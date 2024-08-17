@@ -11,6 +11,7 @@ Skål is a FastAPI application designed to manage and interact with various func
 ## Installation
 
 To get started with Skål, follow these steps:
+### Using Virtual Environment
 
 1. **Clone the Repository**:
     ```bash
@@ -31,9 +32,29 @@ To get started with Skål, follow these steps:
 
 4. **Run the Application**:
     ```bash
-    uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --ssl-keyfile key.pem --ssl-certfile cert.pem --reload
+    uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --ssl-keyfile key.pem --ssl-certfile cert.pem
     ```
-    Visit `https://127.0.0.1:8080` in your web browser.  Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
+    Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
+
+
+### Using Docker
+
+1. **Clone the Repository**:
+    ```bash
+    git clone https://github.com/daytonjones/Skal.git
+    cd Skal
+    ```
+
+2. **Build the Docker Image**:
+    ```bash
+    docker build -t skal-app .
+    ```
+
+3. **Run the Docker Container**:
+    ```bash
+    docker run -d -p 8080:8080 skal-app
+    ```
+    Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
 
 ## Configuration
 
