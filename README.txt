@@ -8,20 +8,34 @@ Features:
 - Database maintenance for database backup and import.
 
 Installation:
+To set up Skål, you have two options:
+
+Using Virtual Environment:
 1. Clone the repository:
-   git clone https://github.com/daytonjones/Skal.git
-   cd Skal
+   `git clone https://github.com/daytonjones/Skal.git && cd Skal`
 
 2. Set up a virtual environment:
-   python -m venv venv
-   source venv/bin/activate  # Use `venv\Scripts\activate` on Windows
+   `python -m venv venv
+   source venv/bin/activate`  # Use `venv\Scripts\activate` on Windows
 
 3. Install dependencies:
-   pip install -r requirements.txt
+   `pip install -r requirements.txt`
 
 4. Run the application:
-   uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --ssl-keyfile key.pem --ssl-certfile cert.pem
-   Access the app at https://127.0.0.1:8080  (Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.)
+    `uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --ssl-keyfile key.pem --ssl-certfile cert.pem`
+    Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
+
+
+Using Docker:
+1. Clone the repository:
+   `git clone https://github.com/daytonjones/Skal.git && cd Skal`
+
+2. Build the Docker image:
+   `docker build -t skal-app .`
+
+3. Run the Docker container:
+   `docker run -d -p 8080:8080 skal-app`
+   Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
 
 Configuration:
 - The application uses an SQLite database which will be created at the first time the app is started.  To access the TiltPi data (if using a Tilt with TiltPi) just follow the instructions in the app to link to your shared reports.
