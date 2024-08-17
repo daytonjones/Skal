@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="/static/css/tailwind.css" rel="stylesheet">
+    <link href="/static/css/daisyui.css" rel="stylesheet">
+    <link rel="icon" href="/static/skal.ico" type="image/x-icon">
+    <title>Skål</title>
+        <style>
+        .loader {
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hover-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hover-container img {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .hover-container:hover img {
+            display: block;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body class="bg-cover bg-center relative h-full">
+    <div class="absolute inset-0 z-0">
+        <img src="/static/mead_background.png"
+             alt="Background Image"
+             class="object-cover w-full h-full opacity-25">
+    </div>
+
+    <div class="relative z-10">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="loading-container">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            <div id="loading-message" class="loading-text">Gathering data, please wait...</div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4 text-white">
+        <ul class="flex space-x-4">
+            <li><a href="/" class="hover:underline">Skål</a></li>
+            <li><a href="/abv-calculator" class="hover:underline">ABV Calculator</a>
+            <li><a href="/recipes" class="hover:underline">Recipes</a>
+            <li><a href="/tilt" class="hover:underline">TiltPi</a>
+            <li>&nbsp;
+            <li>&nbsp;
+            <li><a href="/about" class="hover:underline">About</a>
+        </ul>
+    </nav>
+
+    <div class="container mx-auto mt-6 h-full">
+        {% block content %}{% endblock %}
+    </div>
+        <!-- Footer -->
+    <div class="footer bg-base-200 text-base-content mt-4 p-4">
+        <div>
+            <hr>
+            <div class="hover-container">
+                <p>Skål ©{{ current_year }} Dayton Jones (jones.dayton at gmail dot com)</p>
+                <img src="/static/djones.png" alt="Dayton Jones">
+            </div>
+            <!--               <p>Page loaded at: <span id="local-time"></span> (<span id="utc-time">{{ utcnow }}</span>) in {{ loadtime }}</p> -->
+        </div>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.x.x/dist/alpine.min.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const utcTimeElement = document.getElementById('utc-time');
+            const localTimeElement = document.getElementById('local-time');
+            const utcTime = new Date(utcTimeElement.textContent);
+
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZoneName: 'short'
+            };
+            const localTime = new Intl.DateTimeFormat(undefined, options).format(utcTime);
+
+            utcTimeElement.textContent = utcTime.toISOString().replace('T', ' ').split('.')[0] + ' UTC';
+            localTimeElement.textContent = localTime;
+        });
+    </script>
+
+    <!-- JavaScript for showing loading spinner -->
+    <script type="module">
+        import messages from '/static/loading_messages.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('nav a');
+            const spinner = document.getElementById('loading-spinner');
+            const loadingMessage = document.getElementById('loading-message');
+            let messageInterval;
+
+            function showRandomMessage() {
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                loadingMessage.textContent = messages[randomIndex];
+            }
+
+            links.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    // Prevent default link behavior
+                    event.preventDefault();
+
+                    // Show spinner
+                    spinner.classList.remove('hidden');
+
+                    // Display a random loading message
+                    showRandomMessage();
+
+                    // Set an interval to change the message every 10 seconds
+                    messageInterval = setInterval(showRandomMessage, 10000);
+
+                    // Navigate to the new page
+                    window.location.href = this.href;
+                });
+            });
+
+            window.addEventListener('load', function() {
+                // Hide spinner when the page is fully loaded
+                spinner.classList.add('hidden');
+
+                // Clear the interval to stop updating the message
+                if (messageInterval) {
+                    clearInterval(messageInterval);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

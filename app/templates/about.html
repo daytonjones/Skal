@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="grid grid-cols-1 gap-20">
+        <div class="card w-full bg-base-100">
+            <div class="card-body">
+                <p>Skål is a very simple webapp written in Python, and utilizing some Node.js (tailwindcss and daisyui) and javascript.  It's just a little something I created as a way to track the Meads I've made, and to supply some information.  I find it useful, and it "works for me" (but your mileage may vary!).</p><br>
+                <p>All recipes/batches are stored locally in a database.</p><br>
+                <p>Currently, only allows one user, but I might add "multi-tenancy" support at some point.  I might also add some theme support in the future.</p><br>
+                <p>I use a Tilt, and TiltPi, to track my brews which is why I added the ability to view the Google Sheets TiltPi creates.  I know there are differing opinions out there about the accuracy of the Tilt, but I've been <strong>highly</strong> unsuccessful with either a standard hydrometer or refractometer, so the Tilt works fine for my purposes.</p><br>
+                <p>Provided as is (although please check the repo from time to time to see if I've made any updates, or help with enhancements), to use as you see fit.  I take no responsibility if something happens to the database and all your batch/recipe info is lost.  I strongly recommend you back up the database occasionally, just in case.</p><br>
+                <p>Thanks for using Skål, feel free to email me with any comments! -- Dayton Jones </p><br>
+            </div>
+        </div>
+
+    <div class="grid grid-cols-2 gap-20">
+        <div class="card w-full bg-base-100">
+            <div class="card-body">
+                <h2 class="card-title">Database Maintenance</h2>
+                <form id="maintenance-form" action="/backup-database" method="post" enctype="multipart/form-data">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="action" value="backup" checked>
+                                <span class="ml-2">Backup Database</span>
+                            </label>
+                            <br>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="action" value="import">
+                                <span class="ml-2">Import Database</span>
+                            </label>
+                        </div>
+                        <div id="file-input" class="hidden">
+                            <input type="file" name="file" accept=".db">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button class="bg-yellow-500 text-white p-2 rounded" type="submit">Execute</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card w-full bg-base-100">
+            <div class="card-body">
+                <h2 class="card-title">Update User Information</h2>
+                <form id="edit-user-form" action="/update-user" method="post">
+                    <div class="form-control mb-4">
+                        <input type="hidden" name="user_id" value="{{ user_id }}">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" value="{{ username }}" required>
+                    </div>
+                    <div class="form-control mb-4">
+                        <label for="realname">Real Name:</label>  <!-- Ensure the name is 'realname' -->
+                        <input type="text" id="realname" name="realname" value="{{ realname }}" required>
+                    </div>
+                    <div class="form-control mb-4">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password">
+                    </div>
+                    <div class="form-control mb-4">
+                        <label for="confirm_password">Confirm Password:</label>
+                        <input type="password" id="confirm_password" name="confirm_password">
+                    </div>
+                    <div class="mt-4">
+                        <button class="bg-yellow-500 text-white p-2 rounded" type="submit">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle form submission and validate passwords
+        document.getElementById("edit-user-form").addEventListener("submit", function(event) {
+            const password = document.querySelector('input[name="password"]').value;
+            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+            const errorMessage = document.getElementById("error-message");
+
+            if (password && password !== confirmPassword) {
+                event.preventDefault();  // Prevent form submission
+                errorMessage.classList.remove("hidden");  // Show error message
+            } else {
+                errorMessage.classList.add("hidden");  // Hide error message
+            }
+        });
+
+        // Toggle file input visibility based on selected action in maintenance form
+        document.querySelectorAll('input[name="action"]').forEach((elem) => {
+            elem.addEventListener("change", function() {
+                const fileInput = document.getElementById("file-input");
+                if (this.value === "import") {
+                    fileInput.classList.remove("hidden");
+                } else {
+                    fileInput.classList.add("hidden");
+                }
+            });
+        });
+
+        // Handle form submission for database maintenance
+        document.getElementById("maintenance-form").addEventListener("submit", function(event) {
+            const selectedAction = document.querySelector('input[name="action"]:checked').value;
+            if (selectedAction === "backup") {
+                this.action = "/backup-database";
+                this.enctype = "application/x-www-form-urlencoded";
+            } else {
+                this.action = "/import-database";
+                this.enctype = "multipart/form-data";
+            }
+        });
+    </script>
+
+{% endblock %}
