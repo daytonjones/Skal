@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<center><h1>Calculate % ABV (<i>A</i>lcohol <i>B</i>y <i>V</i>olume)</h1></center>
+    <div class="grid grid-cols-1 gap-6">
+        <div class="card w-full bg-yellow-200 shadow-xl">
+            <div class="card-body">
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Original Gravity (OG) Slider -->
+                    <div>
+                        <label for="original_sg_slider" class="font-bold">Original Gravity (OG):</label>
+                        <input id="original_sg_slider" type="range" min="900" max="1170" value="1150" step="1" class="range  range-success" oninput="calculate_abv_sg()" />
+                        <span id="original_sg_value" class="ml-2">1.150</span>
+                    </div>
+
+                    <!-- Original Brix Slider -->
+                    <div>
+                        <label for="original_brix_slider" class="font-bold">Original Brix:</label>
+                        <input id="original_brix_slider" type="range" min="0" max="30" value="20" step="1" class="range  range-success" oninput="calculate_abv_brix()">
+                        <span id="original_brix_value" class="ml-2">20</span>
+                    </div>
+
+                    <!-- Final Gravity (FG) Slider -->
+                    <div>
+                        <label for="final_sg_slider" class="font-bold">Final Gravity (FG):</label>
+                        <input id="final_sg_slider" type="range" min="900" max="1170" value="1000" step="1" class="range  range-success" oninput="calculate_abv_sg()">
+                        <span id="final_sg_value" class="ml-2">1.000</span>
+                    </div>
+
+                    <!-- Final Brix Slider -->
+                    <div>
+                        <label for="final_brix_slider" class="font-bold">Final Brix:</label>
+                        <input id="final_brix_slider" type="range" min="0" max="30" value="5" step="1" class="range  range-success" oninput="calculate_abv_brix()">
+                        <span id="final_brix_value" class="ml-2">5</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mt-6">
+                    <!-- SG ABV Labels -->
+                    <div>
+                        <p id="sg_abv_label">Approximate (easy) SG ABV = 0.00%</p>
+                        <p id="sg_hard_abv_label">Approximate (hard) SG ABV = 0.00%</p>
+                        <p id="sg_attenuation_label">Attenuation: 0.00%</p>
+                        <p id="sg_calories_label">Calories (Per 12oz): 0.00</p>
+                    </div>
+
+                    <!-- Brix ABV Labels -->
+                    <div>
+                        <p id="brix_abv_label">Approximate (easy) Brix ABV = 0.00%</p>
+                        <p id="brix_hard_abv_label">Approximate (hard) Brix ABV = 0.00%</p>
+                        <p id="brix_attenuation_label">Attenuation: 0.00%</p>
+                        <p id="brix_calories_label">Calories (Per 12oz): 0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    <!-- Collapsible Info Window -->
+                    <div x-data="{ open: false }" class="mt-4">
+                        <button @click="open = !open" class="btn rounded-full bg-green-100">
+                            <span x-show="!open">Calculation Explanation</span>
+                            <span x-show="open">Calculation Explanation</span>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-2 p-4 bg-yellow-100 rounded-lg">
+                        <p class="text-sm">
+                            Specific Gravity is determined by using a <a href="https://www.merriam-webster.com/dictionary/hydrometer" target=_blank class="text-blue-600 underline">hydrometer</a>.<br><br>
+                            Original gravity (OG) measures how much sugar is present in a must before it is fermented.
+                            The final gravity (FG) is how much sugar is left over when fermentation is done.
+                            A lower final gravity indicates a dry or crisp flavor, while a higher final gravity
+                            indicates a sweet or malty flavor. The size of the gap between OG and FG can be used
+                            to calculate how much alcohol the brew contains.<br><br>
+                            Most brewing sites use this basic formula:<br>
+                            &nbsp&nbsp&nbsp&nbsp<code>ABV = (OG – FG) * 131.25</code><br><br>
+                            A more complex equation which attempts to provide greater accuracy at higher gravities is:<br>
+                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp;<code>ABV = (76.08 * (OG - FG) / (1.775 - OG)) * (FG / 0.794)</code><br><br>
+                            <hr>
+                            A second method of determing the ABV of a brew is by using a <a href="https://www.merriam-webster.com/dictionary/refractometer" target=_blank class="text-blue-600 underline">refractometer</a> to get the
+                            Degrees Brix (symbol °Bx), which is a measure of the dissolved solids in a liquid, and is commonly used to measure
+                            dissolved sugar content of an aqueous solution.<br><br>
+                            <hr>
+                            Attenuation is a measurement of how much of the sugar in the must/wort is converted into alcohol.
+                            The lower the attenuation, the more sugars are not fermented and the sweeter the resulting brew.
+                        </p>
+        </div>
+    </div>
+
+    <!-- JavaScript for Calculating ABV and Updating Slider Values -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {calculate_abv_sg(); });
+        document.addEventListener("DOMContentLoaded", function() {calculate_abv_brix(); });
+        function calculate_abv_sg() {
+            let og_slider = document.getElementById("original_sg_slider");
+            let fg_slider = document.getElementById("final_sg_slider");
+
+            let og = og_slider.value / 1000;
+            let fg = fg_slider.value / 1000;
+
+            let abv_easy = (og - fg) * 131.25;
+            let abv_hard = (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794);
+            let attenuation = 100 * (og - fg) / (og - 1);
+            let cal_abv = (1881.22 * fg) * ((og - fg) / (1.775 - og));
+            let cal_carb = (3550 * fg) * ((0.1808 * og) + (0.8192 * fg)) - 1.0004;
+            let cal_total = cal_abv + cal_carb;
+
+            document.getElementById("sg_abv_label").innerText = `Approximate (easy) SG ABV = ${abv_easy.toFixed(2)}%`;
+            document.getElementById("sg_hard_abv_label").innerText = `Approximate (hard) SG ABV = ${abv_hard.toFixed(2)}%`;
+            document.getElementById("sg_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
+            document.getElementById("sg_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
+
+            // Update the displayed values for the sliders
+            document.getElementById("original_sg_value").innerText = og.toFixed(3);
+            document.getElementById("final_sg_value").innerText = fg.toFixed(3);
+        }
+
+        function calculate_abv_brix() {
+            let og_slider = document.getElementById("original_brix_slider");
+            let fg_slider = document.getElementById("final_brix_slider");
+
+            let og = og_slider.value;
+            let fg = fg_slider.value;
+
+            let abv_easy = (og - fg) * 131.25;
+            let abv_hard = (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794);
+            let attenuation = 100 * (og - fg) / (og - 1);
+            let cal_abv = (1881.22 * fg) * ((og - fg) / (1.775 - og));
+            let cal_carb = (3550 * fg) * ((0.1808 * og) + (0.8192 * fg)) - 1.0004;
+            let cal_total = cal_abv + cal_carb;
+
+            document.getElementById("brix_abv_label").innerText = `Approximate (easy) Brix ABV = ${abv_easy.toFixed(2)}%`;
+            document.getElementById("brix_hard_abv_label").innerText = `Approximate (hard) Brix ABV = ${abv_hard.toFixed(2)}%`;
+            document.getElementById("brix_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
+            document.getElementById("brix_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
+
+            // Update the displayed values for the sliders
+            document.getElementById("original_brix_value").innerText = og;
+            document.getElementById("final_brix_value").innerText = fg;
+        }
+    </script>
+{% endblock %}

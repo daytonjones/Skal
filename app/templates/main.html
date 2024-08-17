@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="grid grid-cols-1 gap-20">
+        <div class="card w-full bg-base-100">
+            <div class="card-body">
+                <center>
+                    <h1 class="text-2xl font-bold mb-8">Welcome, {{ realname }}</h1>
+                    <b>Skål</b><audio controls><source src="/static/skal.mp3"></audio>is an Old Norse word meaning bowl.
+        From the tradition of passing the bowl of mead or beer,<br>the term “skål” is now also a toast — ”cheers!”</center>
+                </center>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-20">
+        <div class="card w-full bg-base-100 shadow-xl">
+            <div class="card-body">
+                <center><img src="/static/skal.png" alt="Skål" style="max-width: 40%;" /> </center>
+            </div>
+        </div>
+
+    <div class="grid grid-cols-1 gap-20">
+        <div class="card w-full bg-base-100">
+            <div class="card-body">
+               <ul class="space-y-4">
+                <li class="p-4 bg-gray rounded-lg">
+                    Use the Navigation Bar at the top to access the different features of Skål.  You can calculate your ABV, Add/Edit/View your recipes (and batches you've made)...
+                </li>
+<!--                <li class="p-4 bg-gray rounded-lg">
+                    Calculate your ABV via SG or Brix readings
+                </li>
+                <li class="p-4 bg-gray rounded-lg">
+                    View your recipes and batches
+                </li> -->
+                <li class="p-4 bg-gray rounded-lg">
+                    If you have a <a href="https://tilthydrometer.com/" target=_blank class="text-blue-600 underline">Tilt Hydrometer</a>, and use Tilt Pi to track your batches, you can access the Google Sheets generated/shared with you.  This will require a little extra setup (one time) from you - namely creating an "app" and api key to access your shared documents.
+                    <!-- Collapsible Info Window -->
+                    <div x-data="{ open: false }" class="mt-4">
+                        <button @click="open = !open" class="btn rounded-full bg-green-100">
+                            <span x-show="!open">Show Setup Instructions</span>
+                            <span x-show="open">Hide Setup Instructions</span>
+                        </button>
+                        <div x-show="open" x-cloak class="mt-2 p-4 bg-gray-100 rounded-lg">
+                            <h3 class="text-xl font-semibold mb-2">How to connect your TiltPi Sheets to Skål</h3>
+                            <ol class="list-decimal pl-5">
+                                <li>Go to the <a href="https://console.cloud.google.com/" target="_blank" class="text-blue-600 underline">Google Cloud Console</a> and create a new project.</li>
+                                <li>Navigate to the "API & Services" section and click "Enable APIs and Services".</li>
+                                <li>Search for "Google Drive API" and "Google Sheets" and enable them for your project.</li>
+                                <li>In the "Credentials" section, create OAuth 2.0 credentials.</li>
+                                <li>Download the credentials.json file and save it securely.</li>
+                                <li>Make sure you "publish" your newly created app</li>
+                                <li>Access the "TiltPi" page via the navbar and upload the credentials.json file when prompted, then follow the links to activate/approve the access.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            </div>
+        </div>
+{% endblock %}

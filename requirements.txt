@@ -1,0 +1,11 @@
+fastapi
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+itsdangerous
+jinja2
+passlib
+python-multipart
+sqlalchemy
+uvicorn
