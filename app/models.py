@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, DateTime
+from sqlalchemy import Column, BLOB, Integer, String, Date, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
 from datetime import datetime
@@ -57,6 +57,6 @@ class Batch(Base):
     osg = Column(String(24), nullable=True)
     fsg = Column(String(24), nullable=True)
     abv = Column(String(24), nullable=True)
-    image_path = Column(String(255), nullable=True)  # New column for image path
+    image = Column(BLOB, nullable=True)
 
     recipe = relationship("Recipe", back_populates="batches")

@@ -36,7 +36,7 @@
                 <textarea id="instructions" name="instructions" rows="5" class="block w-full p-2 border rounded"></textarea>
 
                 <!-- Submit Button -->
-                <button type="submit" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 w-full">Create Recipe</button>
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded hover:bg-green-600 w-full">Create Recipe</button>
             </form>
         </div>
 
@@ -131,11 +131,11 @@
                     <!-- Collapsible Content -->
                     <div id="recipe-{{ loop.index }}" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="p-4">
-                            <p class="text-sm text-gray-600">Size: {{ recipe.rec_size }}</p>
+                            <p class="mt-4"><strong>Size:</strong> {{ recipe.rec_size }}</p>
                             <p class="mt-4"><strong>Ingredients:</strong></p>
-                            <p class="text-sm text-gray-700">{{ recipe.ingredients }}</p>
+                            <p class="text-sm text-gray-700">{{ recipe.ingredients.replace('\n', '<br>') | safe }}</p>
                             <p class="mt-4"><strong>Instructions:</strong></p>
-                            <p class="text-sm text-gray-700">{{ recipe.instructions }}</p>
+                            <p class="text-sm text-gray-700">{{ recipe.instructions.replace('\n', '<br>') | safe }}</p>
 
                             <!-- Edit and Delete Buttons -->
                             <div class="flex space-x-2 mt-4">
@@ -163,7 +163,7 @@
                                     <textarea id="instructions_{{ recipe.id }}" name="instructions" rows="5" class="block w-full p-2 border rounded">{{ recipe.instructions }}</textarea>
 
                                     <!-- Submit Button -->
-                                    <button type="submit" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 w-full">Update Recipe</button>
+                                    <button type="submit" class="bg-blue-500 text-white p-2 rounded hover:bg-green-600 w-full">Update Recipe</button>
                                 </form>
                             </div>
                         </div>
@@ -191,14 +191,20 @@
 
                     <!-- Collapsible Content -->
                     <div id="batch-{{ loop.index }}" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                        <div class="p-4">
-                            <p class="text-sm text-gray-600">Primary: {{ batch.primary_fermentation }}</p>
-                            <p class="text-sm text-gray-600">Secondary: {{ batch.secondary_fermentation }}</p>
-                            <p class="text-sm text-gray-600">Bottled: {{ batch.bottled }}</p>
+                        <div class="mt-4 p-4">
+                            {% if batch.image %}
+                                <div class="p-4">
+                                    <img src="/batches/{{ batch.id }}/image" alt="Batch Image" width="50%" height="50%" class="thumbnail">
+                                </div>
+                            {% endif %}
+                            <p class="mt-4"><strong>Batch Size:</strong> {{ batch.batch_size }}</p>
+                            <p class="mt-4"><strong>Primary:</strong> {{ batch.primary_fermentation }}</p>
+                            <p class="mt-4"><strong>Secondary:</strong> {{ batch.secondary_fermentation }}</p>
+                            <p class="mt-4"><strong>Bottled:</strong> {{ batch.bottled }}</p>
                             <p class="mt-4"><strong>Notes:</strong></p>
-                            <p class="text-sm text-gray-700">{{ batch.notes }}</p>
+                            <p class="text-sm text-gray-700">{% if batch.notes %}{{ batch.notes.replace('\n', '<br>') | safe }}{% else %}No notes available.{% endif %}</p>
                             <p class="mt-4"><strong>ABV%:</strong></p>
-                            <p class="text-sm text-gray-700">{{ batch.abv }}</p>
+                            <p class="text-sm text-gray-700">{{ batch.abv }}<br> (OSG: {{ batch.osg }}, FSG: {{ batch.fsg }})</p>
 
                             <!-- Edit and Delete Buttons -->
                             <div class="flex space-x-2 mt-4">
@@ -213,6 +219,10 @@
                             <!-- Collapsible Edit Batch Form -->
                             <div id="editBatchForm{{ batch.id }}" class="mt-4 hidden">
                                 <form action="/batches/{{ batch.id }}/edit" method="post" class="space-y-4">
+                                    <input type="hidden" name="batch_size" value="{{ batch.batch_size }}">
+                                    <label for="image" class="block">Upload Image (Optional):</label>
+                                    <input type="file" id="image" name="image" class="block w-full p-2 border rounded">
+
                                     <label for="primary_fermentation_{{ batch.id }}" class="block">Primary Fermentation:</label>
                                     <input type="date" id="primary_fermentation_{{ batch.id }}" name="primary_fermentation" value="{{ batch.primary_fermentation }}" class="block w-full p-2 border rounded">
 
@@ -224,6 +234,12 @@
 
                                     <label for="notes_{{ batch.id }}" class="block">Notes:</label>
                                     <textarea id="notes_{{ batch.id }}" name="notes" rows="3" class="block w-full p-2 border rounded">{{ batch.notes }}</textarea>
+
+                                    <label for="osg_{{ batch.id }}" class="block">OSG (Optional):</label>
+                                    <input type="text" id="osg_{{ batch.id }}" name="osg" value="{{ batch.osg }}" class="block w-full p-2 border rounded">
+
+                                    <label for="fsg_{{ batch.id }}" class="block">FSG (Optional):</label>
+                                    <input type="text" id="fsg_{{ batch.id }}" name="fsg" value="{{ batch.fsg }}" class="block w-full p-2 border rounded">
 
                                     <label for="abv_{{ batch.id }}" class="block">Alcohol By Volume (ABV%) (Optional):</label>
                                     <input type="text" id="abv_{{ batch.id }}" name="abv" value="{{ batch.abv }}" class="block w-full p-2 border rounded">

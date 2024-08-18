@@ -13,6 +13,7 @@ from fastapi import (
 )
 from fastapi.responses import (
     RedirectResponse,
+    StreamingResponse,
     HTMLResponse
 )
 from fastapi.staticfiles import StaticFiles
@@ -38,6 +39,7 @@ from .models import (
 )
 from .google_docs import list_shared_files
 from datetime import (datetime, timezone, timedelta)
+from io import BytesIO
 from pathlib import Path
 from timeit import default_timer as timer
 from typing import Any, Optional
@@ -407,6 +409,14 @@ async def get_batch_form(request: Request):
 
     return templates.TemplateResponse("create_batch.html", {"request": request, "recipes": recipes})
 
+@app.get("/batches/{batch_id}/image")
+async def get_batch_image(batch_id: int, db: Session = Depends(get_db)):
+    batch = db.query(Batch).filter_by(id=batch_id).first()
+    if batch and batch.image:
+        return Response(content=batch.image, media_type="image/jpeg")
+    else:
+        raise HTTPException(status_code=404, detail="Image not found")
+
 @app.post("/batches")
 async def create_batch(request: Request,
                        recipe_id: Optional[int] = Form(None),
@@ -434,12 +444,9 @@ async def create_batch(request: Request,
         if bottled else None
     )
 
-    image_path = None
+    image_data = None
     if image and hasattr(image, 'filename') and image.filename:
-        file_location = os.path.join(UPLOAD_DIRECTORY, image.filename)
-        with open(file_location, "wb") as file:
-            file.write(image.file.read())
-        image_path = file_location.replace("app/", "", 1)
+        image_data = await image.read()  # Read image data as bytes
 
     new_batch = Batch(
         recipe_id=recipe_id,
@@ -451,7 +458,7 @@ async def create_batch(request: Request,
         osg=osg,
         fsg=fsg,
         abv=abv,
-        image_path=image_path
+        image=image_data
     )
 
     db.add(new_batch)
