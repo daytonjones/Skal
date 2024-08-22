@@ -698,6 +698,16 @@ async def update_user(
 
     return RedirectResponse(url="/about", status_code=303)
 
+@app.get("/license")
+async def get_license():
+    license_path = os.path.join(os.getcwd(), "LICENSE")
+    if os.path.exists(license_path):
+        with open(license_path, "r") as file:
+            license_content = file.read()
+        return Response(content=license_content, media_type="text/plain")
+    return Response(content="LICENSE file not found", media_type="text/plain", status_code=404)
+
+
 
 #@app.post("/generate-cert")
 #async def generate_cert(request: Request, domain: str = Form(...)):
