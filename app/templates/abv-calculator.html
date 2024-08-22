@@ -40,14 +40,14 @@
                         <p id="sg_abv_label">Approximate (easy) SG ABV = 0.00%</p>
                         <p id="sg_hard_abv_label">Approximate (hard) SG ABV = 0.00%</p>
                         <p id="sg_attenuation_label">Attenuation: 0.00%</p>
-                        <p id="sg_calories_label">Calories (Per 12oz): 0.00</p>
+                        <p id="sg_calories_label">Calories (Per 5oz): 0.00</p>
                     </div>
 
                     <!-- Brix ABV Labels -->
                     <div>
                         <p id="brix_abv_label">Approximate (easy) ABV = 0.00%</p>
                         <p id="brix_attenuation_label">Attenuation: 0.00%</p>
-                        <p id="brix_calories_label">Calories (Per 12oz): 0.00</p>
+                        <p id="brix_calories_label">Calories (Per 5oz): 0.00</p>
                     </div>
                 </div>
             </div>
@@ -73,17 +73,27 @@
                             A more complex equation which attempts to provide greater accuracy at higher gravities is:<br>
                             &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp;<code>ABV = (76.08 * (OG - FG) / (1.775 - OG)) * (FG / 0.794)</code><br><br></p>
                             <hr>
-                            <p>A second method of determing the ABV of a brew is by using a <a href="https://www.merriam-webster.com/dictionary/refractometer" target=_blank class="text-blue-600 underline">refractometer</a> to get the
+                        <p class="text-sm">
+                            A second method of determing the ABV of a brew is by using a <a href="https://www.merriam-webster.com/dictionary/refractometer" target=_blank class="text-blue-600 underline">refractometer</a> to get the
                             Degrees Brix (symbol °Bx), which is a measure of the dissolved solids in a liquid, and is commonly used to measure
                             dissolved sugar content of an aqueous solution.<br><br>
                             The calculation for Brix to ABV is by subtracting the final Brix reading after fermentation from the pre-fermentation Brix reading and multiplying the result by 0.55 :<br>
                             &nbsp&nbsp&nbsp&nbsp<code>ABV = (OB - FB) * 0.55</code><br>
                             For example, if a liquid ferments from 25 Brix to 0 Brix, the alcohol content would be 13.75% (25 x 0.55 = 13.75).<br><br></p>
-
                             <hr>
-                            <p>Attenuation is a measurement of how much of the sugar in the must/wort is converted into alcohol.
+                        <p class="text-sm">
+                            Attenuation is a measurement of how much of the sugar in the must/wort is converted into alcohol.
                             The lower the attenuation, the more sugars are not fermented and the sweeter the resulting brew.
-                        </p>
+                            <br><br></p>
+                            <hr>
+                        <p class="text-sm">
+                            To get a general idea of calories in your wine, you first need to know how many grams of alcohol you are dealing with.<br>
+                            To find the grams of alcohol in your drink:<br>
+                            &nbsp&nbsp&nbsp&nbsp;<code>(Volume (ml) x ABV% x 8)/1000</code><br>
+                            Once you have the grams in your wine, multiply that by 7 (alcohol is 7 calories per gram) <br><br>
+                            So, for example, let’s take a 6 oz glass of 11% ABV wine, completely dry (FG 1.000): <br>
+                            &nbsp&nbsp&nbsp&nbsp;<code>117.441ml x 11% x 8/1000</code> = 10.3348 grams of alcohol in that 6 oz.  Multiply that by 7 for 72.34 calories.
+                            <br><br></p>
         </div>
     </div>
 
@@ -101,14 +111,26 @@
             let abv_easy = (og - fg) * 131.25;
             let abv_hard = (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794);
             let attenuation = 100 * (og - fg) / (og - 1);
-            let cal_abv = (1881.22 * fg) * ((og - fg) / (1.775 - og));
-            let cal_carb = (3550 * fg) * ((0.1808 * og) + (0.8192 * fg)) - 1.0004;
+
+            let volume_ml = 147.868;  // 5 oz in ml
+            let abv = abv_easy;    // The ABV% of the wine
+
+            // Calculate grams of alcohol
+            let grams_alcohol = (volume_ml * abv * 8) / 1000;
+
+            // Calculate calories from alcohol
+            let cal_abv = grams_alcohol * 7;
+
+            // If calculating carbohydrate calories
+            let cal_carb = 0;  // Adjust based on carbohydrate content
+
+            // Total calories
             let cal_total = cal_abv + cal_carb;
 
             document.getElementById("sg_abv_label").innerText = `(easy) ABV = ${abv_easy.toFixed(2)}%`;
             document.getElementById("sg_hard_abv_label").innerText = `(alternate) ABV = ${abv_hard.toFixed(2)}%`;
             document.getElementById("sg_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
-            document.getElementById("sg_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
+            document.getElementById("sg_calories_label").innerText = `Calories (Per 5oz): ${cal_total.toFixed(2)}`;
 
             // Update the displayed values for the sliders
             document.getElementById("original_sg_value").innerText = og.toFixed(3);
@@ -133,17 +155,27 @@
             // Calculate ABV using Brix
             let abv = (og_brix - fg_brix) * 0.55;
 
-            // Calculate Calories using SG
-            let cal_abv = (1881.22 * fg_sg) * ((og_sg - fg_sg) / (1.775 - og_sg));
-            let cal_carb = (3550 * fg_sg) * ((0.1808 * og_sg) + (0.8192 * fg_sg)) - 1.0004;
+            let volume_ml = 147.868;  // 5 oz in ml
+
+            // Calculate grams of alcohol
+            let grams_alcohol = (volume_ml * abv * 8) / 1000;
+
+            // Calculate calories from alcohol
+            let cal_abv = grams_alcohol * 7;
+
+            // If calculating carbohydrate calories
+            let cal_carb = 0;  // Adjust based on carbohydrate content
+
+            // Total calories
             let cal_total = cal_abv + cal_carb;
+
 
             // Calculate Attenuation using SG
             let attenuation = ((og_sg - fg_sg) / (og_sg - 1)) * 100;
 
 
             document.getElementById("brix_abv_label").innerText = `ABV = ${abv.toFixed(2)}%`;
-            document.getElementById("brix_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
+            document.getElementById("brix_calories_label").innerText = `Calories (Per 5oz): ${cal_total.toFixed(2)}`;
             document.getElementById("brix_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
 
             // Update the displayed values for the sliders
