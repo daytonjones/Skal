@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     nodejs \
     npm \
+    certbot \
+    python3-certbot-nginx \
+    bind9-dnsutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the current directory contents into the container at /app
