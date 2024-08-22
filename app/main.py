@@ -46,6 +46,7 @@ from typing import Any, Optional
 import os
 import secrets
 import shutil
+import subprocess
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -696,3 +697,76 @@ async def update_user(
     db.close()
 
     return RedirectResponse(url="/about", status_code=303)
+
+
+#@app.post("/generate-cert")
+#async def generate_cert(request: Request, domain: str = Form(...)):
+#    # Trigger Certbot to generate certificates
+#    certbot_command = (
+#        f"sudo certbot certonly --standalone -d {domain} "
+#        f"--non-interactive --agree-tos --email admin@{domain} "
+#        f"--config-dir app/static/certbot/config "
+#        f"--work-dir app/static/certbot/work "
+#        f"--logs-dir app/static/certbot/logs"
+#    )
+#
+#    process = subprocess.run(certbot_command.split(), capture_output=True)
+#
+#    if process.returncode == 0:
+#        # Certbot succeeded, link new certs to the app's cert files
+#        subprocess.run(["ln", "-sf", f"app/static/certbot/{domain}/fullchain.pem", "cert.pem"])
+#        subprocess.run(["ln", "-sf", f"app/static/certbot/{domain}/privkey.pem", "key.pem"])
+#
+#
+#        # Create the Nginx configuration file
+#        nginx_config = f"""
+#        server {{
+#            listen 80;
+#            server_name {domain};
+#
+#            location / {{
+#                return 301 https://$host$request_uri;
+#            }}
+#        }}
+#
+#        server {{
+#            listen 443 ssl;
+#            server_name {domain};
+#
+#            ssl_certificate app/static/certbot/live/{domain}/fullchain.pem;
+#            ssl_certificate_key /etc/letsencrypt/live/{domain}/privkey.pem;
+#
+#            location / {{
+#                proxy_pass https://127.0.0.1:8080;
+#            }}
+#        }}
+#        """
+#
+#        # Write the Nginx configuration to the appropriate location
+#        nginx_config_path = f"/etc/nginx/sites-available/{domain}.conf"
+#        with open(nginx_config_path, "w") as config_file:
+#            config_file.write(nginx_config)
+#
+#        # Enable the configuration by creating a symlink in sites-enabled
+#        subprocess.run(["ln", "-sf", nginx_config_path, f"/etc/nginx/sites-enabled/{domain}.conf"])
+#
+#        # Reload or restart Nginx to apply the changes
+#        nginx_reload = subprocess.run(["systemctl", "reload", "nginx"], capture_output=True)
+#
+#        if nginx_reload.returncode == 0:
+#            return {"message": "Certificate generated and Nginx reloaded successfully"}
+#        else:
+#            return {"error": "Failed to reload Nginx", "details": nginx_reload.stderr.decode()}
+#        cron_command = f"(crontab -l; echo '0 0 * * * certbot renew --quiet --post-hook \"systemctl reload nginx\"') | crontab -"
+#        cron_process = subprocess.run(cron_command, shell=True, capture_output=True)
+#
+#        if cron_process.returncode == 0:
+#            return {"message": "Certificate generated, Nginx reloaded, and renewal cron job created successfully"}
+#        else:
+#            return {"error": "Failed to create cron job", "details": cron_process.stderr.decode()}
+#    else:
+#        return {"error": "Failed to generate certificate", "details": process.stderr.decode()}
+#
+#@app.get("/cert-form")
+#async def cert_form(request: Request):
+#    return templates.TemplateResponse("generate_cert.html", {"request": request})
