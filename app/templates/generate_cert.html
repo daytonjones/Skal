@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<form action="/generate-cert" method="post">
+    <label for="domain">Enter your domain:</label>
+    <input type="text" id="domain" name="domain" required>
+    <button type="submit">Generate Certificate</button>
+</form>
+
+{% endblock %}
