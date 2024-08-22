@@ -41,6 +41,19 @@
             display: block;
         }
 
+        .hover-container #license-popup {
+            display: none;
+            white-space: pre-wrap; /* Ensures new lines are preserved */
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto; /* Adds scrolling if the content is too large */
+        }
+
+        .hover-container:hover #license-popup {
+            display: block;
+        }
+
+
         .loading-container {
             display: flex;
             flex-direction: column;
@@ -112,6 +125,7 @@
             <div class="hover-container">
                 <p>Skål ©{{ current_year }} Dayton Jones (jones.dayton at gmail dot com)</p>
                 <img src="/static/djones.png" alt="Dayton Jones">
+                <div id="license-popup" class="hidden bg-white p-4 border rounded shadow-md absolute"></div>
             </div>
             <!--               <p>Page loaded at: <span id="local-time"></span> (<span id="utc-time">{{ utcnow }}</span>) in {{ loadtime }}</p> -->
         </div>
@@ -119,6 +133,31 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.x.x/dist/alpine.min.js" defer></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const licensePopup = document.getElementById('license-popup');
+            const hoverContainer = document.querySelector('.hover-container');
+
+            hoverContainer.addEventListener('mouseenter', async function() {
+                try {
+                    const response = await fetch('/license');
+                    if (response.ok) {
+                        const licenseText = await response.text();
+                        licensePopup.textContent = licenseText;
+                    } else {
+                        licensePopup.textContent = "Error loading LICENSE file.";
+                    }
+                } catch (error) {
+                    licensePopup.textContent = "Failed to load LICENSE file.";
+                }
+                licensePopup.classList.remove('hidden');
+            });
+
+            hoverContainer.addEventListener('mouseleave', function() {
+                licensePopup.classList.add('hidden');
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             const utcTimeElement = document.getElementById('utc-time');
             const localTimeElement = document.getElementById('local-time');
