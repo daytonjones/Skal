@@ -77,3 +77,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any questions or feedback, please contact me.
+
+### Demo
+
+[https://skaldemo.gecko.org](https://skaldemo.gecko.org)
+**User**: demo
+**Password**: password123

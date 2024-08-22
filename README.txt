@@ -51,3 +51,8 @@ License:
 
 Contact:
 - For questions or feedback, please contact me.
+
+Demo:
+- https://skaldemo.gecko.org
+    User: demo
+    Password: password123
