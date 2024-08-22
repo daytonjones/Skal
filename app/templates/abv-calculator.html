@@ -15,8 +15,8 @@
                     <!-- Original Brix Slider -->
                     <div>
                         <label for="original_brix_slider" class="font-bold">Original Brix:</label>
-                        <input id="original_brix_slider" type="range" min="0" max="30" value="20" step="1" class="range  range-success" oninput="calculate_abv_brix()">
-                        <span id="original_brix_value" class="ml-2">20</span>
+                        <input id="original_brix_slider" type="range" min="0" max="30" value="25" step="1" class="range  range-success" oninput="calculate_abv_brix()">
+                        <span id="original_brix_value" class="ml-2">25</span>
                     </div>
 
                     <!-- Final Gravity (FG) Slider -->
@@ -29,8 +29,8 @@
                     <!-- Final Brix Slider -->
                     <div>
                         <label for="final_brix_slider" class="font-bold">Final Brix:</label>
-                        <input id="final_brix_slider" type="range" min="0" max="30" value="5" step="1" class="range  range-success" oninput="calculate_abv_brix()">
-                        <span id="final_brix_value" class="ml-2">5</span>
+                        <input id="final_brix_slider" type="range" min="0" max="30" value="0" step="1" class="range  range-success" oninput="calculate_abv_brix()">
+                        <span id="final_brix_value" class="ml-2">0</span>
                     </div>
                 </div>
 
@@ -45,8 +45,7 @@
 
                     <!-- Brix ABV Labels -->
                     <div>
-                        <p id="brix_abv_label">Approximate (easy) Brix ABV = 0.00%</p>
-                        <p id="brix_hard_abv_label">Approximate (hard) Brix ABV = 0.00%</p>
+                        <p id="brix_abv_label">Approximate (easy) ABV = 0.00%</p>
                         <p id="brix_attenuation_label">Attenuation: 0.00%</p>
                         <p id="brix_calories_label">Calories (Per 12oz): 0.00</p>
                     </div>
@@ -72,13 +71,17 @@
                             Most brewing sites use this basic formula:<br>
                             &nbsp&nbsp&nbsp&nbsp<code>ABV = (OG – FG) * 131.25</code><br><br>
                             A more complex equation which attempts to provide greater accuracy at higher gravities is:<br>
-                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp;<code>ABV = (76.08 * (OG - FG) / (1.775 - OG)) * (FG / 0.794)</code><br><br>
+                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp;<code>ABV = (76.08 * (OG - FG) / (1.775 - OG)) * (FG / 0.794)</code><br><br></p>
                             <hr>
-                            A second method of determing the ABV of a brew is by using a <a href="https://www.merriam-webster.com/dictionary/refractometer" target=_blank class="text-blue-600 underline">refractometer</a> to get the
+                            <p>A second method of determing the ABV of a brew is by using a <a href="https://www.merriam-webster.com/dictionary/refractometer" target=_blank class="text-blue-600 underline">refractometer</a> to get the
                             Degrees Brix (symbol °Bx), which is a measure of the dissolved solids in a liquid, and is commonly used to measure
                             dissolved sugar content of an aqueous solution.<br><br>
+                            The calculation for Brix to ABV is by subtracting the final Brix reading after fermentation from the pre-fermentation Brix reading and multiplying the result by 0.55 :<br>
+                            &nbsp&nbsp&nbsp&nbsp<code>ABV = (OB - FB) * 0.55</code><br>
+                            For example, if a liquid ferments from 25 Brix to 0 Brix, the alcohol content would be 13.75% (25 x 0.55 = 13.75).<br><br></p>
+
                             <hr>
-                            Attenuation is a measurement of how much of the sugar in the must/wort is converted into alcohol.
+                            <p>Attenuation is a measurement of how much of the sugar in the must/wort is converted into alcohol.
                             The lower the attenuation, the more sugars are not fermented and the sweeter the resulting brew.
                         </p>
         </div>
@@ -102,8 +105,8 @@
             let cal_carb = (3550 * fg) * ((0.1808 * og) + (0.8192 * fg)) - 1.0004;
             let cal_total = cal_abv + cal_carb;
 
-            document.getElementById("sg_abv_label").innerText = `Approximate (easy) SG ABV = ${abv_easy.toFixed(2)}%`;
-            document.getElementById("sg_hard_abv_label").innerText = `Approximate (hard) SG ABV = ${abv_hard.toFixed(2)}%`;
+            document.getElementById("sg_abv_label").innerText = `(easy) ABV = ${abv_easy.toFixed(2)}%`;
+            document.getElementById("sg_hard_abv_label").innerText = `(alternate) ABV = ${abv_hard.toFixed(2)}%`;
             document.getElementById("sg_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
             document.getElementById("sg_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
 
@@ -112,28 +115,41 @@
             document.getElementById("final_sg_value").innerText = fg.toFixed(3);
         }
 
+        function brix_to_sg(brix) {
+            return 1 + (brix / (258.6 - (brix / 258.2)));
+        }
+
         function calculate_abv_brix() {
             let og_slider = document.getElementById("original_brix_slider");
             let fg_slider = document.getElementById("final_brix_slider");
 
-            let og = og_slider.value;
-            let fg = fg_slider.value;
+            let og_brix = parseFloat(og_slider.value);
+            let fg_brix = parseFloat(fg_slider.value);
 
-            let abv_easy = (og - fg) * 131.25;
-            let abv_hard = (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794);
-            let attenuation = 100 * (og - fg) / (og - 1);
-            let cal_abv = (1881.22 * fg) * ((og - fg) / (1.775 - og));
-            let cal_carb = (3550 * fg) * ((0.1808 * og) + (0.8192 * fg)) - 1.0004;
+            // Convert Brix to SG
+            let og_sg = brix_to_sg(og_brix);
+            let fg_sg = brix_to_sg(fg_brix);
+
+            // Calculate ABV using Brix
+            let abv = (og_brix - fg_brix) * 0.55;
+
+            // Calculate Calories using SG
+            let cal_abv = (1881.22 * fg_sg) * ((og_sg - fg_sg) / (1.775 - og_sg));
+            let cal_carb = (3550 * fg_sg) * ((0.1808 * og_sg) + (0.8192 * fg_sg)) - 1.0004;
             let cal_total = cal_abv + cal_carb;
 
-            document.getElementById("brix_abv_label").innerText = `Approximate (easy) Brix ABV = ${abv_easy.toFixed(2)}%`;
-            document.getElementById("brix_hard_abv_label").innerText = `Approximate (hard) Brix ABV = ${abv_hard.toFixed(2)}%`;
-            document.getElementById("brix_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
+            // Calculate Attenuation using SG
+            let attenuation = ((og_sg - fg_sg) / (og_sg - 1)) * 100;
+
+
+            document.getElementById("brix_abv_label").innerText = `ABV = ${abv.toFixed(2)}%`;
             document.getElementById("brix_calories_label").innerText = `Calories (Per 12oz): ${cal_total.toFixed(2)}`;
+            document.getElementById("brix_attenuation_label").innerText = `Attenuation: ${attenuation.toFixed(2)}%`;
 
             // Update the displayed values for the sliders
-            document.getElementById("original_brix_value").innerText = og;
-            document.getElementById("final_brix_value").innerText = fg;
+            document.getElementById("original_brix_value").innerText = og_brix;
+            document.getElementById("final_brix_value").innerText = fg_brix;
         }
+
     </script>
 {% endblock %}
