@@ -244,11 +244,8 @@ async def restricted_view(request: Request, user: User = Depends(get_current_use
 @app.get("/")
 async def read_root(request: Request, db: Session = Depends(get_db)):
     start = timer()
-
     session_token = request.cookies.get("session_token")
-
     realname = "Guest"
-
     if session_token:
         session = db.query(UserSession).filter_by(token=session_token).first()
         if session and session.expires_at > datetime.utcnow():
@@ -707,7 +704,19 @@ async def get_license():
         return Response(content=license_content, media_type="text/plain")
     return Response(content="LICENSE file not found", media_type="text/plain", status_code=404)
 
-
+@app.get("/info", response_class=HTMLResponse)
+async def info(request: Request):
+    start = timer()
+    utcnow = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+    current_year = datetime.now().year
+    end = timer()
+    lt = end - start
+    loadtime = format_time(lt)
+    return templates.TemplateResponse("info.html", {"request": request,
+        "utcnow": utcnow,
+        "current_year": current_year,
+        "loadtime": loadtime
+    })
 
 #@app.post("/generate-cert")
 #async def generate_cert(request: Request, domain: str = Form(...)):
