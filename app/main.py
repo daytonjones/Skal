@@ -25,7 +25,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from passlib.hash import bcrypt
 from google_auth_oauthlib.flow import InstalledAppFlow
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import text
+from sqlalchemy import asc, text
 from .database import (
     SessionLocal,
     engine
@@ -470,7 +470,7 @@ async def recipes_view(request: Request, db: Session = Depends(get_db)):
     start = timer()
     try:
         batches = db.query(Batch).options(joinedload(Batch.recipe)).all()
-        recipes = db.query(Recipe).all()
+        recipes = db.query(Recipe).order_by(asc(Recipe.recipe_name)).all()
     except Exception as e:
         print(f"Error fetching recipes: {e}")
         recipes = "ERROR"
