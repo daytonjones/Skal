@@ -218,7 +218,7 @@
 
                             <!-- Collapsible Edit Batch Form -->
                             <div id="editBatchForm{{ batch.id }}" class="mt-4 hidden">
-                                <form action="/batches/{{ batch.id }}/edit" method="post" class="space-y-4">
+                                <form action="/batches/{{ batch.id }}/edit" method="post" enctype="multipart/form-data" class="space-y-4">
                                     <input type="hidden" name="batch_size" value="{{ batch.batch_size }}">
                                     <label for="image" class="block">Upload Image (Optional):</label>
                                     <input type="file" id="image" name="image" class="block w-full p-2 border rounded">

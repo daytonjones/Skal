@@ -530,6 +530,7 @@ async def edit_batch(batch_id: int,
                      osg: str = Form(...),
                      fsg: str = Form(...),
                      abv: str = Form(...),
+                     image: UploadFile = File(None),
                      db: Session = Depends(get_db)):
 
     try:
@@ -559,6 +560,10 @@ async def edit_batch(batch_id: int,
         batch.osg = osg
         batch.fsg = fsg
         batch.abv = abv
+
+        if image and hasattr(image, 'filename') and image.filename:
+            image_data = await image.read()
+            batch.image = image_data
 
         db.commit()
 
