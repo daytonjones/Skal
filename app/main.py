@@ -235,6 +235,47 @@ async def startup_event():
         )
         db.add(default_user)
         db.commit()
+
+        default_recipe = Recipe(
+        recipe_name="Joe's Ancient Orange Mead",
+        rec_size="1 gallon",
+        ingredients="""3.5 lbs Clover or your choice honey or blend (will finish sweet)
+1 large orange (later cut in eights or smaller rind and all)
+1 small handful raisins (25 if you count but more or less ok)
+1 stick cinnamon
+1 whole clove (or 2 if you like, these critters are potent!)
+1 pinch nutmeg or allspice (very small)
+1 package Fleishmann’s bread yeast
+water to 1 gallon.|Use a clean 1 gallon carboy.""",
+        instructions="""Dissolve honey in some warm water and put in carboy.
+
+Wash orange well to remove any pesticides and slice in eights --add orange (you can push em through opening big boy -- rinds included -- its ok for this mead -- take my word for it -- ignore the experts)
+
+Put in raisins, clove, cinnamon stick, any optional ingredients and fill to 3 inches from the top with cold water. (Need room for some foam -- you can top off with more water after the first few days frenzy.)
+
+Shake the heck out of the jug with top on, of course. This is your sophisticated aeration process.
+
+When at room temperature in your kitchen, put in 1 teaspoon of bread yeast  (No you don't have to rehydrate it first-- the ancients didn't even have that word in their vocabulary-- just put it in and give it a gentle swirl or not - the yeast can fight for their own territory.)
+
+Install water airlock. Put in dark place. It will start working immediately or in an hour. (Don't use grandma's bread yeast she bought years before she passed away in the 90's. ) After major foaming stops in a few days add some water and then keep your hands off of it. (Don't shake it! Don't mess with them yeastees! Let them alone except its okay to open your cabinet to smell every once in a while.
+
+
+Racking --- Don't you dare
+
+additional feeding --- NO NO NO
+
+More stirring or shaking -- You're not listening, don't touch
+
+
+After 2 months and maybe a few days it will slow down to a stop and clear all by itself. (How about that - You are not so important after all).
+
+Then you can put a hose in with a small cloth filter on the end into the clear part and siphon off the golden nectar. If you wait long enough even the oranges will sink to the bottom but I never waited that long. If it is clear it is ready.
+
+You don't need a cold basement. It does better in a kitchen in the dark. (Like in a cabinet) likes a little heat (70-80). If it didn't work out... you screwed up and didn't read my instructions (or used grandma's bread yeast she bought years before she passed away)."""
+    )
+    db.add(default_recipe)
+    db.commit()
+
     db.close()
 
 @app.get("/restricted", response_class=HTMLResponse)
