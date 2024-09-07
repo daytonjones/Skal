@@ -192,14 +192,14 @@ async def create_user(
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
     user = db.query(User).filter_by(id=session.user_id).first()
+    
     if not user or user.username != "admin":
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
-    new_user = User(username=username, realname=realname, hashed_password=User.hash_password(password))
-    db.add(new_user)
-    db.commit()
-
-    db.delete(user)
+    user.username = username
+    user.realname = realname
+    user.hashed_password = User.hash_password(password)
+    
     db.commit()
 
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -237,9 +237,9 @@ async def startup_event():
         db.commit()
 
         default_recipe = Recipe(
-        recipe_name="Joe's Ancient Orange Mead",
-        rec_size="1 gallon",
-        ingredients="""3.5 lbs Clover or your choice honey or blend (will finish sweet)
+            recipe_name="Joe's Ancient Orange Mead",
+            rec_size="1 gallon",
+            ingredients="""3.5 lbs Clover or your choice honey or blend (will finish sweet)
 1 large orange (later cut in eights or smaller rind and all)
 1 small handful raisins (25 if you count but more or less ok)
 1 stick cinnamon
@@ -247,7 +247,7 @@ async def startup_event():
 1 pinch nutmeg or allspice (very small)
 1 package Fleishmann’s bread yeast
 water to 1 gallon.|Use a clean 1 gallon carboy.""",
-        instructions="""Dissolve honey in some warm water and put in carboy.
+            instructions="""Dissolve honey in some warm water and put in carboy.
 
 Wash orange well to remove any pesticides and slice in eights --add orange (you can push em through opening big boy -- rinds included -- its ok for this mead -- take my word for it -- ignore the experts)
 
@@ -273,8 +273,8 @@ Then you can put a hose in with a small cloth filter on the end into the clear p
 
 You don't need a cold basement. It does better in a kitchen in the dark. (Like in a cabinet) likes a little heat (70-80). If it didn't work out... you screwed up and didn't read my instructions (or used grandma's bread yeast she bought years before she passed away)."""
     )
-    db.add(default_recipe)
-    db.commit()
+        db.add(default_recipe)
+        db.commit()
 
     db.close()
 
@@ -485,7 +485,7 @@ async def create_batch(request: Request,
 
     image_data = None
     if image and hasattr(image, 'filename') and image.filename:
-        image_data = await image.read()  # Read image data as bytes
+        image_data = await image.read()  
 
     new_batch = Batch(
         recipe_id=recipe_id,
@@ -701,13 +701,11 @@ async def import_database(file: UploadFile = File(...)):
     backup_dir = "app/data/backups"
     os.makedirs(backup_dir, exist_ok=True)
 
-    # Backup the existing database
     if os.path.exists(db_file_path):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         backup_file_path = os.path.join(backup_dir, f"skal_backup_{timestamp}.db")
         shutil.copy(db_file_path, backup_file_path)
 
-    # Import the new database
     with open(db_file_path, "wb") as db_file:
         shutil.copyfileobj(file.file, db_file)
 
@@ -764,74 +762,6 @@ async def info(request: Request):
         "loadtime": loadtime
     })
 
-#@app.post("/generate-cert")
-#async def generate_cert(request: Request, domain: str = Form(...)):
-#    # Trigger Certbot to generate certificates
-#    certbot_command = (
-#        f"sudo certbot certonly --standalone -d {domain} "
-#        f"--non-interactive --agree-tos --email admin@{domain} "
-#        f"--config-dir app/static/certbot/config "
-#        f"--work-dir app/static/certbot/work "
-#        f"--logs-dir app/static/certbot/logs"
-#    )
-#
-#    process = subprocess.run(certbot_command.split(), capture_output=True)
-#
-#    if process.returncode == 0:
-#        # Certbot succeeded, link new certs to the app's cert files
-#        subprocess.run(["ln", "-sf", f"app/static/certbot/{domain}/fullchain.pem", "cert.pem"])
-#        subprocess.run(["ln", "-sf", f"app/static/certbot/{domain}/privkey.pem", "key.pem"])
-#
-#
-#        # Create the Nginx configuration file
-#        nginx_config = f"""
-#        server {{
-#            listen 80;
-#            server_name {domain};
-#
-#            location / {{
-#                return 301 https://$host$request_uri;
-#            }}
-#        }}
-#
-#        server {{
-#            listen 443 ssl;
-#            server_name {domain};
-#
-#            ssl_certificate app/static/certbot/live/{domain}/fullchain.pem;
-#            ssl_certificate_key /etc/letsencrypt/live/{domain}/privkey.pem;
-#
-#            location / {{
-#                proxy_pass https://127.0.0.1:8080;
-#            }}
-#        }}
-#        """
-#
-#        # Write the Nginx configuration to the appropriate location
-#        nginx_config_path = f"/etc/nginx/sites-available/{domain}.conf"
-#        with open(nginx_config_path, "w") as config_file:
-#            config_file.write(nginx_config)
-#
-#        # Enable the configuration by creating a symlink in sites-enabled
-#        subprocess.run(["ln", "-sf", nginx_config_path, f"/etc/nginx/sites-enabled/{domain}.conf"])
-#
-#        # Reload or restart Nginx to apply the changes
-#        nginx_reload = subprocess.run(["systemctl", "reload", "nginx"], capture_output=True)
-#
-#        if nginx_reload.returncode == 0:
-#            return {"message": "Certificate generated and Nginx reloaded successfully"}
-#        else:
-#            return {"error": "Failed to reload Nginx", "details": nginx_reload.stderr.decode()}
-#        cron_command = f"(crontab -l; echo '0 0 * * * certbot renew --quiet --post-hook \"systemctl reload nginx\"') | crontab -"
-#        cron_process = subprocess.run(cron_command, shell=True, capture_output=True)
-#
-#        if cron_process.returncode == 0:
-#            return {"message": "Certificate generated, Nginx reloaded, and renewal cron job created successfully"}
-#        else:
-#            return {"error": "Failed to create cron job", "details": cron_process.stderr.decode()}
-#    else:
-#        return {"error": "Failed to generate certificate", "details": process.stderr.decode()}
-#
 #@app.get("/cert-form")
 #async def cert_form(request: Request):
 #    return templates.TemplateResponse("generate_cert.html", {"request": request})
