@@ -642,7 +642,7 @@ async def settings_view(
 
 @app.post("/backup-database")
 async def backup_database():
-    db_file_path = "app/skal.db"
+    db_file_path = "app/data/skal.db"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     file_name = f"skal_backup_{timestamp}.db"
 
@@ -656,8 +656,8 @@ async def backup_database():
 
 @app.post("/import-database")
 async def import_database(file: UploadFile = File(...)):
-    db_file_path = "app/skal.db"
-    backup_dir = "app/backups"
+    db_file_path = "app/data/skal.db"
+    backup_dir = "app/data/backups"
     os.makedirs(backup_dir, exist_ok=True)
 
     # Backup the existing database
