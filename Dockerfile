@@ -1,31 +1,31 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+# skal/Dockerfile
+FROM python:3.12-slim
 
-# Set the working directory in the container
+# set workdir
 WORKDIR /app
 
-# Install necessary dependencies
+# system deps for Pillow and Postgres client tools
 RUN apt-get update && apt-get install -y \
-    sqlite3 \
-    nodejs \
-    npm \
-    certbot \
-    python3-certbot-nginx \
-    bind9-dnsutils \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    gcc \
+    postgresql-client \
+ && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+ && pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# copy application source and entrypoint
+COPY . .
+RUN chmod +x /app/entrypoint.sh
 
-# Install Tailwind CSS globally
-RUN npm install -g tailwindcss
+# collect static files
+RUN python manage.py collectstatic --noinput
 
-# Expose port 8080 to the outside world
-EXPOSE 8080
+# expose Django port
+EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload", "--ssl-keyfile", "key.pem", "--ssl-certfile", "cert.pem"]
+# start Gunicorn
+CMD ["gunicorn", "skal.wsgi:application", "--bind", "0.0.0.0:8000"]
 

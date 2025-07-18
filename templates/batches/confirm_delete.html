@@ -1,0 +1,20 @@
+{# templates/batches/confirm_delete.html #}
+{% extends "base.html" %}
+{% block title %}Delete Batch{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-6">
+  <div class="calc-section">
+    <h1>Confirm Delete</h1>
+    <p>Are you sure you want to delete batch “{{ object }}”?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="button">Confirm Delete</button>
+      <a href="{% url 'batches:detail' object.pk %}" class="button secondary">
+        Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

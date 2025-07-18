@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Batches{% endblock %}
+
+{% block content %}
+<div class="calc-section">
+  <h1>Batches</h1>
+
+  <button
+    type="button"
+    onclick="location.href='{% url 'batches:create' %}'"
+    class="button"
+  >
+    + Add New Batch
+  </button>
+
+  {% if newest_batch %}
+    <div class="calc-section mt-6">
+      <h2>Your Latest Batch</h2>
+      <h3>
+        <a href="{% url 'batches:detail' newest_batch.pk %}">
+          {{ newest_batch.name }}
+        </a>
+      </h3>
+      <p>
+        <strong>OG:</strong> {{ newest_batch.og }}
+        {% if newest_batch.fg %}
+          , <strong>FG:</strong> {{ newest_batch.fg }}
+        {% endif %}
+      </p>
+      {% if newest_batch.primary_date %}
+        <p><strong>Primary Date:</strong> {{ newest_batch.primary_date }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if batches %}
+    <div class="mt-4">
+      <label for="batch-select">Select a batch:</label>
+      <select
+        id="batch-select"
+        onchange="if (this.value) window.location.href = this.value;"
+        class="mt-2"
+      >
+        <option value="">— Choose one —</option>
+        {% for batch in batches %}
+          <option value="{% url 'batches:detail' batch.pk %}">
+            {{ batch.name }}
+            {% if batch.user and request.user != batch.user %}
+              ({{ batch.user.get_full_name|default:batch.user.username|default:"Admin" }})
+            {% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  {% else %}
+    <p class="mt-4">No batches yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

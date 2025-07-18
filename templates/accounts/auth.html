@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Login or Register{% endblock %}
+
+{% block content %}
+  <h1>Welcome to Skål</h1>
+
+  <div class="auth-forms">
+    <section class="login-section">
+      <h2>Login</h2>
+      <form method="post" action="{% url 'accounts:login' %}">
+        {% csrf_token %}
+        {{ login_form.as_p }}
+        <button type="submit">Login</button>
+      </form>
+    </section>
+
+    <section class="signup-section">
+      <h2>Register</h2>
+      <form method="post" action="{% url 'accounts:signup' %}">
+        {% csrf_token %}
+        {{ signup_form.as_p }}
+        <button type="submit">Sign Up</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,539 @@
+/* Full-page fixed, semi-transparent background */
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100vh;
+  z-index: 0;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url("/static/images/mead_background.png") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  opacity: 0.15;
+  z-index: -1;
+}
+
+/* Menu bar styling */
+.menu-bar {
+  background: #f8f8f8;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  display: flex;
+  flex-wrap: wrap;
+}
+.menu {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex; align-items: center;
+  flex-wrap: wrap;
+}
+.menu li { margin:0; padding:0; }
+.menu li + li::before {
+  content: "||"; margin: 0 0.5rem; color: #666;
+}
+.menu li a {
+  text-decoration: none; font-weight: bold; color: #333;
+}
+.menu li a:hover { text-decoration: underline; }
+.menu li img.avatar-icon {
+  border-radius:50%; vertical-align:middle; margin-right:0.5rem;
+  width:24px; height:24px;
+}
+
+/* Layout Utilities */
+.container {
+  max-width:1200px; margin:0 auto; padding:0 1rem;
+}
+.mx-auto { margin-left:auto; margin-right:auto; }
+.mt-6 { margin-top:1.5rem; }
+.mt-2 { margin-top:0.5rem; }
+
+/* Grid Utilities */
+.grid { display:grid; }
+.grid-cols-2 { grid-template-columns: repeat(2,1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3,1fr); }
+.gap-8 { gap:2rem; }
+
+/* Typography */
+.text-2xl { font-size:1.5rem; line-height:2rem; }
+.font-semibold { font-weight:600; }
+.font-bold { font-weight:bold; }
+.ml-4 { margin-left:1rem; }
+
+/* Definition Lists */
+dl { margin:0; }
+dt { margin-top:1rem; }
+dd { margin-left:1rem; margin-bottom:0.5rem; }
+
+/* Section Headings */
+h2 { margin-bottom:0.5rem; }
+
+/* Calculator section */
+.calc-section {
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+/* Table styling */
+.calc-table {
+  width:100%; border-collapse:collapse;
+}
+.calc-table th,
+.calc-table td {
+  border:1px solid #ccc;
+  padding:0.5rem;
+  text-align:center;
+}
+.calc-table tbody tr.highlight {
+  background-color:#fffae6;
+}
+
+/* Input styling */
+.calc-inputs label { font-weight:bold; }
+.calc-inputs input[type="range"] { width:100%; }
+
+/* Four-cell grid */
+.calc-grid {
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  grid-auto-rows: auto;
+  gap:2rem;
+}
+
+/* Stack sections in each column */
+.calc-col {
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+}
+
+/* Inputs & options */
+.inputs label,
+.options label {
+  display:block;
+  margin-bottom:0.5rem;
+}
+
+/* Batch Builder full-width */
+.batch-builder {
+  margin-top:2rem;
+  text-align:center;
+}
+.builder-inputs {
+  display:flex;
+  justify-content:center;
+  gap:2rem;
+  flex-wrap:wrap;
+  margin-bottom:1rem;
+}
+.builder-inputs label { font-weight:bold; }
+.builder-inputs input[type="range"] {
+  vertical-align:middle;
+  margin:0 0.5rem;
+}
+.builder-results p { margin:0.5rem 0; font-size:1rem; }
+
+/* Collapsible explanation */
+.calc-info {
+  margin-top:2rem;
+  background: rgba(255,255,255,0.95);
+  border:1px solid #ddd;
+  border-radius:4px;
+  padding:1rem;
+}
+.calc-info summary {
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:0.5rem;
+  outline:none;
+}
+.calc-info summary::-webkit-details-marker { display:none; }
+.calc-info summary::before {
+  content:"▶";
+  display:inline-block;
+  transform:rotate(0deg);
+  transition:transform .2s;
+  margin-right:.5rem;
+}
+.calc-info[open] summary::before {
+  transform:rotate(90deg);
+}
+.calc-info p { margin:0.75rem 0; }
+.calc-info pre {
+  background:#f5f5f5;
+  padding:.5rem;
+  overflow-x:auto;
+  border-radius:3px;
+  margin:.5rem 0;
+}
+.calc-info code { font-family:monospace; }
+
+.line-span {
+  display: block;
+  height: 2px; 
+  background-color: black;
+  margin: 20px 0;
+}
+
+/* ============================
+   Dark Theme Overrides
+   ============================ */
+
+body.dark {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+body.dark::before {
+  opacity: 0.05;
+}
+body.dark .menu-bar {
+  background: #1e1e1e;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+body.dark .menu li a {
+  color: #e0e0e0;
+}
+body.dark .calc-section,
+body.dark .calc-info {
+  background: rgba(30,30,30,0.8);
+  border-color: #444;
+  color: #e0e0e0;
+}
+body.dark .button {
+  background-color: #333;
+  color: #fafafa;
+  border: 1px solid #555;
+}
+body.dark .button.secondary {
+  background-color: transparent;
+  color: #e0e0e0;
+  border-color: #e0e0e0;
+}
+body.dark a {
+  color: #80cbc4;
+}
+body.dark select,
+body.dark input,
+body.dark textarea {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+body.dark option {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+/* media play button */
+.play-btn {
+  font: 600 1rem/1 "Segoe UI", sans-serif;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #198754;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.play-btn:hover {
+  background: #157347;
+}
+
+/* Detail Panel - reusable across views */
+.detail-panel {
+  background-color: rgba(255,255,255,0.75);
+  padding: 1.5rem;
+  border-radius: .5rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  color: #333;
+}
+body.dark .detail-panel {
+  background-color: rgba(30,30,30,0.85);
+  color: #e0e0e0;
+}
+.detail-panel h1 {
+  margin-bottom: .5rem;
+}
+.detail-panel h2 {
+  margin-top: 1rem;
+  margin-bottom: .25rem;
+  font-weight: 500;
+}
+.detail-panel ul {
+  list-style: disc inside;
+  margin-left: 1rem;
+}
+.detail-panel .prose {
+  white-space: pre-wrap;
+}
+.detail-panel .button.primary {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: .25rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform .1s ease, box-shadow .1s ease;
+  margin-right: .5rem;
+}
+.detail-panel .button.primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+}
+.detail-panel .button.secondary {
+  background-color: #eee;
+  color: #333;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: .25rem;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform .1s ease, box-shadow .1s ease;
+  margin-right: .5rem;
+}
+.detail-panel .button.secondary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* ============================
+   Mobile-Friendly Enhancements
+   ============================ */
+
+@media (max-width: 768px) {
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .builder-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-panel {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .menu-bar {
+    flex-direction: column;
+  }
+
+  .menu {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .menu li + li::before {
+    content: "";
+    margin: 0;
+  }
+}
+
+/* Ensure images and tables scale properly */
+img {
+  max-width: 100%;
+  height: auto;
+}
+table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* Touch/scroll polish */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Navigation container */
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* Hamburger toggle checkbox (hidden) */
+.nav-toggle {
+  display: none;
+}
+
+/* Hamburger button styling */
+.nav-toggle-label {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 0.5rem;
+  gap: 5px;
+}
+.nav-toggle-label span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: #333;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+.nav-toggle:checked + .nav-toggle-label span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.nav-toggle:checked + .nav-toggle-label span:nth-child(2) {
+  opacity: 0;
+}
+.nav-toggle:checked + .nav-toggle-label span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Dark mode for hamburger lines and menu */
+body.dark .nav-toggle-label span {
+  background: #e0e0e0;
+}
+body.dark .nav-links {
+  background: #1e1e1e;
+  border-color: #333;
+}
+
+/* Responsive nav toggle */
+@media (max-width: 768px) {
+  .nav-toggle-label {
+    display: flex;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: #f8f8f8;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid #ddd;
+  }
+
+  .nav-links li {
+    padding: 0.5rem 1rem;
+    width: 100%;
+  }
+
+  .nav-toggle:checked + .nav-toggle-label + .nav-links {
+    display: flex;
+  }
+
+  .menu li + li::before {
+    content: "";
+    margin: 0;
+  }
+}
+
+/* ============================
+   Recipe Panels (Light/Dark)
+   ============================ */
+
+.recipes-panel {
+  background-color: rgba(255,255,255,0.75);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+body.dark .recipes-panel {
+  background-color: rgba(30,30,30,0.85);
+  color: #e0e0e0;
+}
+
+.featured-recipe-panel {
+  background-color: rgba(255,255,255,0.75);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin: 2rem auto 0;
+  max-width: 600px;
+  color: #333;
+}
+
+.featured-recipe-panel h1 {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+.featured-recipe-panel h2 {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+.featured-recipe-panel ul {
+  list-style: disc inside;
+  margin-left: 1rem;
+}
+.featured-recipe-panel .prose {
+  margin-top: 0.5rem;
+}
+
+body.dark .featured-recipe-panel {
+  background-color: rgba(30,30,30,0.85);
+  color: #e0e0e0;
+}
+
+
+/* Hide buttons and controls when printing */
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  body::before {
+    display: none;
+  }
+
+  .detail-panel {
+    background: none !important;
+    color: black !important;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .detail-panel .button {
+    display: none;
+  }
+
+  .menu-bar,
+  .menu,
+  .nav-container {
+    display: none !important;
+  }
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.button-group .button,
+.button-group .btn {
+  flex: 1 1 auto;
+  min-width: 160px;
+  text-align: center;
+}
+
