@@ -2,33 +2,80 @@
 {% block title %}Fermentation Info{% endblock %}
 
 {% block content %}
+<!-- ───────────── HISTORY ───────────── -->
 <div class="container mx-auto mt-6">
   <div class="calc-section p-6">
-    <!-- History Section with 2 columns -->
-    <div class="grid grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 gap-8">  <!-- single-column now -->
       <div>
         <h2 class="text-2xl font-semibold">History of Mead</h2>
+
         <p class="mt-2">
-          Mead, also known as honey wine, is considered one of the oldest fermented drinks in human history, dating as far back as 20,000–40,000 years. Some believe it originated in Africa, where early people may have accidentally fermented honey when bees built hives in hollowed-out trees and it rained. The honey and water would mix, become stagnant, and natural yeast would introduce itself, creating a basic alcohol or mead. Archaeological evidence suggests that mead was consumed in China and Ethiopia as early as 7000 BCE.
+          Long before clay pots, vineyards, or even the idea of farming, our distant ancestors probably
+          discovered mead the way you might stumble on a forgotten bottle of kombucha in the back of
+          the fridge: by accident.  Imagine a rainstorm filling a hollow tree that bees had stocked
+          with honey.  A little wild yeast drops in, the mix ferments, and—voilà—someone curious (or
+          thirsty) tastes humanity’s first buzz.  That happy accident could have happened as far back
+          as <strong>20 000 – 40 000 years ago</strong> in southern Africa.
         </p>
+
         <p class="mt-2">
-          In ancient civilizations like Greece and Egypt, mead was seen as a symbol of divine blessings and prosperity. The Celts believed in rivers of mead in the afterlife, and the ancient Indian Rig-Veda also mentions it.
+          Fast-forward to <strong>7000 BCE</strong> in northern China.  Archaeologists analysing
+          Neolithic pottery from Jiahu found chemical fingerprints of honey blended with rice and
+          fruit—proof that people were deliberately brewing what we’d now call a fruit mead.  That
+          makes it the oldest confirmed alcoholic beverage in the archaeological record, beating out
+          both wine and beer.
         </p>
-      </div>
-      <div>
-        <h2 class="text-2xl font-semibold">History of Beer</h2>
+
+        <ul class="list-disc ml-6 mt-2 space-y-2">
+          <li><strong>Ethiopia &amp; East Africa — *tej*:</strong> honey, water and <em>gesho</em>
+              leaves, once reserved for royalty, still poured at celebrations today.</li>
+          <li><strong>India’s Rig-Veda (≈ 1700 BCE):</strong> hymns praise honeyed drinks
+              (<em>madhu</em>) as gifts of the gods.</li>
+          <li><strong>Greece &amp; Egypt:</strong> Aristotle analysed mead; jars in Tutankhamun’s
+              tomb once held it.</li>
+          <li><strong>Celtic &amp; Norse lore:</strong> rivers of mead in the Celtic afterlife and
+              Odin’s stolen “Mead of Poetry” for inspiring mortal bards.  Our word
+              <em>honeymoon</em>?  A month’s supply of mead for newly-weds.</li>
+        </ul>
+
         <p class="mt-2">
-          Beer is one of the world’s oldest prepared beverages, with evidence of brewing dating back over 7,000 years to ancient Mesopotamia. The Sumerians had a goddess of beer, Ninkasi, and even wrote hymns detailing the brewing process. Over time, beer became a staple in many cultures, with monks in medieval Europe refining brewing techniques. With the advent of modern industrialization, beer production expanded globally, leading to a variety of styles and brewing traditions that continue to evolve today.
+          When medieval monks got involved, the drink levelled-up.  Abbey records describe herb-laced
+          <em>metheglins</em> and fruit-packed <em>melomels</em>.  In Poland and Lithuania, dense
+          woodland honey produced rich styles like <em>półtorak</em> and <em>dwójniak</em>—still
+          legally protected regional specialities today.
+        </p>
+
+        <p class="mt-2">
+          Then came sugar, rum and cheap imported wine.  By the 1600 s mead was losing its throne to
+          beverages that cost less to make and travelled better in barrels.  Outside Europe, though,
+          traditions in Ethiopia, Kenya, Russia (<em>medovukha</em>) and Finland (<em>sima</em>)
+          carried on uninterrupted.
+        </p>
+
+        <p class="mt-2">
+          The modern comeback began in the 1960 s home-brewing scene, blossomed with U.S. craft
+          producers in the 1990 s, and today counts hundreds of commercial meaderies worldwide.
+          From champagne-dry sparklers to hazy, dry-hopped “session” cans, mead is once again on the
+          cutting edge of fermentation science.
+        </p>
+
+        <p class="mt-2">
+          So, next time you lift a glass—whether it’s a traditional golden pour or a tart
+          pineapple-infused pét-nat—you’re tapping into tens of thousands of years of human
+          curiosity, cooperation with bees, and the universal desire to turn something sweet into
+          something just a little bit stronger.  Skål!
         </p>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ───────────── DEFINITIONS ───────────── -->
 <div class="container mx-auto mt-6">
   <div class="calc-section p-6">
-    <!-- Definitions Section with 3 columns -->
-    <div class="grid grid-cols-3 gap-8">
+    <!-- Types & Terms: now 2 columns -->
+    <div class="grid grid-cols-2 gap-8">
+      <!-- TYPES OF MEAD -->
       <div>
         <h2 class="text-2xl font-semibold">Types of Mead</h2>
         <dl class="mt-2">
@@ -41,7 +88,7 @@
           <dt class="font-bold">Capsicumel</dt>
             <dd class="ml-4">Mead infused with chili peppers, adding a spicy kick to the traditional honey profile.</dd>
           <dt class="font-bold">Coffeemel</dt>
-            <dd class="ml-4">Mead with the addition of coffee. Cold Brewed Coffee is a great option here as it has a lower acidity.</dd>
+            <dd class="ml-4">Mead with the addition of coffee. Cold-brewed coffee is a great option here as it has a lower acidity.</dd>
           <dt class="font-bold">Cyser</dt>
             <dd class="ml-4">A type of melomel made with apples or apple juice, blending mead with cider.</dd>
           <dt class="font-bold">Hippocras</dt>
@@ -57,7 +104,7 @@
           <dt class="font-bold">Omphacomel</dt>
             <dd class="ml-4">Made with verjuice (the juice of unripe grapes), yielding a tart and tangy flavor profile.</dd>
           <dt class="font-bold">Oxymel</dt>
-            <dd class="ml-4">The added dimension here is vinegar. Interestingly enough, this mead can also serve as the base liquid for a medicinal herb creation.</dd>
+            <dd class="ml-4">Includes vinegar—sometimes used as a base for medicinal herb tonics.</dd>
           <dt class="font-bold">Pyment</dt>
             <dd class="ml-4">Made with grapes or grape juice, combining mead with wine.</dd>
           <dt class="font-bold">Rhodomel</dt>
@@ -65,73 +112,49 @@
           <dt class="font-bold">Sack Mead</dt>
             <dd class="ml-4">A stronger, sweeter mead with higher honey content, often aged for longer periods.</dd>
           <dt class="font-bold">Tej</dt>
-            <dd class="ml-4">A traditional Ethiopian mead made with honey and a special herb called “gesho,” similar to hops.</dd>
+            <dd class="ml-4">Traditional Ethiopian mead using “gesho,” an herb that plays a role similar to hops.</dd>
           <dt class="font-bold">Traditional Mead</dt>
-            <dd class="ml-4">Made with just honey, water, and yeast. The simplest form of mead.</dd>
+            <dd class="ml-4">Just honey, water, and yeast—the simplest form of mead.</dd>
         </dl>
       </div>
+
+      <!-- BREWING / FERMENTING TERMS -->
       <div>
-        <h2 class="text-2xl font-semibold">Types of Beer</h2>
-        <dl class="mt-2">
-          <dt class="font-bold">Ale</dt>
-            <dd class="ml-4">A beer brewed using top-fermenting yeast, often with a fuller body and more fruity, complex flavors.</dd>
-          <dt class="font-bold">Belgian Ale</dt>
-            <dd class="ml-4">A diverse category of Belgian beers, typically known for their fruity, spicy, and sometimes slightly sweet flavors, often using Belgian yeast strains that impart unique, complex aromas.</dd>
-          <dt class="font-bold">Brown Ale</dt>
-            <dd class="ml-4">A malty beer with a smooth, nutty flavor and caramel or chocolate notes, usually dark amber to brown in color with a medium body.</dd>
-          <dt class="font-bold">German Bock</dt>
-            <dd class="ml-4">A strong, malty lager originating from Germany, with a rich, toasty flavor and a slightly sweet finish, often enjoyed during the winter months.</dd>
-          <dt class="font-bold">IPA (India Pale Ale)</dt>
-            <dd class="ml-4">A hoppy beer style known for its strong hop bitterness and citrus or piney aromas.</dd>
-          <dt class="font-bold">Lager</dt>
-            <dd class="ml-4">A type of beer conditioned at low temperatures, known for its clean and crisp flavor profile.</dd>
-          <dt class="font-bold">Pilsner</dt>
-            <dd class="ml-4">A pale lager with a light body and a distinct hop bitterness, originating from the Czech Republic.</dd>
-          <dt class="font-bold">Porter</dt>
-            <dd class="ml-4">A dark, almost black beer, similar to stout but typically lighter in body, with roasted malt flavors.</dd>
-          <dt class="font-bold">Stout</dt>
-            <dd class="ml-4">A dark beer made with roasted malt or roasted barley, known for its rich flavors of coffee and chocolate.</dd>
-          <dt class="font-bold">Wheat Beer</dt>
-            <dd class="ml-4">A beer made with a large proportion of wheat, often with a cloudy appearance and light, refreshing flavor.</dd>
-        </dl>
-      </div>
-      <div>
-        <h2 class="text-2xl font-semibold">Brewing/Fermenting Terms and Definitions</h2>
+        <h2 class="text-2xl font-semibold">Brewing &amp; Fermenting Terms</h2>
         <dl class="mt-2">
           <dt class="font-bold">ABV (Alcohol by Volume)</dt>
-            <dd class="ml-4">A measurement of the alcohol content in a beverage, expressed as a percentage of total volume.</dd>
+            <dd class="ml-4">Measurement of alcohol content, expressed as a percentage of total volume.</dd>
           <dt class="font-bold">Aeration</dt>
-            <dd class="ml-4">The process of adding oxygen to the wort to promote yeast health and fermentation.</dd>
+            <dd class="ml-4">Adding oxygen to wort or must to promote yeast health and fermentation.</dd>
           <dt class="font-bold">Attenuation</dt>
-            <dd class="ml-4">The percentage of sugar converted to alcohol and CO₂ during fermentation, indicating the completeness of fermentation.</dd>
+            <dd class="ml-4">Percentage of sugar converted to alcohol and CO₂—indicates completeness of fermentation.</dd>
           <dt class="font-bold">Brix</dt>
-            <dd class="ml-4">A scale used to measure sugar content in a solution, often used for measuring honey or fruit juice concentration.</dd>
+            <dd class="ml-4">Scale for sugar content in a solution; useful for honey or fruit juice concentration.</dd>
           <dt class="font-bold">Flocculation</dt>
-            <dd class="ml-4">The process by which yeast cells clump together and settle out of the liquid, helping to clarify the mead or beer.</dd>
+            <dd class="ml-4">Yeast cells clump and settle, helping to clarify the beverage.</dd>
           <dt class="font-bold">Gravity</dt>
-            <dd class="ml-4">A measure of the density of a liquid relative to water, used to track fermentation progress (e.g., Original Gravity and Final Gravity).</dd>
+            <dd class="ml-4">Density relative to water; Original vs Final Gravity tracks fermentation progress.</dd>
           <dt class="font-bold">Hydrometer</dt>
-            <dd class="ml-4">An instrument used to measure the specific gravity of a liquid, helping brewers determine the potential alcohol content and fermentation progress.</dd>
+            <dd class="ml-4">Instrument for measuring specific gravity and estimating potential alcohol.</dd>
           <dt class="font-bold">Krausen</dt>
-            <dd class="ml-4">The foamy head formed on top of the fermenting liquid due to the activity of the yeast, especially in beer brewing.</dd>
+            <dd class="ml-4">Foamy head on actively fermenting beer; shows vigorous yeast activity.</dd>
           <dt class="font-bold">Must</dt>
-            <dd class="ml-4">The unfermented mixture of honey, water, and other ingredients used to make mead, or the crushed fruit used in wine making.</dd>
+            <dd class="ml-4">Unfermented honey-water mix for mead—analogous to crushed fruit for wine.</dd>
           <dt class="font-bold">Pitching</dt>
-            <dd class="ml-4">The process of adding yeast to the wort or must to begin fermentation.</dd>
+            <dd class="ml-4">Introducing yeast to wort or must to start fermentation.</dd>
           <dt class="font-bold">Racking</dt>
-            <dd class="ml-4">The process of transferring fermented liquid from one vessel to another to separate it from sediment or lees.</dd>
+            <dd class="ml-4">Transferring fermented liquid off sediment to another vessel.</dd>
           <dt class="font-bold">Secondary Fermentation</dt>
-            <dd class="ml-4">A secondary phase of fermentation where the beverage is transferred to another vessel to age, clarify, and develop more complex flavors.</dd>
+            <dd class="ml-4">Aging phase in a new vessel for clarification and flavor development.</dd>
           <dt class="font-bold">Sparging</dt>
-            <dd class="ml-4">The process of rinsing grains with hot water to extract additional sugars after the mash in beer brewing.</dd>
+            <dd class="ml-4">Rinsing grains with hot water to extract remaining sugars after the mash.</dd>
           <dt class="font-bold">Wort</dt>
-            <dd class="ml-4">The liquid extracted from the mashing process during brewing, which contains the sugars that will be fermented by the yeast.</dd>
+            <dd class="ml-4">Sugar-rich liquid extracted during brewing that yeast will ferment.</dd>
           <dt class="font-bold">Yeast Nutrient</dt>
-            <dd class="ml-4">Additives used to ensure that yeast has sufficient nutrients to promote healthy fermentation, particularly in mead making.</dd>
+            <dd class="ml-4">Additives ensuring yeast has the minerals and nitrogen it needs for a robust fermentation.</dd>
         </dl>
       </div>
     </div>
   </div>
 </div>
 {% endblock %}
-
