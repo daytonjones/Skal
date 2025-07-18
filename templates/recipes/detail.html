@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ recipe.name }}{% endblock %}
+
+{% block content %}
+<div class="detail-panel">
+  <h1 class="text-2xl">
+    {{ recipe.name }}
+    {% if recipe.user and request.user != recipe.user %}
+      ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Admin" }})
+    {% endif %}
+  </h1>
+
+  <p class="mb-2"><strong>Visibility:</strong>
+    {{ recipe.is_public|yesno:"Public,Private" }}
+  </p>
+
+  {% if request.user == recipe.user %}
+    <form method="post" action="{% url 'recipes:toggle_visibility' recipe.pk %}">
+      {% csrf_token %}
+      <div class="button-group no-print">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">
+          {% if recipe.is_public %}
+            Make Private
+          {% else %}
+            Make Public
+          {% endif %}
+        </button>
+      </div>
+    </form>
+  {% endif %}
+
+  <p class="mb-4">
+    <strong>Batch Size:</strong> {{ recipe.batch_size }} gal
+  </p>
+
+  <h2>Ingredients</h2>
+  <ul>
+    {% for ri in ingredients %}
+      <li>{{ ri.quantity }} {{ ri.ingredient.name }}</li>
+    {% empty %}
+      <li><em>No ingredients listed.</em></li>
+    {% endfor %}
+  </ul>
+
+  <h2>Instructions</h2>
+  <div class="prose">
+    {{ recipe.instructions|linebreaks }}
+  </div>
+
+  {% if request.user == recipe.user %}
+    <div class="button-group mt-6 no-print">
+      <button type="button" onclick="window.location.href='{% url 'recipes:edit' recipe.pk %}'" class="button primary">
+        ✏️ Edit Recipe
+      </button>
+      <button type="button" onclick="window.location.href='{% url 'recipes:delete' recipe.pk %}'" class="button primary">
+        🗑️ Delete Recipe
+      </button>
+    </div>
+  {% endif %}
+
+  <div class="button-group mt-4 no-print">
+    <button type="button" onclick="window.location.href='{% url 'recipes:index' %}'" class="button secondary">
+      🔙 Back to Recipes
+    </button>
+    <button type="button" onclick="window.print()" class="button primary">
+      🖨️ Print Recipe
+    </button>
+  </div>
+</div>
+{% endblock %}
+
