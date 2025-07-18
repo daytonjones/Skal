@@ -9,14 +9,15 @@ Though built primarily for meadmakers (it's what I brew!), Skål is just as capa
 ## 🌟 Features
 
 * **Recipe Management**: Create, edit, and browse brewing recipes with detailed ingredients and step-by-step instructions.
-* **Batch Tracking**: Log fermentation batches with OG, FG, start/transfer/bottle dates, notes, and photo galleries.
-* **ABV & Calorie Calculator**: Calculates ABV using the alternate formula and estimates calories per 5 oz. glass.
+* **Batch Tracking**: Log fermentation batches with OG, FG, primary/secondary/bottle dates, notes, and photo galleries.
+* **Yeast Comparison**: Compare, search, sort various yeasts to see tolerances and suggested uses.
+* **ABV & Calorie Calculator**: Calculates ABV using the alternate formula and estimates calories.
 * **Ingredient Autocomplete**: Ingredient names auto-saved and suggested for quicker input.
 * **Image Support**: Upload and resize images (max 800x800), organized per batch.
 * **Theme Toggle**: Supports light and dark themes, saved per user profile.
 * **User Authentication**: Secure login, registration, and profile customization.
 * **Multi-User Support**: Users can manage their own recipes and batches, or make them public.
-* **Responsive Design**: Built with Tailwind CSS + DaisyUI for a sleek, mobile-friendly interface.
+* **Responsive Design**: Built with a sleek, CSS styled interface - and mobile-friendly.
 * **Export Options**: Export your recipes and batches as PDF, CSV, JSON, TXT, or SQL backups.
 
 ---
@@ -51,14 +52,16 @@ DJANGO_SUPERUSER_PASSWORD={password123}
 ### 3. Start Services
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-The app will automatically apply migrations and create the superuser on first run.
+The app will automatically apply migrations, seed some recipes,  and create the superuser on first run.
 
 ### 4. Access the App
 
 Visit [http://localhost:8000](http://localhost:8000)
+
+### 4. Create a user and login
 
 ---
 
@@ -76,15 +79,15 @@ Visit [http://localhost:8000](http://localhost:8000)
 
 * Home Page
 
-  ![screenshot-home](images/homepage.png)
+  ![screenshot-home](screenshots/homepage.png)
 
 * ABV Calculator
 
-  ![screenshot-abv](images/abv-calculator.png)
+  ![screenshot-abv](screenshots/abv-calculator.png)
 
 * Yeast Info and Comparison
 
-  ![screenshot-yeast](images/yeast-table.png)
+  ![screenshot-yeast](screenshots/yeast-table.png)
 ---
 
 ## 🔄 Usage Overview
