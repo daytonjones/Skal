@@ -1,85 +1,126 @@
 # Skål
 
-Skål is a FastAPI application designed to manage and interact with various functionalities related to brewing, including recipes, ABV% calculations, and more. This project aims to provide a comprehensive, but simple, web application for brewers to manage their brewing processes.
+Skål is a modern web application for managing your mead brewing journey—from crafting recipes to tracking batches and calculating ABV & calories. Designed with the homebrewer in mind, it features an intuitive interface, responsive design, and robust tooling for both casual and meticulous brewers alike.
 
-## Features
+Though built primarily for meadmakers (it's what I brew!), Skål is just as capable for beer and cider.
 
-- **SQLite Database Interaction**: Add, edit, and view data stored in an SQLite database.
-- **ABV% Calculation**: Calculate the Alcohol By Volume percentage and estimate calories based on user input.
-- **Database Maintenance**: Includes commands for backing up and importing the database.
+---
 
-## Installation
+## 🌟 Features
 
-To get started with Skål, follow these steps:
-### Using Virtual Environment
+* **Recipe Management**: Create, edit, and browse brewing recipes with detailed ingredients and step-by-step instructions.
+* **Batch Tracking**: Log fermentation batches with OG, FG, primary/secondary/bottle dates, notes, and photo galleries.
+* **Yeast Comparison**: Compare, search, sort various yeasts to see tolerances and suggested uses.
+* **ABV & Calorie Calculator**: Calculates ABV using the alternate formula and estimates calories.
+* **Ingredient Autocomplete**: Ingredient names auto-saved and suggested for quicker input.
+* **Image Support**: Upload and resize images (max 800x800), organized per batch.
+* **Theme Toggle**: Supports light and dark themes, saved per user profile.
+* **User Authentication**: Secure login, registration, and profile customization.
+* **Multi-User Support**: Users can manage their own recipes and batches, or make them public.
+* **Responsive Design**: Built with a sleek, CSS styled interface - and mobile-friendly.
+* **Export Options**: Export your recipes and batches as PDF, CSV, JSON, TXT, or SQL backups.
 
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/daytonjones/Skal.git
-    cd Skal
-    ```
+---
 
-2. **Set Up a Virtual Environment**:
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
+## 🚀 Quick Start (Docker Compose)
 
-3. **Install Dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+### Prerequisites
 
-4. **Run the Application**:
-    ```bash
-    uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --ssl-keyfile key.pem --ssl-certfile cert.pem
-    ```
-    Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
+* [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
 
+### 1. Clone the Repo
 
-### Using Docker
+```bash
+git clone https://github.com/daytonjones/Skal.git
+cd Skal
+```
 
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/daytonjones/Skal.git
-    cd Skal
-    ```
+### 2. Create a `.env` File
+(replace the values in '{}')
+```dotenv
+SECRET_KEY={your-secret-key}
+DEBUG=False
+POSTGRES_DB=skal
+POSTGRES_USER=skaluser
+POSTGRES_PASSWORD={skalpass}
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,{yourdomain.com}
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@{example.com}
+DJANGO_SUPERUSER_PASSWORD={password123}
+```
 
-2. **Build the Docker Image**:
-    ```bash
-    docker build -t skal-app .
-    ```
+### 3. Start Services
 
-3. **Run the Docker Container**:
-    ```bash
-    docker run -d -p 8080:8080 skal-app
-    ```
-    Open https://127.0.0.1:8080 in your web browser. Default User/Pass is "admin/password123" and you will be prompted to create a user at first login.
+```bash
+docker compose up --build -d
+```
 
-## Configuration
+The app will automatically apply migrations, seed some recipes,  and create the superuser on first run.
 
-The application uses an SQLite database which will be created at the first time the app is started.  To access the TiltPi data (if using a Tilt with TiltPi) just follow the instructions in the app to link to your shared reports.
+### 4. Access the App
 
-## Usage
+Visit [http://localhost:8000](http://localhost:8000)
 
-- **Accessing the Application**: Navigate to the application's URL in your web browser.
-- **Viewing Recipes**: Access and manage brewing recipes.
-- **Calculating ABV%**: Use the provided form to calculate the ABV% and estimated calories for your brews.
+### 4. Create a user and login
 
-## Contributing
+---
 
-If you'd like to contribute to the project, please fork the repository and submit a pull request with your changes. Ensure that you follow the project's coding guidelines and include relevant tests.
+## 🔧 Configuration Notes
 
-## License
+* **Database**: PostgreSQL service managed via `docker-compose.yml`
+* **Static & Media**: Static files served with Whitenoise; uploaded media goes to `/media/`
+* **Themes**: Toggle stored in user profile, switched via CSS class
+* **CSRF**: Derived from `DJANGO_ALLOWED_HOSTS`
+* **Export**: Recipes/batches exportable in multiple formats (PDF, JSON, CSV, TXT, SQL)
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+---
 
-## Contact
+## 📃 Screenshots
 
-For any questions or feedback, please contact me.
+* Home Page
 
-### Demo
+  ![screenshot-home](screenshots/homepage.png)
 
-[https://skaldemo.gecko.org](https://skaldemo.gecko.org)
-**User**: demo
-**Password**: password123
+* ABV Calculator
+
+  ![screenshot-abv](screenshots/abv-calculator.png)
+
+* Yeast Info and Comparison
+
+  ![screenshot-yeast](screenshots/yeast-table.png)
+---
+
+## 🔄 Usage Overview
+
+* **Home**: Welcome banner, most recent recipe & batch
+* **Recipes**: Sortable list, detail view, edit/delete (if owner), public visibility toggle
+* **Batches**: Track your brews from primary to bottling; upload images and notes
+* **Profile**: Set your display name, avatar, and theme
+* **Calculators**: Input OG/FG to compute ABV and estimated calories
+* **Export**: Download your data for backup or printing
+
+---
+
+## 🙌 Contributing
+
+1. Fork the repository
+2. Create a new feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes and add tests
+4. Submit a pull request with details
+
+---
+
+## 👋 Contact
+
+Dayton Jones
+Email: [jones.dayton@gmail.com](mailto:jones.dayton@gmail.com)
+GitHub: [@daytonjones](https://github.com/daytonjones)
+
+---
+
+## 📚 License
+
+MIT License. See [LICENSE](LICENSE) for full details.
+
+---
+

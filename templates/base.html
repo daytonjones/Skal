@@ -1,0 +1,62 @@
+<!-- templates/base.html -->
+{% load static gravatar %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skål — {% block title %}{% endblock %}</title>
+
+  <link rel="icon" href="{% static 'images/skal.ico' %}" type="image/x-icon">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if request.user.is_authenticated and request.user.theme == 'dark' %}dark{% endif %}">
+  {% if request.user.is_authenticated %}
+  <header class="menu-bar">
+  <nav class="nav-container">
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <ul class="menu nav-links">
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li><a href="{% url 'info' %}">Mead History & Types</a></li>
+      <li><a href="{% url 'yeast' %}">Yeast Info</a></li>
+      <li><a href="{% url 'calculators:index' %}">Calculators</a></li>
+      <li><a href="{% url 'recipes:index' %}">Recipes</a></li>
+      <li><a href="{% url 'batches:index' %}">Batches</a></li>
+      <li>
+        <a href="{% url 'accounts:profile' %}">
+          {% if request.user.avatar %}
+            <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="avatar-icon">
+          {% else %}
+            <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="avatar-icon">
+          {% endif %}
+          Profile
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <span class="line-span"></span>
+    <p>
+      Skål ©{% now "Y" %} Dayton Jones
+    </p>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+
