@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto mt-6">
+    <center>
+    <h1 class="text-2xl font-semibold mb-4 text-center">
+      Welcome to Skål,&nbsp;
+      {% if request.user.get_full_name %}
+        {{ request.user.get_full_name }}!
+      {% else %}
+        {{ request.user.username }}!
+      {% endif %}
+    </h1>
+    </center>
+
+    <center>
+      <button id="play-skal" class="play-btn">▶ <b>Skål</b></button>
+      <audio id="player-skal" preload="auto" style="display:none;">
+        <source src="/static/skal.mp3" type="audio/mpeg">
+      </audio>
+      is an Old Norse word for a communal drinking bowl and, by extension, the act of sharing that vessel at feasts. Over time it evolved into the familiar Scandinavian toast still heard today—an invitation to drink in camaraderie and good health. When you raise a glass and say “Skål!” you are echoing a thousand-year-old habit of celebrating togetherness, good drink, and shared prosperity—one simple word capturing both the vessel and the spirit of the toast.
+    </center>
+
+    <br><br><br>
+    <center><img src="/static/images/skal.png" alt="Skål" style="max-width: 40%;" /> </center>
+
+    {% if newest_recipe %}
+      <div class="calc-section">
+        <h2>Newest Recipe</h2>
+        <h3>
+          <a href="{% url 'recipes:detail' newest_recipe.pk %}">
+            {{ newest_recipe.name }}
+            {% if newest_recipe.user and request.user != newest_recipe.user %}
+              ({{ newest_recipe.user.get_full_name|default:newest_recipe.user.username|default:"Admin" }})
+            {% endif %}
+          </a>
+        </h3>
+        <p><strong>Batch Size:</strong> {{ newest_recipe.batch_size }} gal</p>
+      </div>
+    {% endif %}
+
+    {% if newest_batch %}
+      <div class="calc-section mt-6">
+        <h2>Latest Batch</h2>
+        <h3>
+          <a href="{% url 'batches:detail' newest_batch.pk %}">
+            {{ newest_batch.name }}
+          </a>
+        </h3>
+        <p>
+          <strong>OG:</strong> {{ newest_batch.og }}
+          {% if newest_batch.fg %}
+            , <strong>FG:</strong> {{ newest_batch.fg }}
+          {% endif %}
+        </p>
+        {% if newest_batch.primary_date %}
+          <p><strong>Primary Date:</strong> {{ newest_batch.primary_date }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    (function () {
+      const btn = document.getElementById('play-skal');
+      const player = document.getElementById('player-skal');
+      let playing = false;
+
+      btn.addEventListener('click', () => {
+        if (!playing) {
+          player.play();
+          playing = true;
+          btn.textContent = '⏸ Pause';
+        } else {
+          player.pause();
+          playing = false;
+          btn.textContent = '▶ Play';
+        }
+      });
+
+      player.addEventListener('ended', () => {
+        playing = false;
+        btn.textContent = '▶ Play';
+      });
+    })();
+  </script>
+{% endblock %}
+

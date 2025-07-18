@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Calculators{% endblock %}
+{% block content %}
+<div class="container mx-auto mt-6">
+
+  <div class="calc-grid">
+    <!-- SG ABV & Calories -->
+    <section class="calc-section">
+      <h2>ABV & Calories from Specific Gravity</h2>
+      <div class="inputs">
+        <label>
+          OG: <span id="og-sg-val">1.120</span>
+          <input type="range" id="og-sg" min="1.000" max="1.300" step="0.001" value="1.120">
+        </label>
+        <label>
+          FG: <span id="fg-sg-val">1.000</span>
+          <input type="range" id="fg-sg" min="0.900" max="1.300" step="0.001" value="1.000">
+        </label>
+      </div>
+      <div class="options">
+        <label><input type="radio" name="abv-formula" value="standard" checked> Standard</label>
+        <label><input type="radio" name="abv-formula" value="alternate"> Alternate</label>
+      </div>
+      <div class="results">
+        <p>ABV: <strong id="abv-sg">--</strong></p>
+        <p>Attenuation: <strong id="att-sg">--</strong></p>
+        <hr>
+        <label>
+          Estimated Calories by Glass (oz):
+          <select id="glass-size-sg">
+            <option>5</option>
+            <option>8</option>
+            <option>12</option>
+          </select>
+        </label>
+        <p>Calories: <strong id="calories-sg">--</strong></p>
+      </div>
+    </section>
+
+    <!-- Brix ABV & Calories -->
+    <section class="calc-section">
+      <h2>ABV & Calories from Brix</h2>
+      <div class="inputs">
+        <label>
+          OG °Bx: <span id="og-brix-val">20.0</span>
+          <input type="range" id="og-brix" min="0" max="40" step="0.1" value="20">
+        </label>
+        <label>
+          FG °Bx: <span id="fg-brix-val">0.0</span>
+          <input type="range" id="fg-brix" min="0" max="40" step="0.1" value="0">
+        </label>
+      </div>
+      <div class="results">
+        <p>ABV: <strong id="abv-bx">--</strong></p>
+        <p>Attenuation: <strong id="att-bx">--</strong></p>
+        <hr>
+        <label>
+          Estimated Calories by Glass (oz):
+          <select id="glass-size-bx">
+            <option>5</option>
+            <option>8</option>
+            <option>12</option>
+          </select>
+        </label>
+        <p>Calories: <strong id="calories-bx">--</strong></p>
+      </div>
+    </section>
+
+    <!-- SNA Schedule -->
+    <section class="calc-section">
+      <h2>SNA Schedule</h2>
+      <p>Assumes Fermaid O (1.5 grams/gallon)</p>
+      <div class="inputs">
+        <label>
+          Batch size (gal):
+          <input type="number" id="batch-size" min="0.5" step="0.1" value="5">
+        </label>
+      </div>
+      <table class="calc-table">
+        <thead>
+          <tr><th>Stage</th><th>Dosage (g)</th><th>tsp</th></tr>
+        </thead>
+        <tbody id="sna-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Sweetness Levels -->
+    <section class="calc-section">
+      <h2>Sweetness Levels</h2>
+      <table class="calc-table">
+        <thead>
+          <tr><th>Level</th><th>SG Range</th><th>ABV Range</th></tr>
+        </thead>
+        <tbody id="sweet-body"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Batch Builder -->
+  <section class="calc-section batch-builder">
+    <h2>Batch Builder</h2>
+    <div class="builder-inputs">
+      <label>
+        Batch Size (gal):
+        <input type="range" id="builder-batch-size" min="1" max="10" step="0.5" value="5">
+        <span id="builder-size-val">5.0</span>
+      </label>
+      <label>
+        Desired ABV (%):
+        <input type="range" id="builder-desired-abv" min="0" max="20" step="0.5" value="12">
+        <span id="builder-abv-val">12.0</span>
+      </label>
+    </div>
+    <div class="builder-results">
+      <p>Honey Needed: <strong id="honey-amt">--</strong> lbs</p>
+      <p>Fermaid-O Needed: <strong id="fm-amt">--</strong> g (1.5 g/gal)</p>
+      <p>Yeast Pitch: <strong id="yeast-amt">--</strong> g</p>
+    </div>
+  </section>
+
+  <!-- Explanation -->
+  <details class="calc-info">
+    <summary>How These Calculations Work</summary>
+    <p><strong>Specific Gravity</strong> is determined by using a hydrometer.</p>
+    <p><strong>Original gravity (OG)</strong> measures sugar before fermentation; <strong>final gravity (FG)</strong> measures residual sugar after. The difference lets you calculate alcohol.</p>
+    <p>
+In winemaking, the "standard" equation for calculating ABV (Alcohol By Volume) is typically used for most situations, while the "alternate" equation is used for higher-gravity wines where greater accuracy is desired. The standard equation is simpler and sufficient for most common wines, but the alternate equation provides a more accurate result for wines with higher alcohol content. 
+The standard equation is a widely used, simpler formula.
+It works well for most wines, especially those with lower alcohol content. 
+<br>
+The alternate equation is more complex but is designed to provide greater accuracy for higher-gravity wines.
+It accounts for the non-linear relationship between gravity and alcohol content in higher-alcohol beverages. 
+<br>
+When to Use Which:
+Standard Equation:
+.
+Use for most standard wine fermentation, where the final ABV is not expected to be exceptionally high (e.g., below 12-14%).
+Alternate Equation:
+.
+Use when you are making a high-gravity wine, where the alcohol content is expected to be significantly higher, or when you need a more precise ABV calculation. 
+    </p>
+    <p>Basic formula:</p>
+    <pre><code>ABV = (OG – FG) × 131.25</code></pre>
+    <p>Alternate formula:</p>
+    <pre><code>ABV = (76.08 × (OG – FG) / (1.775 – OG)) × (FG / 0.794)</code></pre>
+    <p><strong>Brix method:</strong> <code>ABV = (OB – FB) × 0.55</code></p>
+    <p><strong>Attenuation</strong> measures sugar converted to alcohol; lower means sweeter.</p>
+    <p><strong>Calories</strong> in grams: <code>(ml × ABV × 8)/1000</code>, then ×7.</p>
+  </details>
+</div>
+
+<script src="{% static 'js/calculators.js' %}"></script>
+{% endblock %}
+

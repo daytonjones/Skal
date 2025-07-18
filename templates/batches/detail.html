@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ batch.name }}{% endblock %}
+
+{% block content %}
+<div class="detail-panel">
+  <h1 class="text-2xl">
+    {{ batch.name }}
+    {% if batch.user and request.user != batch.user %}
+      ({{ batch.user.get_full_name|default:batch.user.username|default:"Admin" }})
+    {% endif %}
+  </h1>
+
+  <p><strong>Batch Size:</strong> {{ batch.batch_size }} gal</p>
+  <p><strong>OG:</strong> {{ batch.og }}</p>
+  <p><strong>FG:</strong> {{ batch.fg }}</p>
+  <p><strong>Primary Date:</strong> {{ batch.primary_date }}</p>
+  <p><strong>Secondary Date:</strong> {{ batch.secondary_date }}</p>
+  <p><strong>Bottling Date:</strong> {{ batch.bottling_date }}</p>
+
+  <p><strong>ABV:</strong>
+    {% if abv %}{{ abv|floatformat:2 }}%{% else %}<em>N/A</em>{% endif %}
+  </p>
+
+  <p><strong>Estimated Calories per Glass:</strong>
+    {% if calories %}{{ calories|floatformat:0 }} cal (5oz){% else %}<em>N/A</em>{% endif %}
+  </p>
+
+  <h2>Notes</h2>
+  <div class="prose">{{ batch.notes|linebreaks }}</div>
+
+  <p><strong>Visibility:</strong>
+    {{ batch.is_public|yesno:"Public,Private" }}
+  </p>
+
+  {% if request.user == batch.user %}
+    <form method="post" action="{% url 'batches:toggle_visibility' batch.pk %}">
+      {% csrf_token %}
+      <div class="button-group no-print">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">
+          {% if batch.is_public %}
+            Make Private
+          {% else %}
+            Make Public
+          {% endif %}
+        </button>
+      </div>
+    </form>
+
+    <div class="button-group mt-6 no-print">
+      <button type="button" onclick="window.location.href='{% url 'batches:edit' batch.pk %}'" class="button primary">
+        ✏️ Edit Batch
+      </button>
+      <button type="button" onclick="window.location.href='{% url 'batches:delete' batch.pk %}'" class="button primary">
+        🗑️ Delete Batch
+      </button>
+    </div>
+  {% endif %}
+
+  <div class="button-group mt-4 no-print">
+    <button type="button" onclick="window.location.href='{% url 'batches:index' %}'" class="button secondary">
+      🔙 Back to Batches
+    </button>
+    <button type="button" onclick="window.print()" class="button primary">
+      🖨️ Print Batch
+    </button>
+  </div>
+
+  {% if images %}
+    <div class="batch-images">
+      <h2>Images</h2>
+      {% for img in images %}
+        <div>
+          <img src="{{ img.image.url }}" alt="{{ img.caption }}">
+          {% if img.caption %}
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ img.caption }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

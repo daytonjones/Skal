@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit{% else %}New{% endif %} Batch{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-6">
+  <div class="calc-section">
+    <h1>{% if object %}Edit{% else %}New{% endif %} Batch</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <!-- Batch fields (unchanged) -->
+      <div class="form-group">{{ form.recipe.label_tag }}<br>{{ form.recipe }} {{ form.recipe.errors }}</div>
+      <div class="form-group">{{ form.name.label_tag }}<br>{{ form.name }} {{ form.name.errors }}</div>
+      <div class="form-group">{{ form.batch_size.label_tag }}<br>{{ form.batch_size }} {{ form.batch_size.errors }}</div>
+      <div class="form-group">{{ form.og.label_tag }}<br>{{ form.og }} {{ form.og.errors }}</div>
+      <div class="form-group">{{ form.fg.label_tag }}<br>{{ form.fg }} {{ form.fg.errors }}</div>
+      <div class="form-group">{{ form.primary_date.label_tag }}<br>{{ form.primary_date }} {{ form.primary_date.errors }}</div>
+      <div class="form-group">{{ form.secondary_date.label_tag }}<br>{{ form.secondary_date }} {{ form.secondary_date.errors }}</div>
+      <div class="form-group">{{ form.bottling_date.label_tag }}<br>{{ form.bottling_date }} {{ form.bottling_date.errors }}</div>
+      <div class="form-group">{{ form.notes.label_tag }}<br>{{ form.notes }} {{ form.notes.errors }}</div>
+      <div class="form-group">{{ form.is_public.label_tag }}<br>{{ form.is_public }} {{ form.is_public.errors }}</div>
+
+      <div class="form-group">
+        <label for="id_images">Upload Batch Images</label><br>
+        <input type="file" name="images" id="id_images" multiple>
+      </div>
+
+      <div id="image-preview-container" class="grid grid-cols-2 gap-4 mt-4"></div>
+
+      <button type="submit" class="button">
+        {% if object %}Save Changes{% else %}Create Batch{% endif %}
+      </button>
+      <a href="{% url 'batches:index' %}" class="button secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/batches.js' %}"></script>
+{% endblock %}
+
