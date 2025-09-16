@@ -1,4 +1,12 @@
 # Skål
+<!-- GitHub repo metadata -->
+[![GitHub release](https://img.shields.io/github/v/release/daytonjones/Skal?sort=semver)](https://github.com/daytonjones/Skal/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/daytonjones/Skal)](https://github.com/daytonjones/Skal/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/daytonjones/Skal)](https://github.com/daytonjones/Skal/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/daytonjones/Skal)](https://github.com/daytonjones/Skal/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/daytonjones/Skal)](https://github.com/daytonjones/Skal/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/daytonjones/Skal)](https://github.com/daytonjones/Skal/network/members)
+[![License](https://img.shields.io/github/license/daytonjones/Skal)](https://github.com/daytonjones/Skal/blob/main/LICENSE)
 
 Skål is a modern web application for managing your mead brewing journey—from crafting recipes to tracking batches and calculating ABV & calories. Designed with the homebrewer in mind, it features an intuitive interface, responsive design, and robust tooling for both casual and meticulous brewers alike.
 
