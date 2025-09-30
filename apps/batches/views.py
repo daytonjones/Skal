@@ -8,6 +8,8 @@ from django.views.generic import (
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from datetime import date
 
 from .models import Batch, BatchImage
 from .forms import BatchForm
@@ -67,7 +69,6 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         response = super().form_valid(form)
 
-        # Save images + captions
         for i, img in enumerate(self.request.FILES.getlist('images')):
             caption = self.request.POST.get(f'caption_{i}', '')
             BatchImage.objects.create(batch=self.object, image=img, caption=caption)
@@ -106,4 +107,35 @@ def toggle_visibility(request, pk):
     batch.is_public = not batch.is_public
     batch.save()
     return redirect('batches:detail', pk=pk)
+
+
+@login_required
+def update_checklist_item(request, pk):
+    """AJAX endpoint to toggle checklist items dynamically"""
+    batch = get_object_or_404(Batch, pk=pk, user=request.user)
+    field = request.POST.get("field")
+    value = request.POST.get("value") == "true"
+
+    if not hasattr(batch, field):
+        return JsonResponse({"success": False, "error": "Invalid field"}, status=400)
+
+    setattr(batch, field, value)
+
+    date_value = None
+    if field.endswith("_done"):
+        date_field = field.replace("_done", "_date")
+        if value:
+            date_value = date.today()
+            setattr(batch, date_field, date_value)
+        else:
+            setattr(batch, date_field, None)
+        response_date = str(date_value) if date_value else ""
+
+    batch.save()
+    return JsonResponse({
+        "success": True,
+        "field": field,
+        "value": value,
+        "date": response_date if field.endswith("_done") else None,
+    })
 
