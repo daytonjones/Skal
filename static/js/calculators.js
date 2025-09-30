@@ -1,5 +1,52 @@
 // static/js/calculators.js
 
+// Yeast → N-factor mapping
+const YEAST_N_FACTORS = {
+  "Lalvin 71-B": 1.25,
+  "Lalvin BOURGOVIN RC 212": 1.25,
+  "Lalvin EC-1118": 1.4,
+  "Lalvin ICV D-47": 1.25,
+  "Lalvin KIV-1116": 1.4,
+  "Red Star Cote des Blancs": 1.25,
+  "Red Star Flor Sherry": 1.25,
+  "Red Star Montrachet": 1.25,
+  "Red Star Pasteur Champagne": 1.4,
+  "Red Star Pasteur Red": 1.25,
+  "Red Star Premier Cuvée": 1.4,
+  "Vintner’s Harvest Saccharomyces Bayanus #1": 1.4,
+  "Vintner’s Harvest Saccharomyces Bayanus #2": 1.4,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #1": 1.25,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #2": 1.25,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #3": 1.25,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #4": 1.25,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #5": 1.25,
+  "White Labs Assmanshausen Wine Yeast": 1.25,
+  "White Labs Avise Wine Yeast": 1.25,
+  "White Labs Cabernet Red Wine Yeast": 1.25,
+  "White Labs Champagne": 1.4,
+  "White Labs Chardonnay White Wine": 1.25,
+  "White Labs English Cider": 1.25,
+  "White Labs French Red Wine Yeast": 1.25,
+  "White Labs French White Wine Yeast": 1.25,
+  "White Labs Merlot Red Wine Yeast": 1.25,
+  "White Labs Steinberg-Geisenheim Wine Yeast": 1.25,
+  "White Labs Suremain Burgundy Wine Yeast": 1.25,
+  "White Labs Sweet Mead and Wine": 1.0,
+  "Wyeast Bordeaux": 1.25,
+  "Wyeast Chablis": 1.25,
+  "Wyeast Chateau": 1.25,
+  "Wyeast Chianti": 1.25,
+  "Wyeast Cider": 1.25,
+  "Wyeast Dry Mead": 1.25,
+  "Wyeast Eau de Vie": 1.4,
+  "Wyeast Pasteur Champagne": 1.4,
+  "Wyeast Portwine": 1.25,
+  "Wyeast Rudesheimer": 1.25,
+  "Wyeast Sake #9": 1.25,
+  "Wyeast Sweet Mead": 1.0,
+  "Wyeast Zinfandel": 1.25,
+};
+
 // Round a number to two decimal places and return as string
 const to2 = x => (Math.round(x * 100) / 100).toFixed(2);
 
@@ -86,24 +133,36 @@ function updateBx() {
   document.getElementById('calories-bx').textContent   = to2(calories);
 }
 
-// -------- SNA Scheduler --------
+// -------- SNA Scheduler (TOSNA for Mead) --------
 function updateSNA() {
   const og = parseFloat(document.getElementById('og-sg').value);
   const fg = parseFloat(document.getElementById('fg-sg').value);
   const batch = parseFloat(document.getElementById('batch-size').value);
+  const yeast = document.getElementById('yeast-strain').value;
 
-  const totalFermaid = 1.5 * batch;
-  const pitchAmt     = 0.5 * batch;
-  const breakAmt     = 0.5 * batch;
-  const intervalAmt  = (totalFermaid - pitchAmt - breakAmt) / 3;
+  // Convert OG SG → Brix
+  const obrix = ((182.4601 * og - 775.6821) * og + 1262.7794) * og - 669.5622;
+
+  // Look up N-factor
+  const nFactor = YEAST_N_FACTORS[yeast] || 1.25;
+
+  // Update display of N-factor
+  const nDisplay = document.getElementById('n-factor-display');
+  if (nDisplay) {
+    nDisplay.textContent = nFactor.toFixed(2) + ` (for ${yeast})`;
+  }
+
+  // Mead Made Right formula
+  const totalFermaid = (obrix * 10 * nFactor / 50) * batch;
+  const additionAmt = totalFermaid / 4;
   const sugarBreakSG = og - ((og - fg) / 3);
 
   const schedule = [
-    ['Yeast pitch', pitchAmt],
-    ['24 h',         intervalAmt],
-    ['48 h',         intervalAmt],
-    ['72 h',         intervalAmt],
-    [`1/3 Sugar Break (SG = ${sugarBreakSG.toFixed(3)})`, breakAmt]
+    ['Yeast pitch', 0],
+    ['24 h', additionAmt],
+    ['48 h', additionAmt],
+    ['72 h', additionAmt],
+    [`1/3 Sugar Break (SG = ${sugarBreakSG.toFixed(3)})`, additionAmt]
   ];
 
   document.getElementById('sna-body').innerHTML = schedule.map(([stage, g]) => {
@@ -149,6 +208,7 @@ document.getElementById('glass-size-bx').addEventListener('change', updateBx);
 
 // SNA scheduler
 document.getElementById('batch-size').addEventListener('input', updateSNA);
+document.getElementById('yeast-strain').addEventListener('change', updateSNA);
 
 // Batch builder
 ['builder-batch-size','builder-desired-abv'].forEach(id =>
@@ -160,4 +220,3 @@ updateSG();
 updateBx();
 updateSNA();
 updateBuilder();
-
