@@ -12,7 +12,7 @@
       {% csrf_token %}
       {{ form.non_field_errors }}
 
-      <!-- Batch fields (unchanged) -->
+      <!-- Batch fields -->
       <div class="form-group">{{ form.recipe.label_tag }}<br>{{ form.recipe }} {{ form.recipe.errors }}</div>
       <div class="form-group">{{ form.name.label_tag }}<br>{{ form.name }} {{ form.name.errors }}</div>
       <div class="form-group">{{ form.batch_size.label_tag }}<br>{{ form.batch_size }} {{ form.batch_size.errors }}</div>
@@ -24,11 +24,22 @@
       <div class="form-group">{{ form.notes.label_tag }}<br>{{ form.notes }} {{ form.notes.errors }}</div>
       <div class="form-group">{{ form.is_public.label_tag }}<br>{{ form.is_public }} {{ form.is_public.errors }}</div>
 
+      <!-- Checklist -->
+      <h2 class="mt-6">Batch Checklist</h2>
+      <div class="form-group">{{ form.create_must_done }} Create Must {{ form.create_must_date }}</div>
+      <div class="form-group">{{ form.pitch_yeast_done }} Pitch Yeast {{ form.pitch_yeast_date }}</div>
+      <div class="form-group">{{ form.fo_24h_done }} FO 24h {{ form.fo_24h_date }}</div>
+      <div class="form-group">{{ form.fo_48h_done }} FO 48h {{ form.fo_48h_date }}</div>
+      <div class="form-group">{{ form.fo_72h_done }} FO 72h {{ form.fo_72h_date }}</div>
+      <div class="form-group">{{ form.fo_1_3_break_done }} FO 1/3 Sugar Break {{ form.fo_1_3_break_date }}</div>
+      <div class="form-group">{{ form.rack_secondary_done }} Racked to Secondary {{ form.rack_secondary_date }}</div>
+      <div class="form-group">{{ form.bottled_done }} Bottled {{ form.bottled_date }}</div>
+
+      <!-- Images -->
       <div class="form-group">
         <label for="id_images">Upload Batch Images</label><br>
         <input type="file" name="images" id="id_images" multiple>
       </div>
-
       <div id="image-preview-container" class="grid grid-cols-2 gap-4 mt-4"></div>
 
       <button type="submit" class="button">

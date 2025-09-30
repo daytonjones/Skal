@@ -44,10 +44,55 @@ class Batch(models.Model):
     bottling_date = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True)
 
+    # --- Checklist fields ---
+    create_must_done = models.BooleanField(default=False)
+    create_must_date = models.DateField(blank=True, null=True)
+
+    pitch_yeast_done = models.BooleanField(default=False)
+    pitch_yeast_date = models.DateField(blank=True, null=True)
+
+    fo_24h_done = models.BooleanField(default=False)
+    fo_24h_date = models.DateField(blank=True, null=True)
+
+    fo_48h_done = models.BooleanField(default=False)
+    fo_48h_date = models.DateField(blank=True, null=True)
+
+    fo_72h_done = models.BooleanField(default=False)
+    fo_72h_date = models.DateField(blank=True, null=True)
+
+    fo_1_3_break_done = models.BooleanField(default=False)
+    fo_1_3_break_date = models.DateField(blank=True, null=True)
+
+    rack_secondary_done = models.BooleanField(default=False)
+    rack_secondary_date = models.DateField(blank=True, null=True)
+
+    bottled_done = models.BooleanField(default=False)
+    bottled_date = models.DateField(blank=True, null=True)
+    # -------------------------
+
     class Meta:
         ordering = ['-primary_date']
 
     def save(self, *args, **kwargs):
+        today = date.today()
+
+        if self.create_must_done and not self.create_must_date:
+            self.create_must_date = today
+        if self.pitch_yeast_done and not self.pitch_yeast_date:
+            self.pitch_yeast_date = today
+        if self.fo_24h_done and not self.fo_24h_date:
+            self.fo_24h_date = today
+        if self.fo_48h_done and not self.fo_48h_date:
+            self.fo_48h_date = today
+        if self.fo_72h_done and not self.fo_72h_date:
+            self.fo_72h_date = today
+        if self.fo_1_3_break_done and not self.fo_1_3_break_date:
+            self.fo_1_3_break_date = today
+        if self.rack_secondary_done and not self.rack_secondary_date:
+            self.rack_secondary_date = today
+        if self.bottled_done and not self.bottled_date:
+            self.bottled_date = today
+
         if self.primary_date:
             self.name = _unique_batch_name(self.name, self.primary_date)
         super().save(*args, **kwargs)
