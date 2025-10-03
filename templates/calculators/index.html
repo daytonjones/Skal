@@ -67,6 +67,7 @@
         <p>Calories: <strong id="calories-bx">--</strong></p>
       </div>
     </section>
+
     <!-- TOSNA Schedule -->
     <section class="calc-section">
       <h2 class="tooltip">
@@ -74,7 +75,7 @@
         <span class="tooltip-trigger">(what is this?)</span>
         <div class="tooltip-content">
           <p><strong>TOSNA 3.0</strong> is a specific protocol for providing nutrients to yeast during the fermentation of mead. It stands for <em>Tailored Organic Staggered Nutrient Addition</em>. This protocol is a refined version of older methods, designed to ensure a clean, consistent, and efficient fermentation process, which helps prevent off-flavors from developing.</p>
-    
+
           <h4>Core components and principles</h4>
           <ul>
             <li><strong>Tailored:</strong> Uses a calculator to determine nutrients based on:
@@ -94,7 +95,7 @@
             <li><strong>Staggered:</strong> Nutrients split into smaller additions over first days.</li>
             <li><strong>Nutrient Addition:</strong> Typically 4 equal additions of Fermaid-O.</li>
           </ul>
-    
+
           <h4>Typical TOSNA 3.0 schedule</h4>
           <ul>
             <li><strong>Day 0:</strong> Yeast rehydrated with Go-Ferm, then pitched.</li>
@@ -103,7 +104,7 @@
             <li><strong>Day 3 (72h):</strong> Third addition.</li>
             <li><strong>Day 4/5 (1/3 sugar break or ~96h):</strong> Fourth and final addition.</li>
           </ul>
-    
+
           <h4>Key differences and benefits</h4>
           <ul>
             <li><strong>TOSNA 2.0 vs 3.0:</strong> 3.0 refines yeast/nutrient amounts by strain & OG.</li>
@@ -184,11 +185,19 @@
         <input type="range" id="builder-desired-abv" min="0" max="20" step="0.5" value="12">
         <span id="builder-abv-val">12.0</span>
       </label>
+      <label>
+        Yeast strain:
+        <select id="builder-yeast-strain">
+          {% for y in yeasts %}
+            <option>{{ y.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
     </div>
     <div class="builder-results">
       <p>Honey Needed: <strong id="honey-amt">--</strong> lbs</p>
-      <p>Fermaid-O Needed: <strong id="fm-amt">--</strong> g (1.5 g/gal)</p>
-      <p>Yeast Pitch: <strong id="yeast-amt">--</strong> g</p>
+      <p>TOSNA Nutrient Needed (Fermaid-O, total): <strong id="tosna-amt">--</strong></p>
+      <p>Yeast Pitch: <strong id="builder-yeast-pitch">--</strong></p>
     </div>
   </section>
 

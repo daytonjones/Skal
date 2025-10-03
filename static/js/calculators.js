@@ -85,6 +85,11 @@ function brixToSG(b) {
   return (b / (258.6 - ((b / 258.2) * 227.1))) + 1;
 }
 
+// Convert Specific Gravity to Brix
+function sgToBrix(sg) {
+  return ((182.4601 * sg - 775.6821) * sg + 1262.7794) * sg - 669.5622;
+}
+
 // Populate the sweetness levels table based on an ABV value
 function updateSweetTable(abv) {
   const levels = [
@@ -212,13 +217,35 @@ function updateSNA() {
 function updateBuilder() {
   const batch      = parseFloat(document.getElementById('builder-batch-size').value);
   const desiredAbv = parseFloat(document.getElementById('builder-desired-abv').value);
+  const builderYeast = document.getElementById('builder-yeast-strain').value;
+
+  // Keep using your existing honey estimate formula
   const honeyLbs   = ((desiredAbv / 131.25) * 1000 * batch) / 35;
 
+  // To estimate TOSNA nutrient, infer an OG from desired ABV.
+  // Assume FG from the SG calculator (or 1.000 if missing)
+  const fgAssumed = parseFloat(document.getElementById('fg-sg')?.value) || 1.000;
+  const ogEstimated = (desiredAbv / 131.25) + fgAssumed;
+
+  const obrixEstimated = sgToBrix(ogEstimated);
+  const nFactorBuilder = YEAST_N_FACTORS[builderYeast] || 1.25;
+
+  // TOSNA total Fermaid-O (builder uses FO)
+  const totalFO = (obrixEstimated * 10 * nFactorBuilder / 50) * batch;
+
+  // Yeast pitch (range)
+  const pitchRateNormal = 1.0; // g/gal
+  const pitchRateRobust = 1.5; // g/gal
+  const yeastNeededNormal = pitchRateNormal * batch;
+  const yeastNeededRobust = pitchRateRobust * batch;
+
+  // Write outputs
   document.getElementById('builder-size-val').textContent = batch.toFixed(1);
   document.getElementById('builder-abv-val').textContent  = desiredAbv.toFixed(1);
   document.getElementById('honey-amt').textContent        = to2(honeyLbs);
-  document.getElementById('fm-amt').textContent           = to2(1.5 * batch);
-  document.getElementById('yeast-amt').textContent        = to2(0.5 * batch);
+  document.getElementById('tosna-amt').textContent        = to2(totalFO) + ' g';
+  document.getElementById('builder-yeast-pitch').textContent =
+    `${to2(yeastNeededNormal)}–${to2(yeastNeededRobust)} g (1.00–1.50 g/gal)`;
 }
 
 // -------- Attach Event Listeners --------
@@ -247,6 +274,7 @@ document.getElementById('nutrient-type').addEventListener('change', updateSNA);
 ['builder-batch-size','builder-desired-abv'].forEach(id =>
   document.getElementById(id).addEventListener('input', updateBuilder)
 );
+document.getElementById('builder-yeast-strain').addEventListener('change', updateBuilder);
 
 // -------- Initial Render --------
 updateSG();
