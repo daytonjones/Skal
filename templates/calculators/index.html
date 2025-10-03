@@ -193,10 +193,17 @@
           {% endfor %}
         </select>
       </label>
+      <label>
+        Nutrient type:
+        <select id="builder-nutrient-type">
+          <option value="FO" selected>Fermaid O</option>
+          <option value="FK">Fermaid K</option>
+        </select>
+      </label>
     </div>
     <div class="builder-results">
       <p>Honey Needed: <strong id="honey-amt">--</strong> lbs</p>
-      <p>TOSNA Nutrient Needed (Fermaid-O, total): <strong id="tosna-amt">--</strong></p>
+      <p>TOSNA Nutrient Needed: <strong id="tosna-amt">--</strong></p>
       <p>Yeast Pitch: <strong id="builder-yeast-pitch">--</strong></p>
     </div>
   </section>
