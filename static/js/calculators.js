@@ -1,50 +1,63 @@
 // static/js/calculators.js
 
-// Yeast → N-factor mapping
+// TOSNA factors
+const N = { LOW: 0.75, MED: 0.90, HIGH: 1.25 };
+
+// Yeast → N-factor mapping (corrected)
 const YEAST_N_FACTORS = {
-  "Lalvin 71-B": 1.25,
-  "Lalvin BOURGOVIN RC 212": 1.25,
-  "Lalvin EC-1118": 1.4,
-  "Lalvin ICV D-47": 1.25,
-  "Lalvin KIV-1116": 1.4,
-  "Red Star Cote des Blancs": 1.25,
-  "Red Star Flor Sherry": 1.25,
-  "Red Star Montrachet": 1.25,
-  "Red Star Pasteur Champagne": 1.4,
-  "Red Star Pasteur Red": 1.25,
-  "Red Star Premier Cuvée": 1.4,
-  "Vintner’s Harvest Saccharomyces Bayanus #1": 1.4,
-  "Vintner’s Harvest Saccharomyces Bayanus #2": 1.4,
-  "Vintner’s Harvest Saccharomyces Cerevisiae #1": 1.25,
-  "Vintner’s Harvest Saccharomyces Cerevisiae #2": 1.25,
-  "Vintner’s Harvest Saccharomyces Cerevisiae #3": 1.25,
-  "Vintner’s Harvest Saccharomyces Cerevisiae #4": 1.25,
-  "Vintner’s Harvest Saccharomyces Cerevisiae #5": 1.25,
-  "White Labs Assmanshausen Wine Yeast": 1.25,
-  "White Labs Avise Wine Yeast": 1.25,
-  "White Labs Cabernet Red Wine Yeast": 1.25,
-  "White Labs Champagne": 1.4,
-  "White Labs Chardonnay White Wine": 1.25,
-  "White Labs English Cider": 1.25,
-  "White Labs French Red Wine Yeast": 1.25,
-  "White Labs French White Wine Yeast": 1.25,
-  "White Labs Merlot Red Wine Yeast": 1.25,
-  "White Labs Steinberg-Geisenheim Wine Yeast": 1.25,
-  "White Labs Suremain Burgundy Wine Yeast": 1.25,
-  "White Labs Sweet Mead and Wine": 1.0,
-  "Wyeast Bordeaux": 1.25,
-  "Wyeast Chablis": 1.25,
-  "Wyeast Chateau": 1.25,
-  "Wyeast Chianti": 1.25,
-  "Wyeast Cider": 1.25,
-  "Wyeast Dry Mead": 1.25,
-  "Wyeast Eau de Vie": 1.4,
-  "Wyeast Pasteur Champagne": 1.4,
-  "Wyeast Portwine": 1.25,
-  "Wyeast Rudesheimer": 1.25,
-  "Wyeast Sake #9": 1.25,
-  "Wyeast Sweet Mead": 1.0,
-  "Wyeast Zinfandel": 1.25,
+  // Lalvin / Lallemand
+  "Lalvin 71-B": N.LOW,                    // 71B has low nitrogen demand
+  "Lalvin BOURGOVIN RC 212": N.HIGH,       // often treated as high in mead to avoid sulfides (see note)
+  "Lalvin EC-1118": N.LOW,                 // Prise de Mousse, low N need
+  "Lalvin ICV D-47": N.LOW,                // D47 listed as low N need
+  "Lalvin KIV-1116": N.LOW,                // alias typo kept for compatibility
+  "Lalvin K1V-1116": N.LOW,                // K1V is low/low–avg; treat as LOW
+
+  // Red Star
+  "Red Star Cote des Blancs": N.MED,       // manufacturer/vendo r lists medium
+  "Red Star Flor Sherry": N.MED,           // limited data; default MED for primary ferment
+  "Red Star Montrachet (Premier Classique)": N.MED,
+  "Red Star Pasteur Champagne (Premier Blanc)": N.LOW,
+  "Red Star Pasteur Red (Premier Rouge)": N.HIGH,
+  "Red Star Premier Cuvée": N.LOW,
+
+  // Vintner’s Harvest (generic defaults; specific docs vary by strain)
+  "Vintner’s Harvest Saccharomyces Bayanus #1": N.MED,
+  "Vintner’s Harvest Saccharomyces Bayanus #2": N.MED,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #1": N.MED,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #2": N.MED,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #3": N.MED,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #4": N.MED,
+  "Vintner’s Harvest Saccharomyces Cerevisiae #5": N.MED,
+
+  // White Labs (specific N-need rarely published; defaults chosen from style)
+  "White Labs Assmanshausen Wine Yeast": N.MED,
+  "White Labs Avise Wine Yeast": N.MED,
+  "White Labs Cabernet Red Wine Yeast": N.MED,
+  "White Labs Champagne": N.LOW,           // WLP715 analogue → low
+  "White Labs Chardonnay White Wine": N.MED,
+  "White Labs English Cider": N.MED,
+  "White Labs French Red Wine Yeast": N.MED,
+  "White Labs French White Wine Yeast": N.MED,
+  "White Labs Merlot Red Wine Yeast": N.MED,
+  "White Labs Steinberg-Geisenheim Wine Yeast": N.MED,
+  "White Labs Suremain Burgundy Wine Yeast": N.MED,
+  "White Labs Sweet Mead and Wine": N.MED, // WLP720: treat as MED
+
+  // Wyeast
+  "Wyeast Bordeaux": N.MED,
+  "Wyeast Chablis": N.MED,
+  "Wyeast Chateau": N.MED,
+  "Wyeast Chianti": N.MED,
+  "Wyeast Cider": N.MED,
+  "Wyeast Dry Mead": N.MED,                // 4632 needs added nutrients
+  "Wyeast Eau de Vie": N.HIGH,             // 4347 “Extreme” high-ABV work; set HIGH
+  "Wyeast Pasteur Champagne": N.LOW,
+  "Wyeast Portwine": N.MED,
+  "Wyeast Rudesheimer": N.MED,
+  "Wyeast Sake #9": N.HIGH,                // sake yeasts are typically higher N-demand
+  "Wyeast Sweet Mead": N.MED,
+  "Wyeast Zinfandel": N.MED,
 };
 
 // Round a number to two decimal places and return as string
