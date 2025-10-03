@@ -537,3 +537,48 @@ body.dark .featured-recipe-panel {
   text-align: center;
 }
 
+/* ============================
+   Tooltip for TOSNA definition
+   ============================ */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-trigger {
+  color: #0066cc;
+  cursor: help;
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.tooltip-content {
+  display: none;
+  position: absolute;
+  top: 1.5rem;
+  left: 0;
+  width: 600px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 100;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.tooltip:hover .tooltip-content {
+  display: block;
+}
+
+/* Dark mode tooltip */
+body.dark .tooltip-content {
+  background: #222;
+  color: #eee;
+  border-color: #444;
+}
+
