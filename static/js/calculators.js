@@ -1,27 +1,27 @@
 // static/js/calculators.js
- 
+
 // TOSNA factors
 const N = { LOW: 0.75, MED: 0.90, HIGH: 1.25 };
 
 // Yeast → N-factor mapping (corrected)
 const YEAST_N_FACTORS = {
   // Lalvin / Lallemand
-  "Lalvin 71-B": N.LOW,                    // 71B has low nitrogen demand
-  "Lalvin BOURGOVIN RC 212": N.HIGH,       // often treated as high in mead to avoid sulfides (see note)
-  "Lalvin EC-1118": N.LOW,                 // Prise de Mousse, low N need
-  "Lalvin ICV D-47": N.LOW,                // D47 listed as low N need
-  "Lalvin KIV-1116": N.LOW,                // alias typo kept for compatibility
-  "Lalvin K1V-1116": N.LOW,                // K1V is low/low–avg; treat as LOW
+  "Lalvin 71-B": N.LOW,
+  "Lalvin BOURGOVIN RC 212": N.HIGH,
+  "Lalvin EC-1118": N.LOW,
+  "Lalvin ICV D-47": N.LOW,
+  "Lalvin KIV-1116": N.LOW,
+  "Lalvin K1V-1116": N.LOW,
 
   // Red Star
-  "Red Star Cote des Blancs": N.MED,       // manufacturer/vendo r lists medium
-  "Red Star Flor Sherry": N.MED,           // limited data; default MED for primary ferment
+  "Red Star Cote des Blancs": N.MED,
+  "Red Star Flor Sherry": N.MED,
   "Red Star Montrachet (Premier Classique)": N.MED,
   "Red Star Pasteur Champagne (Premier Blanc)": N.LOW,
   "Red Star Pasteur Red (Premier Rouge)": N.HIGH,
   "Red Star Premier Cuvée": N.LOW,
 
-  // Vintner’s Harvest (generic defaults; specific docs vary by strain)
+  // Vintner’s Harvest
   "Vintner’s Harvest Saccharomyces Bayanus #1": N.MED,
   "Vintner’s Harvest Saccharomyces Bayanus #2": N.MED,
   "Vintner’s Harvest Saccharomyces Cerevisiae #1": N.MED,
@@ -30,11 +30,11 @@ const YEAST_N_FACTORS = {
   "Vintner’s Harvest Saccharomyces Cerevisiae #4": N.MED,
   "Vintner’s Harvest Saccharomyces Cerevisiae #5": N.MED,
 
-  // White Labs (specific N-need rarely published; defaults chosen from style)
+  // White Labs
   "White Labs Assmanshausen Wine Yeast": N.MED,
   "White Labs Avise Wine Yeast": N.MED,
   "White Labs Cabernet Red Wine Yeast": N.MED,
-  "White Labs Champagne": N.LOW,           // WLP715 analogue → low
+  "White Labs Champagne": N.LOW,
   "White Labs Chardonnay White Wine": N.MED,
   "White Labs English Cider": N.MED,
   "White Labs French Red Wine Yeast": N.MED,
@@ -42,7 +42,7 @@ const YEAST_N_FACTORS = {
   "White Labs Merlot Red Wine Yeast": N.MED,
   "White Labs Steinberg-Geisenheim Wine Yeast": N.MED,
   "White Labs Suremain Burgundy Wine Yeast": N.MED,
-  "White Labs Sweet Mead and Wine": N.MED, // WLP720: treat as MED
+  "White Labs Sweet Mead and Wine": N.MED,
 
   // Wyeast
   "Wyeast Bordeaux": N.MED,
@@ -50,17 +50,15 @@ const YEAST_N_FACTORS = {
   "Wyeast Chateau": N.MED,
   "Wyeast Chianti": N.MED,
   "Wyeast Cider": N.MED,
-  "Wyeast Dry Mead": N.MED,                // 4632 needs added nutrients
-  "Wyeast Eau de Vie": N.HIGH,             // 4347 “Extreme” high-ABV work; set HIGH
+  "Wyeast Dry Mead": N.MED,
+  "Wyeast Eau de Vie": N.HIGH,
   "Wyeast Pasteur Champagne": N.LOW,
   "Wyeast Portwine": N.MED,
   "Wyeast Rudesheimer": N.MED,
-  "Wyeast Sake #9": N.HIGH,                // sake yeasts are typically higher N-demand
+  "Wyeast Sake #9": N.HIGH,
   "Wyeast Sweet Mead": N.MED,
   "Wyeast Zinfandel": N.MED,
 };
-
-
 
 // Round a number to two decimal places and return as string
 const to2 = x => (Math.round(x * 100) / 100).toFixed(2);
@@ -110,8 +108,14 @@ function updateSweetTable(abv) {
   }).join('');
 }
 
+// Guard to prevent infinite loop between SG <-> Brix updates
+let isSyncing = false;
+
 // -------- SG Calculator --------
 function updateSG() {
+  if (isSyncing) return;
+  isSyncing = true;
+
   const og = parseFloat(document.getElementById('og-sg').value);
   const fg = parseFloat(document.getElementById('fg-sg').value);
   const formula = document.querySelector('input[name="abv-formula"]:checked').value;
@@ -121,21 +125,43 @@ function updateSG() {
     : (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794);
 
   const attenuation = ((og - fg) / (og - 1)) * 100;
-  const glass = parseFloat(document.getElementById('glass-size-sg').value);
-  const calories = ((abv / 100) * 0.789 * 7) * (glass * 29.5735);
+
+  // SG calories
+  const glassSG = parseFloat(document.getElementById('glass-size-sg').value);
+  const caloriesSG = ((abv / 100) * 0.789 * 7) * (glassSG * 29.5735);
 
   document.getElementById('og-sg-val').textContent   = og.toFixed(3);
   document.getElementById('fg-sg-val').textContent   = fg.toFixed(3);
   document.getElementById('abv-sg').textContent      = to2(abv) + '%';
   document.getElementById('att-sg').textContent      = to2(attenuation) + '%';
-  document.getElementById('calories-sg').textContent = to2(calories);
+  document.getElementById('calories-sg').textContent = to2(caloriesSG);
+
+  // Sync Brix sliders
+  const ogBrix = sgToBrix(og);
+  const fgBrix = sgToBrix(fg);
+  document.getElementById('og-brix').value = ogBrix.toFixed(1);
+  document.getElementById('fg-brix').value = fgBrix.toFixed(1);
+
+  // Also update Brix display
+  const glassBx = parseFloat(document.getElementById('glass-size-bx').value);
+  const caloriesBx = ((abv / 100) * 0.789 * 7) * (glassBx * 29.5735);
+  document.getElementById('og-brix-val').textContent = ogBrix.toFixed(1);
+  document.getElementById('fg-brix-val').textContent = fgBrix.toFixed(1);
+  document.getElementById('abv-bx').textContent      = to2(abv) + '%';
+  document.getElementById('att-bx').textContent      = to2(attenuation) + '%';
+  document.getElementById('calories-bx').textContent = to2(caloriesBx);
 
   updateSweetTable(abv);
   updateSNA();
+
+  isSyncing = false;
 }
 
 // -------- Brix Calculator --------
 function updateBx() {
+  if (isSyncing) return;
+  isSyncing = true;
+
   const obx = parseFloat(document.getElementById('og-brix').value);
   const fbx = parseFloat(document.getElementById('fg-brix').value);
   const ogSG = brixToSG(obx);
@@ -143,14 +169,34 @@ function updateBx() {
 
   const abv = (ogSG - fgSG) * 131.25;
   const attenuation = ((ogSG - fgSG) / (ogSG - 1)) * 100;
-  const glass = parseFloat(document.getElementById('glass-size-bx').value);
-  const calories = ((abv / 100) * 0.789 * 7) * (glass * 29.5735);
 
-  document.getElementById('og-brix-val').textContent   = obx.toFixed(1);
-  document.getElementById('fg-brix-val').textContent   = fbx.toFixed(1);
-  document.getElementById('abv-bx').textContent        = to2(abv) + '%';
-  document.getElementById('att-bx').textContent        = to2(attenuation) + '%';
-  document.getElementById('calories-bx').textContent   = to2(calories);
+  // Brix calories
+  const glassBx = parseFloat(document.getElementById('glass-size-bx').value);
+  const caloriesBx = ((abv / 100) * 0.789 * 7) * (glassBx * 29.5735);
+
+  document.getElementById('og-brix-val').textContent = obx.toFixed(1);
+  document.getElementById('fg-brix-val').textContent = fbx.toFixed(1);
+  document.getElementById('abv-bx').textContent      = to2(abv) + '%';
+  document.getElementById('att-bx').textContent      = to2(attenuation) + '%';
+  document.getElementById('calories-bx').textContent = to2(caloriesBx);
+
+  // Sync SG sliders
+  document.getElementById('og-sg').value = ogSG.toFixed(3);
+  document.getElementById('fg-sg').value = fgSG.toFixed(3);
+
+  // Also update SG display
+  const glassSG = parseFloat(document.getElementById('glass-size-sg').value);
+  const caloriesSG = ((abv / 100) * 0.789 * 7) * (glassSG * 29.5735);
+  document.getElementById('og-sg-val').textContent = ogSG.toFixed(3);
+  document.getElementById('fg-sg-val').textContent = fgSG.toFixed(3);
+  document.getElementById('abv-sg').textContent    = to2(abv) + '%';
+  document.getElementById('att-sg').textContent    = to2(attenuation) + '%';
+  document.getElementById('calories-sg').textContent = to2(caloriesSG);
+
+  updateSweetTable(abv);
+  updateSNA();
+
+  isSyncing = false;
 }
 
 // -------- SNA Scheduler (TOSNA for Mead) --------
@@ -161,29 +207,22 @@ function updateSNA() {
   const yeast = document.getElementById('yeast-strain').value;
   const nutrient = document.getElementById('nutrient-type').value;
 
-  // Convert OG SG → Brix
-  const obrix = ((182.4601 * og - 775.6821) * og + 1262.7794) * og - 669.5622;
-
-  // Look up N-factor
+  const obrix = sgToBrix(og);
   const nFactor = YEAST_N_FACTORS[yeast] || 1.25;
 
-  // Yeast pitch recommendation
-  const pitchRateNormal = 1.0;  // g/gal (baseline, ~1 packet for 5 gal)
-  const pitchRateRobust = 1.5;  // g/gal (high gravity / faster ferment)
-  
+  const pitchRateNormal = 1.0;
+  const pitchRateRobust = 1.5;
   const yeastNeededNormal = pitchRateNormal * batch;
   const yeastNeededRobust = pitchRateRobust * batch;
 
-  // Nutrient calc
   let totalNutrient = (obrix * 10 * nFactor / 50) * batch;
   if (nutrient === 'FK') {
-    totalNutrient *= 0.6; // FK supplies more YAN
+    totalNutrient *= 0.6;
   }
   const additionAmt = totalNutrient / 4;
 
   const sugarBreakSG = og - ((og - fg) / 3);
 
-  // Display metadata
   document.getElementById('n-factor-display').textContent =
     `${nFactor.toFixed(2)} (for ${yeast})`;
   document.getElementById('pitch-rate').textContent =
@@ -193,7 +232,6 @@ function updateSNA() {
   document.getElementById('nutrient-total').textContent =
     `${to2(totalNutrient)} g (${nutrient})`;
 
-  // Schedule
   const schedule = [
     ['Yeast pitch', 0],
     ['24 h', additionAmt],
@@ -203,7 +241,7 @@ function updateSNA() {
   ];
 
   document.getElementById('sna-body').innerHTML = schedule.map(([stage, g]) => {
-    const tsp = g / 5; // 1 tsp ≈ 5 g
+    const tsp = g / 5;
     return `
       <tr>
         <td>${stage}</td>
@@ -219,27 +257,21 @@ function updateBuilder() {
   const desiredAbv = parseFloat(document.getElementById('builder-desired-abv').value);
   const builderYeast = document.getElementById('builder-yeast-strain').value;
 
-  // Keep using your existing honey estimate formula
   const honeyLbs   = ((desiredAbv / 131.25) * 1000 * batch) / 35;
 
-  // To estimate TOSNA nutrient, infer an OG from desired ABV.
-  // Assume FG from the SG calculator (or 1.000 if missing)
   const fgAssumed = parseFloat(document.getElementById('fg-sg')?.value) || 1.000;
   const ogEstimated = (desiredAbv / 131.25) + fgAssumed;
 
   const obrixEstimated = sgToBrix(ogEstimated);
   const nFactorBuilder = YEAST_N_FACTORS[builderYeast] || 1.25;
 
-  // TOSNA total Fermaid-O (builder uses FO)
   const totalFO = (obrixEstimated * 10 * nFactorBuilder / 50) * batch;
 
-  // Yeast pitch (range)
-  const pitchRateNormal = 1.0; // g/gal
-  const pitchRateRobust = 1.5; // g/gal
+  const pitchRateNormal = 1.0;
+  const pitchRateRobust = 1.5;
   const yeastNeededNormal = pitchRateNormal * batch;
   const yeastNeededRobust = pitchRateRobust * batch;
 
-  // Write outputs
   document.getElementById('builder-size-val').textContent = batch.toFixed(1);
   document.getElementById('builder-abv-val').textContent  = desiredAbv.toFixed(1);
   document.getElementById('honey-amt').textContent        = to2(honeyLbs);
