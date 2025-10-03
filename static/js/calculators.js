@@ -256,6 +256,7 @@ function updateBuilder() {
   const batch      = parseFloat(document.getElementById('builder-batch-size').value);
   const desiredAbv = parseFloat(document.getElementById('builder-desired-abv').value);
   const builderYeast = document.getElementById('builder-yeast-strain').value;
+  const builderNutrient = document.getElementById('builder-nutrient-type').value;
 
   const honeyLbs   = ((desiredAbv / 131.25) * 1000 * batch) / 35;
 
@@ -265,7 +266,10 @@ function updateBuilder() {
   const obrixEstimated = sgToBrix(ogEstimated);
   const nFactorBuilder = YEAST_N_FACTORS[builderYeast] || 1.25;
 
-  const totalFO = (obrixEstimated * 10 * nFactorBuilder / 50) * batch;
+  let totalNutrient = (obrixEstimated * 10 * nFactorBuilder / 50) * batch;
+  if (builderNutrient === 'FK') {
+    totalNutrient *= 0.6;
+  }
 
   const pitchRateNormal = 1.0;
   const pitchRateRobust = 1.5;
@@ -275,7 +279,7 @@ function updateBuilder() {
   document.getElementById('builder-size-val').textContent = batch.toFixed(1);
   document.getElementById('builder-abv-val').textContent  = desiredAbv.toFixed(1);
   document.getElementById('honey-amt').textContent        = to2(honeyLbs);
-  document.getElementById('tosna-amt').textContent        = to2(totalFO) + ' g';
+  document.getElementById('tosna-amt').textContent        = `${to2(totalNutrient)} g (${builderNutrient})`;
   document.getElementById('builder-yeast-pitch').textContent =
     `${to2(yeastNeededNormal)}–${to2(yeastNeededRobust)} g (1.00–1.50 g/gal)`;
 }
@@ -307,6 +311,7 @@ document.getElementById('nutrient-type').addEventListener('change', updateSNA);
   document.getElementById(id).addEventListener('input', updateBuilder)
 );
 document.getElementById('builder-yeast-strain').addEventListener('change', updateBuilder);
+document.getElementById('builder-nutrient-type').addEventListener('change', updateBuilder);
 
 // -------- Initial Render --------
 updateSG();
