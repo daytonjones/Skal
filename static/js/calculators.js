@@ -1,5 +1,5 @@
 // static/js/calculators.js
-
+ 
 // TOSNA factors
 const N = { LOW: 0.75, MED: 0.90, HIGH: 1.25 };
 
@@ -59,6 +59,8 @@ const YEAST_N_FACTORS = {
   "Wyeast Sweet Mead": N.MED,
   "Wyeast Zinfandel": N.MED,
 };
+
+
 
 // Round a number to two decimal places and return as string
 const to2 = x => (Math.round(x * 100) / 100).toFixed(2);
@@ -152,6 +154,7 @@ function updateSNA() {
   const fg = parseFloat(document.getElementById('fg-sg').value);
   const batch = parseFloat(document.getElementById('batch-size').value);
   const yeast = document.getElementById('yeast-strain').value;
+  const nutrient = document.getElementById('nutrient-type').value;
 
   // Convert OG SG → Brix
   const obrix = ((182.4601 * og - 775.6821) * og + 1262.7794) * og - 669.5622;
@@ -159,17 +162,33 @@ function updateSNA() {
   // Look up N-factor
   const nFactor = YEAST_N_FACTORS[yeast] || 1.25;
 
-  // Update display of N-factor
-  const nDisplay = document.getElementById('n-factor-display');
-  if (nDisplay) {
-    nDisplay.textContent = nFactor.toFixed(2) + ` (for ${yeast})`;
-  }
+  // Yeast pitch recommendation
+  const pitchRateNormal = 1.0;  // g/gal (baseline, ~1 packet for 5 gal)
+  const pitchRateRobust = 1.5;  // g/gal (high gravity / faster ferment)
+  
+  const yeastNeededNormal = pitchRateNormal * batch;
+  const yeastNeededRobust = pitchRateRobust * batch;
 
-  // Mead Made Right formula
-  const totalFermaid = (obrix * 10 * nFactor / 50) * batch;
-  const additionAmt = totalFermaid / 4;
+  // Nutrient calc
+  let totalNutrient = (obrix * 10 * nFactor / 50) * batch;
+  if (nutrient === 'FK') {
+    totalNutrient *= 0.6; // FK supplies more YAN
+  }
+  const additionAmt = totalNutrient / 4;
+
   const sugarBreakSG = og - ((og - fg) / 3);
 
+  // Display metadata
+  document.getElementById('n-factor-display').textContent =
+    `${nFactor.toFixed(2)} (for ${yeast})`;
+  document.getElementById('pitch-rate').textContent =
+    `${pitchRateNormal.toFixed(2)}–${pitchRateRobust.toFixed(2)} g/gal`;
+  document.getElementById('yeast-needed').textContent =
+    `${to2(yeastNeededNormal)}–${to2(yeastNeededRobust)} g`;
+  document.getElementById('nutrient-total').textContent =
+    `${to2(totalNutrient)} g (${nutrient})`;
+
+  // Schedule
   const schedule = [
     ['Yeast pitch', 0],
     ['24 h', additionAmt],
@@ -179,7 +198,7 @@ function updateSNA() {
   ];
 
   document.getElementById('sna-body').innerHTML = schedule.map(([stage, g]) => {
-    const tsp = g / 5;
+    const tsp = g / 5; // 1 tsp ≈ 5 g
     return `
       <tr>
         <td>${stage}</td>
@@ -222,6 +241,7 @@ document.getElementById('glass-size-bx').addEventListener('change', updateBx);
 // SNA scheduler
 document.getElementById('batch-size').addEventListener('input', updateSNA);
 document.getElementById('yeast-strain').addEventListener('change', updateSNA);
+document.getElementById('nutrient-type').addEventListener('change', updateSNA);
 
 // Batch builder
 ['builder-batch-size','builder-desired-abv'].forEach(id =>
@@ -233,3 +253,4 @@ updateSG();
 updateBx();
 updateSNA();
 updateBuilder();
+

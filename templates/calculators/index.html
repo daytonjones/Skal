@@ -67,12 +67,59 @@
         <p>Calories: <strong id="calories-bx">--</strong></p>
       </div>
     </section>
-
-    <!-- SNA Schedule -->
+    <!-- TOSNA Schedule -->
     <section class="calc-section">
-      <h2>SNA Schedule</h2>
+      <h2 class="tooltip">
+        TOSNA 3.0 Schedule
+        <span class="tooltip-trigger">(what is this?)</span>
+        <div class="tooltip-content">
+          <p><strong>TOSNA 3.0</strong> is a specific protocol for providing nutrients to yeast during the fermentation of mead. It stands for <em>Tailored Organic Staggered Nutrient Addition</em>. This protocol is a refined version of older methods, designed to ensure a clean, consistent, and efficient fermentation process, which helps prevent off-flavors from developing.</p>
+    
+          <h4>Core components and principles</h4>
+          <ul>
+            <li><strong>Tailored:</strong> Uses a calculator to determine nutrients based on:
+              <ul>
+                <li>Batch size</li>
+                <li>Original Gravity</li>
+                <li>Yeast strain</li>
+                <li>Potential nutrient contributions from fruit</li>
+              </ul>
+            </li>
+            <li><strong>Organic:</strong>
+              <ul>
+                <li><strong>Fermaid-O:</strong> Organic nutrient providing amino acids, vitamins, minerals.</li>
+                <li><strong>Go-Ferm:</strong> Used for yeast rehydration, improving viability and reducing lag time.</li>
+              </ul>
+            </li>
+            <li><strong>Staggered:</strong> Nutrients split into smaller additions over first days.</li>
+            <li><strong>Nutrient Addition:</strong> Typically 4 equal additions of Fermaid-O.</li>
+          </ul>
+    
+          <h4>Typical TOSNA 3.0 schedule</h4>
+          <ul>
+            <li><strong>Day 0:</strong> Yeast rehydrated with Go-Ferm, then pitched.</li>
+            <li><strong>Day 1 (24h):</strong> First Fermaid-O addition.</li>
+            <li><strong>Day 2 (48h):</strong> Second addition.</li>
+            <li><strong>Day 3 (72h):</strong> Third addition.</li>
+            <li><strong>Day 4/5 (1/3 sugar break or ~96h):</strong> Fourth and final addition.</li>
+          </ul>
+    
+          <h4>Key differences and benefits</h4>
+          <ul>
+            <li><strong>TOSNA 2.0 vs 3.0:</strong> 3.0 refines yeast/nutrient amounts by strain & OG.</li>
+            <li><strong>TOSNA vs Traditional SNA:</strong>
+              <ul>
+                <li><em>Organic vs Inorganic:</em> Fermaid-O vs DAP.</li>
+                <li><em>Avoiding Off-Flavors:</em> Steady additions reduce yeast stress and fusels.</li>
+                <li><em>Customization:</em> Tailored to batch variables.</li>
+                <li><em>Consistency:</em> Prevents sluggish or stuck fermentations.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </h2>
       <p>
-        TOSNA: Fermaid O additions are based on OG Brix.<br>
+        Fermaid O or K additions are based on OG (by Brix [°Bx]) and yeast strain.<br>
         Total = (Brix × 10 × N-factor ÷ 50 × gallons).<br>
         Split into 4 additions (24h, 48h, 72h, 1/3 sugar break [or day 7, whichever is first]).
       </p>
@@ -80,6 +127,13 @@
         <label>
           Batch size (gal):
           <input type="number" id="batch-size" min="0.5" step="0.1" value="5">
+        </label>
+        <label>
+          Nutrient type:
+          <select id="nutrient-type">
+            <option value="FO" selected>Fermaid O</option>
+            <option value="FK">Fermaid K</option>
+          </select>
         </label>
         <label>
           Yeast strain:
@@ -91,7 +145,10 @@
         </label>
       </div>
       <p>
-        Using N-factor: <strong id="n-factor-display">--</strong>
+        Using N-factor: <strong id="n-factor-display">--</strong><br>
+        Recommended yeast pitch rate: <strong id="pitch-rate">--</strong><br>
+        Yeast needed: <strong id="yeast-needed">--</strong><br>
+        TOTAL nutrient needed: <strong id="nutrient-total">--</strong>
       </p>
       <table class="calc-table">
         <thead>
@@ -141,20 +198,7 @@
     <p><strong>Specific Gravity</strong> is determined by using a hydrometer.</p>
     <p><strong>Original gravity (OG)</strong> measures sugar before fermentation; <strong>final gravity (FG)</strong> measures residual sugar after. The difference lets you calculate alcohol.</p>
     <p>
-In winemaking, the "standard" equation for calculating ABV (Alcohol By Volume) is typically used for most situations, while the "alternate" equation is used for higher-gravity wines where greater accuracy is desired. The standard equation is simpler and sufficient for most common wines, but the alternate equation provides a more accurate result for wines with higher alcohol content. 
-The standard equation is a widely used, simpler formula.
-It works well for most wines, especially those with lower alcohol content. 
-<br>
-The alternate equation is more complex but is designed to provide greater accuracy for higher-gravity wines.
-It accounts for the non-linear relationship between gravity and alcohol content in higher-alcohol beverages. 
-<br>
-When to Use Which:
-Standard Equation:
-.
-Use for most standard wine fermentation, where the final ABV is not expected to be exceptionally high (e.g., below 12-14%).
-Alternate Equation:
-.
-Use when you are making a high-gravity wine, where the alcohol content is expected to be significantly higher, or when you need a more precise ABV calculation. 
+In winemaking, the "standard" equation for calculating ABV (Alcohol By Volume) is typically used for most situations, while the "alternate" equation is used for higher-gravity wines where greater accuracy is desired. 
     </p>
     <p>Basic formula:</p>
     <pre><code>ABV = (OG – FG) × 131.25</code></pre>
