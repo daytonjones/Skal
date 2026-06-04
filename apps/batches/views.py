@@ -15,6 +15,13 @@ from .models import Batch, BatchImage
 from .forms import BatchForm
 
 
+ALLOWED_CHECKLIST_FIELDS = {
+    'create_must_done', 'pitch_yeast_done', 'fo_24h_done',
+    'fo_48h_done', 'fo_72h_done', 'fo_1_3_break_done',
+    'rack_secondary_done', 'bottled_done',
+}
+
+
 class BatchListView(LoginRequiredMixin, ListView):
     model = Batch
     template_name = 'batches/index.html'
@@ -116,7 +123,7 @@ def update_checklist_item(request, pk):
     field = request.POST.get("field")
     value = request.POST.get("value") == "true"
 
-    if not hasattr(batch, field):
+    if field not in ALLOWED_CHECKLIST_FIELDS:
         return JsonResponse({"success": False, "error": "Invalid field"}, status=400)
 
     setattr(batch, field, value)
@@ -129,13 +136,12 @@ def update_checklist_item(request, pk):
             setattr(batch, date_field, date_value)
         else:
             setattr(batch, date_field, None)
-        response_date = str(date_value) if date_value else ""
 
     batch.save()
     return JsonResponse({
         "success": True,
         "field": field,
         "value": value,
-        "date": response_date if field.endswith("_done") else None,
+        "date": str(date_value) if date_value else "",
     })
 
