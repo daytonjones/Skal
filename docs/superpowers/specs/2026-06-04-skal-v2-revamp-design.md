@@ -347,6 +347,8 @@ Single `static/css/styles.css` remains (no build step). Restructured into sectio
 
 The existing CSS file is replaced entirely (it has significant dead/conflicting rules and mixes layout utilities with component styles).
 
+**Background image (`static/images/mead_background.png`) is kept.** The `body::before` fixed-position treatment at `opacity: 0.15` (light) / `opacity: 0.05` (dark) is intentional and stays. It gives the app a warmth that fits the craft aesthetic.
+
 ---
 
 ## 7. HTMX Integration Points
