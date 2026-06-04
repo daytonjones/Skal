@@ -13,6 +13,7 @@ from django.http import HttpResponse, FileResponse, HttpResponseServerError
 from django.utils.dateformat import format as datefmt
 
 from .forms import SignUpForm, ProfileForm, CustomPasswordChangeForm
+from .models import User
 from apps.recipes.models import Recipe, RecipeIngredient
 from apps.batches.models import Batch
 
@@ -88,7 +89,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = settings.AUTH_USER_MODEL
+    model = User
     form_class = ProfileForm
     template_name = "accounts/profile.html"
     success_url = reverse_lazy("accounts:profile")
