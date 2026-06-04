@@ -7,6 +7,7 @@ from .views import (
     BatchDeleteView,
     toggle_visibility,
     update_checklist_item,
+    update_checklist_note,
 )
 
 app_name = "batches"
@@ -14,6 +15,7 @@ app_name = "batches"
 urlpatterns = [
     path('<int:pk>/toggle/', toggle_visibility, name='toggle_visibility'),
     path('<int:pk>/update-checklist/', update_checklist_item, name='update_checklist'),
+    path('<int:pk>/checklist-note/', update_checklist_note, name='checklist_note'),
 
     path("",                BatchListView.as_view(),   name="index"),
     path("new/",            BatchCreateView.as_view(), name="create"),
