@@ -13,6 +13,7 @@ from datetime import date
 
 from .models import Batch, BatchImage
 from .forms import BatchForm
+from apps.recipes.models import Recipe
 
 
 ALLOWED_CHECKLIST_FIELDS = {
@@ -71,6 +72,18 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
     form_class = BatchForm
     template_name = 'batches/form.html'
     success_url = reverse_lazy('batches:index')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        recipe_pk = self.request.GET.get('recipe')
+        if recipe_pk:
+            try:
+                recipe = Recipe.objects.get(pk=recipe_pk)
+                initial['recipe'] = recipe
+                initial['name'] = recipe.name
+            except Recipe.DoesNotExist:
+                pass
+        return initial
 
     def form_valid(self, form):
         form.instance.user = self.request.user

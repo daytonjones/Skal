@@ -1,6 +1,7 @@
 import pytest
 from django.urls import reverse
 from apps.batches.models import Batch
+from apps.recipes.models import Recipe
 import datetime
 
 
@@ -47,3 +48,35 @@ class TestUpdateChecklistItem:
             {'field': 'create_must_done', 'value': 'true'},
         )
         assert response.status_code == 404
+
+
+@pytest.fixture
+def public_recipe(db, user):
+    return Recipe.objects.create(
+        user=user, name='Cherry Vanilla', batch_size='5.0',
+        instructions='Test', is_public=True,
+    )
+
+
+@pytest.mark.django_db
+class TestStartBatchFromRecipe:
+    def test_new_batch_form_prepopulates_recipe(self, auth_client, public_recipe):
+        response = auth_client.get(
+            reverse('batches:create') + f'?recipe={public_recipe.pk}'
+        )
+        assert response.status_code == 200
+        form = response.context['form']
+        assert form.initial.get('recipe') == public_recipe
+
+    def test_new_batch_form_prepopulates_name(self, auth_client, public_recipe):
+        response = auth_client.get(
+            reverse('batches:create') + f'?recipe={public_recipe.pk}'
+        )
+        form = response.context['form']
+        assert form.initial.get('name') == 'Cherry Vanilla'
+
+    def test_invalid_recipe_pk_is_ignored(self, auth_client):
+        response = auth_client.get(
+            reverse('batches:create') + '?recipe=99999'
+        )
+        assert response.status_code == 200  # no 404, just ignored
