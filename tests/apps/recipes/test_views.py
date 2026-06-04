@@ -65,3 +65,68 @@ class TestRecipeIngredientType:
         assert ingredient.type == 'additive', (
             f"Expected 'additive', got '{ingredient.type}'"
         )
+
+
+import datetime
+from apps.recipes.models import Recipe, RecipeIngredient, Ingredient
+
+
+@pytest.fixture
+def recipe_with_ingredients(db, user):
+    recipe = Recipe.objects.create(
+        user=user, name='Original Mead', batch_size='5.0',
+        instructions='Original instructions',
+    )
+    honey, _ = Ingredient.objects.get_or_create(name='Wildflower Honey', defaults={'type': 'honey'})
+    water, _ = Ingredient.objects.get_or_create(name='Water', defaults={'type': 'additive'})
+    yeast, _ = Ingredient.objects.get_or_create(name='Lalvin EC-1118', defaults={'type': 'yeast'})
+    RecipeIngredient.objects.create(recipe=recipe, ingredient=honey, quantity='15.0 lbs', order=0)
+    RecipeIngredient.objects.create(recipe=recipe, ingredient=water, quantity='5.0 gal', order=1)
+    RecipeIngredient.objects.create(recipe=recipe, ingredient=yeast, quantity='2 packets', order=2)
+    return recipe
+
+
+@pytest.mark.django_db
+class TestRecipeUpdatePrimaryIngredients:
+    def test_editing_honey_quantity_saves(self, auth_client, recipe_with_ingredients):
+        recipe = recipe_with_ingredients
+        auth_client.post(reverse('recipes:edit', kwargs={'pk': recipe.pk}), {
+            'name': 'Original Mead',
+            'batch_size': '5.0',
+            'instructions': 'Updated instructions',
+            'honey': 'Wildflower Honey',
+            'honey_quantity': '18.0',
+            'water': 'Water',
+            'water_quantity': '5.0',
+            'yeast': 'Lalvin EC-1118',
+            'yeast_quantity': '2 packets',
+            'is_public': '',
+            'recipeingredient_set-TOTAL_FORMS': '0',
+            'recipeingredient_set-INITIAL_FORMS': '0',
+            'recipeingredient_set-MIN_NUM_FORMS': '0',
+            'recipeingredient_set-MAX_NUM_FORMS': '1000',
+        })
+        ri = RecipeIngredient.objects.get(recipe=recipe, order=0)
+        assert ri.quantity == '18.0 lbs', f"Expected '18.0 lbs', got '{ri.quantity}'"
+
+    def test_editing_yeast_saves(self, auth_client, recipe_with_ingredients):
+        recipe = recipe_with_ingredients
+        auth_client.post(reverse('recipes:edit', kwargs={'pk': recipe.pk}), {
+            'name': 'Original Mead',
+            'batch_size': '5.0',
+            'instructions': 'Updated instructions',
+            'honey': 'Wildflower Honey',
+            'honey_quantity': '15.0',
+            'water': 'Water',
+            'water_quantity': '5.0',
+            'yeast': 'Lalvin 71-B',
+            'yeast_quantity': '1 packet',
+            'is_public': '',
+            'recipeingredient_set-TOTAL_FORMS': '0',
+            'recipeingredient_set-INITIAL_FORMS': '0',
+            'recipeingredient_set-MIN_NUM_FORMS': '0',
+            'recipeingredient_set-MAX_NUM_FORMS': '1000',
+        })
+        ri = RecipeIngredient.objects.get(recipe=recipe, order=2)
+        assert ri.ingredient.name == 'Lalvin 71-B'
+        assert ri.quantity == '1 packet'

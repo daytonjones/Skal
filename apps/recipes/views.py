@@ -209,22 +209,44 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
         return data
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         form = self.get_form()
         formset = RecipeIngredientFormSet(request.POST, instance=self.object)
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
-
-            ris = list(self.object.recipeingredient_set.order_by('order'))
-
-            # [Optionally update honey/water/yeast quantities here if needed]
-
+            self._update_primary_ingredients(form)
             formset.instance = self.object
             formset.save()
-
             return HttpResponseRedirect(self.get_success_url())
-
         return self.render_to_response(
             self.get_context_data(form=form, ingredient_formset=formset)
+        )
+
+    def _update_primary_ingredients(self, form):
+        cd = form.cleaned_data
+
+        honey_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['honey'], defaults={'type': Ingredient.TYPE_HONEY}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=0,
+            defaults={'ingredient': honey_obj, 'quantity': f"{cd['honey_quantity']} lbs"}
+        )
+
+        water_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['water'], defaults={'type': Ingredient.TYPE_ADDITIVE}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=1,
+            defaults={'ingredient': water_obj, 'quantity': f"{cd['water_quantity']} gal"}
+        )
+
+        yeast_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['yeast'], defaults={'type': Ingredient.TYPE_YEAST}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=2,
+            defaults={'ingredient': yeast_obj, 'quantity': cd['yeast_quantity']}
         )
 
 
