@@ -79,7 +79,10 @@ class RecipeIngredientForm(forms.ModelForm):
 
     def save(self, commit=True):
         name = self.cleaned_data.get('ingredient_name')
-        ingredient, _ = Ingredient.objects.get_or_create(name=name)
+        ingredient, _ = Ingredient.objects.get_or_create(
+            name=name,
+            defaults={'type': Ingredient.TYPE_ADDITIVE}
+        )
         self.instance.ingredient = ingredient
         return super().save(commit=commit)
 
