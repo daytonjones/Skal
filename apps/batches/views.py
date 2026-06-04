@@ -8,7 +8,7 @@ from django.views.generic import (
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from datetime import date
 
 from .models import Batch, BatchImage
@@ -20,6 +20,12 @@ ALLOWED_CHECKLIST_FIELDS = {
     'create_must_done', 'pitch_yeast_done', 'fo_24h_done',
     'fo_48h_done', 'fo_72h_done', 'fo_1_3_break_done',
     'rack_secondary_done', 'bottled_done',
+}
+
+ALLOWED_NOTE_FIELDS = {
+    'create_must_note', 'pitch_yeast_note', 'fo_24h_note',
+    'fo_48h_note', 'fo_72h_note', 'fo_1_3_break_note',
+    'rack_secondary_note', 'bottled_note',
 }
 
 
@@ -157,4 +163,18 @@ def update_checklist_item(request, pk):
         "value": value,
         "date": str(date_value) if date_value else "",
     })
+
+
+@login_required
+def update_checklist_note(request, pk):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+    batch = get_object_or_404(Batch, pk=pk, user=request.user)
+    field = request.POST.get('field', '')
+    if field not in ALLOWED_NOTE_FIELDS:
+        return HttpResponse(status=400)
+    note = request.POST.get('note', '')
+    setattr(batch, field, note)
+    batch.save(update_fields=[field])
+    return HttpResponse(status=204)
 
