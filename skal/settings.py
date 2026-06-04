@@ -63,11 +63,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "crispy_forms",
     "apps.accounts",
     "apps.recipes",
     "apps.batches",
     "apps.calculators",
+    "apps.yeast",
 ]
 
 MIDDLEWARE = [
@@ -127,10 +127,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
-# Crispy forms ---------------------------------------------------------------
-
-CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Authentication -------------------------------------------------------------
 
