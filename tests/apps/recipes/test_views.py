@@ -130,3 +130,44 @@ class TestRecipeUpdatePrimaryIngredients:
         ri = RecipeIngredient.objects.get(recipe=recipe, order=2)
         assert ri.ingredient.name == 'Lalvin 71-B'
         assert ri.quantity == '1 packet'
+
+
+@pytest.mark.django_db
+class TestCloneRecipe:
+    def test_clone_creates_new_recipe(self, auth_client, recipe_with_ingredients):
+        recipe = recipe_with_ingredients
+        response = auth_client.post(reverse('recipes:clone', kwargs={'pk': recipe.pk}))
+        assert response.status_code == 302
+        cloned = Recipe.objects.get(name='Copy of Original Mead')
+        assert cloned.user.username == 'testbrewer'
+        # Refresh recipe from DB to ensure we get the actual stored value
+        recipe.refresh_from_db()
+        assert cloned.batch_size == recipe.batch_size
+        assert cloned.instructions == recipe.instructions
+        assert cloned.is_public is False
+
+    def test_clone_copies_ingredients(self, auth_client, recipe_with_ingredients):
+        recipe = recipe_with_ingredients
+        auth_client.post(reverse('recipes:clone', kwargs={'pk': recipe.pk}))
+        cloned = Recipe.objects.get(name='Copy of Original Mead')
+        original_count = recipe.recipeingredient_set.count()
+        cloned_count = cloned.recipeingredient_set.count()
+        assert cloned_count == original_count
+
+    def test_clone_redirects_to_edit(self, auth_client, recipe_with_ingredients):
+        response = auth_client.post(
+            reverse('recipes:clone', kwargs={'pk': recipe_with_ingredients.pk})
+        )
+        cloned = Recipe.objects.get(name='Copy of Original Mead')
+        assert response['Location'] == reverse('recipes:edit', kwargs={'pk': cloned.pk})
+
+    def test_cannot_clone_private_recipe_of_other_user(
+        self, client, other_user, recipe_with_ingredients
+    ):
+        recipe_with_ingredients.is_public = False
+        recipe_with_ingredients.save()
+        client.login(username='otherbrewer', password='testpass123')
+        response = client.post(
+            reverse('recipes:clone', kwargs={'pk': recipe_with_ingredients.pk})
+        )
+        assert response.status_code == 404

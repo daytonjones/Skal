@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.db import models
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 
 from .models import Recipe, Ingredient, RecipeIngredient
@@ -265,4 +266,35 @@ def toggle_visibility(request, pk):
     recipe.is_public = not recipe.is_public
     recipe.save()
     return redirect('recipes:detail', pk=pk)
+
+
+@login_required
+def clone_recipe(request, pk):
+    if request.method != 'POST':
+        return redirect('recipes:index')
+
+    original = get_object_or_404(Recipe, pk=pk)
+
+    # Only allow cloning own recipes, public recipes, or seeded (user=None) recipes
+    if (original.user != request.user
+            and not original.is_public
+            and original.user is not None):
+        raise Http404
+
+    new_recipe = Recipe.objects.create(
+        user=request.user,
+        name=f'Copy of {original.name}',
+        batch_size=original.batch_size,
+        instructions=original.instructions,
+        is_public=False,
+    )
+    for ri in original.recipeingredient_set.order_by('order'):
+        RecipeIngredient.objects.create(
+            recipe=new_recipe,
+            ingredient=ri.ingredient,
+            quantity=ri.quantity,
+            order=ri.order,
+        )
+    messages.success(request, f'Recipe cloned as "{new_recipe.name}".')
+    return redirect('recipes:edit', pk=new_recipe.pk)
 
