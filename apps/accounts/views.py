@@ -44,6 +44,10 @@ class CustomLoginView(LoginView):
         return ctx
 
     def form_valid(self, form):
+        user = form.get_user()
+        if not user.is_approved:
+            messages.error(self.request, "Your account is pending admin approval.")
+            return redirect("accounts:login")
         response = super().form_valid(form)
         self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
         return response
@@ -60,10 +64,12 @@ class SignUpView(CreateView):
         return ctx
 
     def form_valid(self, form):
-        user = form.save()
-        auth_login(self.request, user)
-        self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
-        return redirect("home")
+        form.save()
+        messages.info(
+            self.request,
+            "Account created! You'll be able to log in once an admin approves it."
+        )
+        return redirect("accounts:login")
 
 
 class CustomLogoutView(LogoutView):
