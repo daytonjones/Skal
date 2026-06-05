@@ -105,6 +105,21 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
     template_name = 'batches/form.html'
     success_url = reverse_lazy('batches:index')
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        form = ctx['form']
+        ctx['checklist_steps'] = [
+            (form['create_must_done'],    form['create_must_date'],    'Create Must'),
+            (form['pitch_yeast_done'],    form['pitch_yeast_date'],    'Pitch Yeast'),
+            (form['fo_24h_done'],         form['fo_24h_date'],         'Fermaid O — 24h'),
+            (form['fo_48h_done'],         form['fo_48h_date'],         'Fermaid O — 48h'),
+            (form['fo_72h_done'],         form['fo_72h_date'],         'Fermaid O — 72h'),
+            (form['fo_1_3_break_done'],   form['fo_1_3_break_date'],   '1/3 Sugar Break'),
+            (form['rack_secondary_done'], form['rack_secondary_date'], 'Rack to Secondary'),
+            (form['bottled_done'],        form['bottled_date'],        'Bottled'),
+        ]
+        return ctx
+
     def get_initial(self):
         initial = super().get_initial()
         recipe_pk = self.request.GET.get('recipe')
@@ -149,6 +164,21 @@ class BatchUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.get_object().user == self.request.user
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        form = ctx['form']
+        ctx['checklist_steps'] = [
+            (form['create_must_done'],    form['create_must_date'],    'Create Must'),
+            (form['pitch_yeast_done'],    form['pitch_yeast_date'],    'Pitch Yeast'),
+            (form['fo_24h_done'],         form['fo_24h_date'],         'Fermaid O — 24h'),
+            (form['fo_48h_done'],         form['fo_48h_date'],         'Fermaid O — 48h'),
+            (form['fo_72h_done'],         form['fo_72h_date'],         'Fermaid O — 72h'),
+            (form['fo_1_3_break_done'],   form['fo_1_3_break_date'],   '1/3 Sugar Break'),
+            (form['rack_secondary_done'], form['rack_secondary_date'], 'Rack to Secondary'),
+            (form['bottled_done'],        form['bottled_date'],        'Bottled'),
+        ]
+        return ctx
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
