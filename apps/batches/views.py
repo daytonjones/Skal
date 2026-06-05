@@ -6,7 +6,7 @@ from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from django.db import models
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from datetime import date
@@ -36,17 +36,42 @@ class BatchListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        return Batch.objects.filter(
+        qs = Batch.objects.filter(
             models.Q(user=user) | models.Q(is_public=True)
         ).order_by('-primary_date')
+
+        q = self.request.GET.get('q', '').strip()
+        stage = self.request.GET.get('stage', '').strip()
+
+        if q:
+            qs = qs.filter(name__icontains=q)
+
+        if stage == 'bottled':
+            qs = qs.filter(bottled_done=True)
+        elif stage == 'secondary':
+            qs = qs.filter(rack_secondary_done=True, bottled_done=False)
+        elif stage == 'active':
+            qs = qs.filter(pitch_yeast_done=True, bottled_done=False,
+                           rack_secondary_done=False)
+        elif stage == 'planned':
+            qs = qs.filter(pitch_yeast_done=False, bottled_done=False)
+
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
         ctx['newest_batch'] = Batch.objects.filter(
-            models.Q(user=user) 
+            models.Q(user=user)
         ).order_by('-pk').first()
+        ctx['q'] = self.request.GET.get('q', '')
+        ctx['stage'] = self.request.GET.get('stage', '')
         return ctx
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get('HX-Request'):
+            return render(self.request, 'batches/partials/batch_rows.html', context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class BatchDetailView(LoginRequiredMixin, DetailView):

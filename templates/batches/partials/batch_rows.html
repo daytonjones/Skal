@@ -1,0 +1,9 @@
+{% for batch in batches %}
+<div class="batch-row" data-stage="{{ batch.stage }}">
+  <span>{{ batch.name }}</span>
+  <span>{{ batch.stage }}</span>
+  <span>{{ batch.checklist_progress }}%</span>
+</div>
+{% empty %}
+<p>No batches found.</p>
+{% endfor %}
