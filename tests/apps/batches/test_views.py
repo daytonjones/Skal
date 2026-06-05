@@ -140,3 +140,46 @@ class TestUpdateChecklistNote:
         )
         batch.refresh_from_db()
         assert batch.fo_24h_note == ''
+
+
+@pytest.mark.django_db
+class TestBatchListHTMX:
+    def test_htmx_request_returns_partial(self, auth_client, batch):
+        response = auth_client.get(
+            reverse('batches:index'),
+            HTTP_HX_REQUEST='true',
+        )
+        assert response.status_code == 200
+        assert b'batch-row' in response.content
+
+    def test_search_filters_by_name(self, auth_client, batch):
+        response = auth_client.get(
+            reverse('batches:index') + '?q=Test',
+            HTTP_HX_REQUEST='true',
+        )
+        assert response.status_code == 200
+        assert b'Test Batch' in response.content
+
+    def test_search_no_results(self, auth_client, batch):
+        response = auth_client.get(
+            reverse('batches:index') + '?q=nonexistent',
+            HTTP_HX_REQUEST='true',
+        )
+        assert b'No batches found' in response.content
+
+    def test_stage_filter_active(self, auth_client, batch):
+        batch.pitch_yeast_done = True
+        batch.save()
+        response = auth_client.get(
+            reverse('batches:index') + '?stage=active',
+            HTTP_HX_REQUEST='true',
+        )
+        assert b'Test Batch' in response.content
+
+    def test_stage_filter_excludes_wrong_stage(self, auth_client, batch):
+        # batch is 'planned', filter for 'bottled' should exclude it
+        response = auth_client.get(
+            reverse('batches:index') + '?stage=bottled',
+            HTTP_HX_REQUEST='true',
+        )
+        assert b'Test Batch' not in response.content

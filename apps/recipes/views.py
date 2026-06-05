@@ -11,7 +11,7 @@ from django.db import models
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Recipe, Ingredient, RecipeIngredient
 from .forms import RecipeForm, RecipeIngredientFormSet
@@ -24,15 +24,25 @@ class RecipeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        return Recipe.objects.filter(
+        qs = Recipe.objects.filter(
             models.Q(user=user) | models.Q(is_public=True) | models.Q(user__isnull=True)
         ).distinct()
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         items = ctx.get('recipes') or self.get_queryset()
         ctx['featured'] = random.choice(list(items)) if items else None
+        ctx['q'] = self.request.GET.get('q', '')
         return ctx
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get('HX-Request'):
+            return render(self.request, 'recipes/partials/recipe_rows.html', context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class RecipeDetailView(LoginRequiredMixin, DetailView):

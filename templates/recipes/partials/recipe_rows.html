@@ -1,0 +1,8 @@
+{% for recipe in recipes %}
+<div class="recipe-row">
+  <span>{{ recipe.name }}</span>
+  <span>{{ recipe.batch_size }} gal</span>
+</div>
+{% empty %}
+<p>No recipes found.</p>
+{% endfor %}
