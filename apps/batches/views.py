@@ -146,13 +146,18 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
         return form
 
     def form_valid(self, form):
+        import logging
+        logger = logging.getLogger(__name__)
         form.instance.user = self.request.user
         response = super().form_valid(form)
         messages.success(self.request, f'Batch "{self.object.name}" created.')
 
         for i, img in enumerate(self.request.FILES.getlist('images')):
             caption = self.request.POST.get(f'caption_{i}', '')
-            BatchImage.objects.create(batch=self.object, image=img, caption=caption)
+            try:
+                BatchImage.objects.create(batch=self.object, image=img, caption=caption)
+            except Exception as exc:
+                logger.error("Failed to save batch image %s: %s", img.name, exc)
         return response
 
 
@@ -190,11 +195,16 @@ class BatchUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return form
 
     def form_valid(self, form):
+        import logging
+        logger = logging.getLogger(__name__)
         response = super().form_valid(form)
         messages.success(self.request, f'Batch "{self.object.name}" saved.')
         for i, img in enumerate(self.request.FILES.getlist('images')):
             caption = self.request.POST.get(f'caption_{i}', '')
-            BatchImage.objects.create(batch=self.object, image=img, caption=caption)
+            try:
+                BatchImage.objects.create(batch=self.object, image=img, caption=caption)
+            except Exception as exc:
+                logger.error("Failed to save batch image %s: %s", img.name, exc)
         return response
 
 
