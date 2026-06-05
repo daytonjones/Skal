@@ -11,18 +11,27 @@
   <h2 style="margin-bottom:1rem;">Add Ingredient</h2>
   <form method="post" action="{% url 'pantry:index' %}" id="add-form">
     {% csrf_token %}
+
+    <!-- Barcode lookup row -->
+    <div class="form-group">
+      <label>Barcode lookup <span style="font-weight:400;text-transform:none;letter-spacing:0;">— focus this field, then scan with a barcode scanner or type a barcode number</span></label>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="text" id="barcode-input" inputmode="numeric" autocomplete="off"
+               placeholder="Focus here and scan, or type a barcode…"
+               style="flex:1;font-family:monospace;letter-spacing:0.05em;">
+        <button type="button" id="scan-camera-btn" class="btn btn-secondary"
+                title="Scan with camera (mobile)" style="flex-shrink:0;">📷</button>
+      </div>
+      <p id="barcode-status" style="font-size:0.78rem;margin-top:0.3rem;min-height:1.1em;color:var(--brown-700);"></p>
+    </div>
+
+    <!-- Ingredient name + type + quantity -->
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:0.75rem;align-items:end;">
       <div class="form-group" style="margin-bottom:0;">
         <label>Ingredient name</label>
-        <div style="display:flex;gap:0.4rem;">
-          <input type="text" name="ingredient_name" id="ingredient-name-input"
-                 list="ingredient-list" placeholder="e.g. Wildflower Honey"
-                 required autocomplete="off" style="flex:1;">
-          <button type="button" id="scan-btn" class="btn btn-secondary"
-                  title="Scan barcode" style="padding:0.45rem 0.7rem;flex-shrink:0;">
-            📷
-          </button>
-        </div>
+        <input type="text" name="ingredient_name" id="ingredient-name-input"
+               list="ingredient-list" placeholder="e.g. Wildflower Honey"
+               required autocomplete="off">
         <datalist id="ingredient-list">
           {% for ing in all_ingredients %}
             <option value="{{ ing.name }}">
@@ -31,7 +40,7 @@
       </div>
       <div class="form-group" style="margin-bottom:0;">
         <label>Type <span style="font-weight:400;text-transform:none;letter-spacing:0;">(if new)</span></label>
-        <select name="ingredient_type" id="ingredient-type-select" style="width:auto;">
+        <select name="ingredient_type" style="width:auto;">
           {% for value, label in ingredient_types %}
             <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
@@ -45,6 +54,7 @@
         <button type="submit" class="btn btn-primary">+ Add</button>
       </div>
     </div>
+
     <div class="form-group" style="margin-top:0.75rem;margin-bottom:0;">
       <label>Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
       <input type="text" name="notes" placeholder="e.g. expires June 2026">
@@ -97,39 +107,83 @@
   </div>
 {% endif %}
 
-<!-- Barcode scan modal -->
+<!-- Camera scan modal (mobile / secondary) -->
 <div id="scan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
   <div style="background:var(--cream-100);border-radius:10px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-      <h2 style="margin:0;">📷 Scan Barcode</h2>
+      <h2 style="margin:0;">📷 Camera Scan</h2>
       <button onclick="closeScanner()" class="btn btn-ghost" style="padding:0.25rem 0.5rem;">✕</button>
     </div>
-
     <div id="qr-reader" style="width:100%;border-radius:6px;overflow:hidden;"></div>
     <p id="scan-status" style="font-size:0.8rem;color:var(--brown-700);margin-top:0.5rem;min-height:1.2em;text-align:center;"></p>
     <div id="scan-result" style="margin-top:0.75rem;"></div>
-
     <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0 0.75rem;">
-    <p style="font-size:0.75rem;color:var(--brown-700);margin-bottom:0.5rem;">
-      Point the camera at the barcode on the package. Works with EAN-13, UPC-A, and most grocery barcodes.
-      If not found in the database, enter the name manually.
-    </p>
-    <button onclick="closeScanner()" class="btn btn-secondary" style="width:100%;">Enter manually instead</button>
+    <button onclick="closeScanner()" class="btn btn-secondary" style="width:100%;">Cancel</button>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-var _scanner = null;
+// ── Hardware / USB barcode scanner ─────────────────────────────────────────
+// Scanners type characters very fast then send Enter. We auto-trigger lookup
+// on Enter keypress, or after 400 ms debounce once 8+ digits are present.
+var barcodeInput  = document.getElementById('barcode-input');
+var barcodeStatus = document.getElementById('barcode-status');
+var lookupTimer;
 
-document.getElementById('scan-btn').addEventListener('click', openScanModal);
+barcodeInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    clearTimeout(lookupTimer);
+    doLookup(this.value.trim());
+  }
+});
+
+barcodeInput.addEventListener('input', function() {
+  var code = this.value.trim();
+  clearTimeout(lookupTimer);
+  if (code.length >= 8 && /^\d+$/.test(code)) {
+    lookupTimer = setTimeout(function() { doLookup(code); }, 400);
+  } else {
+    barcodeStatus.textContent = '';
+  }
+});
+
+function doLookup(code) {
+  if (!code || !/^\d{8,14}$/.test(code)) {
+    barcodeStatus.textContent = 'Enter 8–14 digit barcode.';
+    return;
+  }
+  barcodeStatus.textContent = '🔍 Looking up…';
+  fetch('{% url "pantry:barcode_lookup" %}?code=' + encodeURIComponent(code))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.found && data.name) {
+        document.getElementById('ingredient-name-input').value = data.name;
+        barcodeStatus.innerHTML = '<span style="color:#15803d;">✓ Found: <strong>' +
+          data.name.replace(/</g,'&lt;') + '</strong> — name pre-filled below.</span>';
+        document.getElementById('ingredient-name-input').focus();
+      } else {
+        barcodeStatus.innerHTML =
+          '<span style="color:var(--brown-700);">Barcode not in product database — enter the name manually below.</span>';
+        document.getElementById('ingredient-name-input').focus();
+      }
+    })
+    .catch(function() {
+      barcodeStatus.textContent = 'Lookup failed — enter name manually.';
+    });
+}
+
+// ── Camera scanner (mobile / secondary) ────────────────────────────────────
+var _scanner = null;
+document.getElementById('scan-camera-btn').addEventListener('click', openScanModal);
 
 function openScanModal() {
   var modal = document.getElementById('scan-modal');
   modal.style.display = 'flex';
   document.getElementById('scan-result').innerHTML = '';
-  document.getElementById('scan-status').textContent = 'Loading scanner…';
+  document.getElementById('scan-status').textContent = 'Loading camera…';
 
   if (typeof Html5Qrcode !== 'undefined') {
     startScanner();
@@ -139,7 +193,7 @@ function openScanModal() {
     s.onload = startScanner;
     s.onerror = function() {
       document.getElementById('scan-status').textContent =
-        'Could not load scanner library. Please enter the name manually.';
+        'Could not load camera library. Use a barcode scanner or enter manually.';
     };
     document.head.appendChild(s);
   }
@@ -151,79 +205,62 @@ function startScanner() {
   _scanner.start(
     { facingMode: 'environment' },
     { fps: 10, qrbox: { width: 280, height: 120 } },
-    onScanSuccess,
-    function() {}  // ignore per-frame failures
+    onCameraScanSuccess,
+    function() {}
   ).then(function() {
     document.getElementById('scan-status').textContent = 'Aim camera at barcode…';
   }).catch(function(err) {
     document.getElementById('scan-status').textContent =
-      'Camera unavailable — ' + (err.message || 'check browser permissions') + '. Enter name manually.';
+      'Camera unavailable — use a barcode scanner or enter manually.';
     _scanner = null;
   });
 }
 
-function onScanSuccess(code) {
+function onCameraScanSuccess(code) {
   if (!_scanner) return;
-  var sc = _scanner;
-  _scanner = null;
+  var sc = _scanner; _scanner = null;
   sc.stop().catch(function() {});
   document.getElementById('qr-reader').innerHTML = '';
-  document.getElementById('scan-status').textContent = '🔍 Looking up product…';
+  document.getElementById('scan-status').textContent = '🔍 Looking up…';
 
   fetch('{% url "pantry:barcode_lookup" %}?code=' + encodeURIComponent(code))
     .then(function(r) { return r.json(); })
-    .then(showResult)
-    .catch(function() { showResult({ found: false, code: code }); });
+    .then(showCameraResult)
+    .catch(function() { showCameraResult({ found: false, code: code }); });
 }
 
-function showResult(data) {
+function showCameraResult(data) {
   document.getElementById('scan-status').textContent = '';
   var el = document.getElementById('scan-result');
   if (data.found && data.name) {
-    var safeName = data.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var safe = data.name.replace(/</g, '&lt;');
     el.innerHTML =
-      '<div style="background:rgba(22,163,74,0.1);border:1px solid #16a34a;border-radius:6px;padding:0.75rem;margin-bottom:0.75rem;">' +
-        '<p style="margin:0 0 0.5rem;font-weight:600;color:#15803d;">✓ Found: ' + safeName + '</p>' +
-        '<div style="display:flex;gap:0.5rem;">' +
-          '<button class="btn btn-primary" onclick="useProduct(this.dataset.name)" data-name="' + data.name.replace(/"/g, '&quot;') + '" style="flex:1;">Use this name</button>' +
-          '<button class="btn btn-ghost" onclick="retryScanner()">Scan again</button>' +
-        '</div>' +
+      '<div style="background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:6px;padding:.75rem;margin-bottom:.75rem;">' +
+        '<p style="margin:0 0 .5rem;font-weight:600;color:#15803d;">✓ Found: ' + safe + '</p>' +
+        '<button class="btn btn-primary" style="flex:1;width:100%;" ' +
+          'onclick="useCameraResult(\'' + data.name.replace(/'/g, "\\'") + '\')">Use this name</button>' +
       '</div>';
   } else {
     el.innerHTML =
-      '<div style="background:rgba(180,83,9,0.08);border:1px solid var(--amber-400);border-radius:6px;padding:0.75rem;margin-bottom:0.75rem;">' +
-        '<p style="margin:0 0 0.5rem;color:var(--brown-700);">Not found in product database for barcode <code>' + data.code + '</code>.</p>' +
-        '<div style="display:flex;gap:0.5rem;">' +
-          '<button class="btn btn-secondary" onclick="closeScanner()" style="flex:1;">Enter name manually</button>' +
-          '<button class="btn btn-ghost" onclick="retryScanner()">Try again</button>' +
-        '</div>' +
+      '<div style="background:rgba(180,83,9,.08);border:1px solid var(--amber-400);border-radius:6px;padding:.75rem;">' +
+        '<p style="margin:0 0 .5rem;color:var(--brown-700);">Not found — enter name manually.</p>' +
+        '<button class="btn btn-secondary" style="width:100%;" onclick="closeScanner()">Enter manually</button>' +
       '</div>';
   }
 }
 
-function useProduct(name) {
+function useCameraResult(name) {
   document.getElementById('ingredient-name-input').value = name;
   closeScanner();
   document.getElementById('ingredient-name-input').focus();
 }
 
-function retryScanner() {
-  document.getElementById('scan-result').innerHTML = '';
-  document.getElementById('qr-reader').innerHTML = '';
-  startScanner();
-}
-
 function closeScanner() {
-  if (_scanner) {
-    var sc = _scanner;
-    _scanner = null;
-    sc.stop().catch(function() {});
-  }
+  if (_scanner) { var sc = _scanner; _scanner = null; sc.stop().catch(function(){}); }
   document.getElementById('qr-reader').innerHTML = '';
   document.getElementById('scan-modal').style.display = 'none';
 }
 
-// Close modal on backdrop click
 document.getElementById('scan-modal').addEventListener('click', function(e) {
   if (e.target === this) closeScanner();
 });

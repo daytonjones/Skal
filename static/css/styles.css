@@ -911,6 +911,11 @@ body.dark .pending-banner { background: #2a1800; border-color: var(--amber-600);
 .calc-table thead th.sortable[data-sort-dir="desc"]::after { content: ' ↓'; opacity: 1; }
 .calc-table tbody tr:hover { background: var(--amber-200); }
 .calc-table tbody tr.highlight { background: var(--amber-100); font-weight: 600; }
+/* tr/td elements don't always inherit CSS custom properties cleanly — hardcode dark mode */
+body.dark .calc-table thead th           { background: #3a2000; color: var(--amber-200); }
+body.dark .calc-table tbody tr           { background: #1c0e00; }
+body.dark .calc-table tbody tr:hover     { background: #2e1800; }
+body.dark .calc-table tbody tr.highlight { background: #2a1800; }
 
 .batch-builder {
   background: var(--white);
