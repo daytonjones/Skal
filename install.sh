@@ -241,7 +241,7 @@ if [[ "${launch,,}" != "n" ]]; then
     echo -e "  Login with username: ${BOLD}${DJANGO_SUPERUSER_USERNAME}${RESET}"
     echo
     echo -e "  To stop:   ${BOLD}docker compose down${RESET}"
-    echo -e "  To logs:   ${BOLD}docker compose logs -f web${RESET}"
+    echo -e "  View logs: ${BOLD}docker compose logs -f web${RESET}"
     hr
 else
     echo
