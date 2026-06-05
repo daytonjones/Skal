@@ -189,6 +189,7 @@ if [[ -n "$EMAIL_HOST" ]]; then
         echo "  1. Enable 2-Step Verification: myaccount.google.com/security"
         echo "  2. Create an App Password:     myaccount.google.com/apppasswords"
         echo "  3. Use the generated 16-character password when prompted below."
+        echo "     Enter it WITHOUT spaces (omit the spaces Google shows for readability)."
         echo
     fi
     prompt EMAIL_PORT "SMTP port" "587"

@@ -75,29 +75,34 @@ class SignUpView(CreateView):
         return redirect("accounts:login")
 
     def _notify_admins(self, new_user):
+        import logging
         from django.core.mail import send_mail
+        logger = logging.getLogger(__name__)
         admin_emails = list(
             User.objects.filter(is_staff=True)
             .exclude(email='')
             .values_list('email', flat=True)
         )
         if not admin_emails:
+            logger.warning("No admin emails configured — skipping pending-account notification.")
             return
         name = new_user.get_full_name() or new_user.username
-        send_mail(
-            subject="New Skål account pending approval",
-            message=(
-                f"A new user has registered and is awaiting your approval.\n\n"
-                f"Username: {new_user.username}\n"
-                f"Name:     {name}\n"
-                f"Email:    {new_user.email or '(not provided)'}\n\n"
-                f"Review at /admin/accounts/user/?is_approved__exact=0\n\n"
-                f"Skål! 🍯"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=admin_emails,
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                subject="New Skål account pending approval",
+                message=(
+                    f"A new user has registered and is awaiting your approval.\n\n"
+                    f"Username: {new_user.username}\n"
+                    f"Name:     {name}\n"
+                    f"Email:    {new_user.email or '(not provided)'}\n\n"
+                    f"Review at /admin/accounts/user/?is_approved__exact=0\n\n"
+                    f"Skål! 🍯"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=admin_emails,
+            )
+        except Exception as exc:
+            logger.error("Failed to send admin notification email: %s", exc)
 
 
 class CustomLogoutView(LogoutView):
