@@ -7,7 +7,10 @@ until pg_isready -h skal_db -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&
 done
 echo "✅ Postgres is up—migrating database."
 
-# 1) Run all migrations
+# 1) Collect static files so CSS/JS changes are always served fresh
+python manage.py collectstatic --noinput
+
+# 2) Run all migrations
 python manage.py migrate --noinput
 
 # 2) Conditionally create superuser

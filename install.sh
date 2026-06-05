@@ -74,14 +74,29 @@ fi
 ok "python3 found"
 echo
 
-# ── Existing .env warning ─────────────────────────────────────────────────────
+# ── Existing install detection ────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
 
 if [[ -f "$ENV_FILE" ]]; then
-    warn ".env already exists at $ENV_FILE"
-    read -rp "  Overwrite it? [y/N] " overwrite
-    [[ "${overwrite,,}" != "y" ]] && { say "Aborted — existing .env unchanged."; exit 0; }
+    hr
+    echo -e "${BOLD}  Existing installation detected${RESET}"
+    hr
+    echo "  A .env file already exists, which means Skål may already be installed."
+    echo
+    echo -e "  ${BOLD}A${RESET}  Upgrade  — back up data, rebuild with new code, apply migrations"
+    echo -e "  ${BOLD}B${RESET}  Reconfigure — overwrite .env and do a fresh setup (${RED}data stays in DB volume${RESET})"
+    echo
+    read -rp "  $(echo -e "${BOLD}Choice${RESET} [A/b]: ")" install_choice
+    install_choice="${install_choice:-A}"
+    echo
+
+    if [[ "${install_choice,,}" != "b" ]]; then
+        say "Launching upgrade script…"
+        exec "$SCRIPT_DIR/upgrade.sh"
+    fi
+
+    warn "Reconfiguring — the existing .env will be overwritten."
     echo
 fi
 
