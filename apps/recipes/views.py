@@ -162,7 +162,9 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
     model = Recipe
     form_class = RecipeForm
     template_name = 'recipes/form.html'
-    success_url = reverse_lazy('recipes:index')
+
+    def get_success_url(self):
+        return reverse_lazy('recipes:detail', kwargs={'pk': self.object.pk})
 
     def get_queryset(self):
         return Recipe.objects.filter(user=self.request.user)
@@ -320,6 +322,6 @@ def clone_recipe(request, pk):
             quantity=ri.quantity,
             order=ri.order,
         )
-    messages.success(request, f'Recipe cloned as "{new_recipe.name}".')
-    return redirect('recipes:edit', pk=new_recipe.pk)
+    messages.success(request, f'Recipe cloned as "{new_recipe.name}". Edit it below or start a batch.')
+    return redirect('recipes:detail', pk=new_recipe.pk)
 

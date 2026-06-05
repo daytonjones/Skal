@@ -154,12 +154,12 @@ class TestCloneRecipe:
         cloned_count = cloned.recipeingredient_set.count()
         assert cloned_count == original_count
 
-    def test_clone_redirects_to_edit(self, auth_client, recipe_with_ingredients):
+    def test_clone_redirects_to_detail(self, auth_client, recipe_with_ingredients):
         response = auth_client.post(
             reverse('recipes:clone', kwargs={'pk': recipe_with_ingredients.pk})
         )
         cloned = Recipe.objects.get(name='Copy of Original Mead')
-        assert response['Location'] == reverse('recipes:edit', kwargs={'pk': cloned.pk})
+        assert response['Location'] == reverse('recipes:detail', kwargs={'pk': cloned.pk})
 
     def test_cannot_clone_private_recipe_of_other_user(
         self, client, other_user, recipe_with_ingredients

@@ -38,10 +38,11 @@ urlpatterns = [
     ),
 ]
 
-# In DEBUG only, serve media files through Django
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT,
-    )
+# Always serve media files — Gunicorn doesn't serve /media/ on its own.
+# For a self-hosted personal app this is acceptable; add nginx if you need
+# high-throughput file serving.
+urlpatterns += static(
+    settings.MEDIA_URL,
+    document_root=settings.MEDIA_ROOT,
+)
 
