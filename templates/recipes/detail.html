@@ -26,7 +26,12 @@
   <h2>Ingredients</h2>
   <ul style="list-style:disc inside;font-size:0.875rem;margin:0.5rem 0 1rem 0.5rem;line-height:1.7;">
     {% for ri in ingredients %}
-      <li>{{ ri.quantity }} {{ ri.ingredient.name }}</li>
+      <li>
+        {{ ri.quantity }} {{ ri.ingredient.name }}
+        {% if ri.ingredient.pk in pantry_ids %}
+          <span style="font-size:0.7rem;background:#dcfce7;color:#15803d;padding:1px 5px;border-radius:2px;margin-left:0.3rem;vertical-align:middle;">✓ in pantry</span>
+        {% endif %}
+      </li>
     {% empty %}
       <li><em>No ingredients listed.</em></li>
     {% endfor %}

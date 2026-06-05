@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}My Pantry{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🧺 My Pantry</h1>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem;">
+  <h2 style="margin-bottom:1rem;">Add Ingredient</h2>
+  <form method="post" action="{% url 'pantry:index' %}">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:0.75rem;align-items:end;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Ingredient name</label>
+        <input type="text" name="ingredient_name" list="ingredient-list"
+               placeholder="e.g. Wildflower Honey" required autocomplete="off">
+        <datalist id="ingredient-list">
+          {% for ing in all_ingredients %}
+            <option value="{{ ing.name }}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Type <span style="font-weight:400;text-transform:none;letter-spacing:0;">(if new)</span></label>
+        <select name="ingredient_type" style="width:auto;">
+          {% for value, label in ingredient_types %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Quantity on hand</label>
+        <input type="text" name="quantity" placeholder="e.g. 3 lbs">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">+ Add</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:0.75rem;margin-bottom:0;">
+      <label>Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <input type="text" name="notes" placeholder="e.g. expires June 2026">
+    </div>
+  </form>
+</div>
+
+{% if items %}
+  {% regroup items by ingredient.get_type_display as grouped %}
+  {% for group in grouped %}
+  <div class="card" style="margin-bottom:1rem;">
+    <h2 style="margin-bottom:0.75rem;">{{ group.grouper }}</h2>
+    <table class="calc-table" style="font-size:0.875rem;">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Ingredient</th>
+          <th style="text-align:left;">Quantity</th>
+          <th style="text-align:left;">Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in group.list %}
+        <tr>
+          <td style="text-align:left;font-weight:600;">{{ item.ingredient.name }}</td>
+          <td style="text-align:left;">{{ item.quantity|default:"—" }}</td>
+          <td style="text-align:left;font-size:0.8rem;color:var(--brown-700);">{{ item.notes|default:"" }}</td>
+          <td style="text-align:right;white-space:nowrap;">
+            <a href="{% url 'pantry:edit' item.pk %}" class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.75rem;">Edit</a>
+            <form method="post" action="{% url 'pantry:delete' item.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger" style="padding:0.25rem 0.6rem;font-size:0.75rem;"
+                      onclick="return confirm('Remove {{ item.ingredient.name }} from pantry?')">
+                Remove
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card" style="text-align:center;color:var(--brown-700);padding:2rem;">
+    Your pantry is empty. Add ingredients above to track what you have on hand.
+  </div>
+{% endif %}
+{% endblock %}

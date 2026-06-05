@@ -15,7 +15,7 @@ class User(AbstractUser):
     theme = models.CharField(
         max_length=20,
         choices=[("light", "Light"), ("dark", "Dark")],
-        default="light",
+        default="dark",
     )
     is_approved = models.BooleanField(default=False)
 

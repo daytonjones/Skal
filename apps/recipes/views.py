@@ -59,6 +59,12 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['ingredients'] = self.object.recipeingredient_set.order_by('order')
+        from apps.pantry.models import PantryItem
+        data['pantry_ids'] = set(
+            PantryItem.objects
+            .filter(user=self.request.user)
+            .values_list('ingredient_id', flat=True)
+        )
         return data
 
 
