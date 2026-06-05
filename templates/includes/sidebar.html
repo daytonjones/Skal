@@ -44,6 +44,12 @@
         <span class="nav-label">Mead History</span>
       </a>
     </li>
+    <li>
+      <a href="{% url 'about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">ℹ️</span>
+        <span class="nav-label">About</span>
+      </a>
+    </li>
   </ul>
 
   <div class="sidebar-bottom" id="sidebar-bottom">

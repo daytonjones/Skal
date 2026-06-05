@@ -11,8 +11,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", HomeView.as_view(), name="home"),
 
-    # Info page
-    path("info/", TemplateView.as_view(template_name="info.html"), name="info"),
+    path("info/",  TemplateView.as_view(template_name="info.html"),  name="info"),
+    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
 
     path("yeast/", YeastListView.as_view(), name="yeast"),
 
