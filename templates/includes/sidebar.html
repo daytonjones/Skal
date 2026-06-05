@@ -1,0 +1,57 @@
+{% load static gravatar %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">Skål</div>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'recipes:index' %}" {% if 'recipes' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">📜</span>
+        <span class="nav-label">Recipes</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'batches:index' %}" {% if 'batches' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🍺</span>
+        <span class="nav-label">Batches</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'calculators:index' %}" {% if 'calculators' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🧮</span>
+        <span class="nav-label">Calculators</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'yeast' %}" {% if request.resolver_match.url_name == 'yeast' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🦠</span>
+        <span class="nav-label">Yeast Info</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'info' %}" {% if request.resolver_match.url_name == 'info' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">Mead History</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-user">
+    {% if request.user.avatar %}
+      <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+    {% else %}
+      <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+    {% endif %}
+    <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:rgba(253,230,138,0.5);padding:0;">
+        Sign out
+      </button>
+    </form>
+  </div>
+</aside>
