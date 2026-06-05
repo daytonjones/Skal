@@ -30,6 +30,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.enums import TA_LEFT
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.serializers.json import DjangoJSONEncoder
 
 
@@ -157,7 +158,10 @@ def toggle_theme(request):
     user = request.user
     user.theme = 'dark' if user.theme == 'light' else 'light'
     user.save(update_fields=['theme'])
-    return redirect(request.POST.get('next', '/'))
+    next_url = request.POST.get('next', '/')
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        next_url = '/'
+    return redirect(next_url)
 
 
 @login_required
