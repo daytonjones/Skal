@@ -1,5 +1,24 @@
 // static/js/batches.js
 
+// Checklist date auto-fill
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('input[id$="_done"]').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+      const dateId = this.id.replace(/_done$/, '_date');
+      const dateInput = document.getElementById(dateId);
+      if (!dateInput) return;
+      if (this.checked) {
+        if (!dateInput.value) {
+          dateInput.value = new Date().toISOString().split('T')[0];
+        }
+      } else {
+        dateInput.value = '';
+      }
+    });
+  });
+});
+
+// Image preview and drag-to-reorder
 document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("id_images");
   const container = document.getElementById("image-preview-container");

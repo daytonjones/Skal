@@ -66,12 +66,38 @@ class SignUpView(CreateView):
         return ctx
 
     def form_valid(self, form):
-        form.save()
+        new_user = form.save()
+        self._notify_admins(new_user)
         messages.info(
             self.request,
             "Account created! You'll be able to log in once an admin approves it."
         )
         return redirect("accounts:login")
+
+    def _notify_admins(self, new_user):
+        from django.core.mail import send_mail
+        admin_emails = list(
+            User.objects.filter(is_staff=True)
+            .exclude(email='')
+            .values_list('email', flat=True)
+        )
+        if not admin_emails:
+            return
+        name = new_user.get_full_name() or new_user.username
+        send_mail(
+            subject="New Skål account pending approval",
+            message=(
+                f"A new user has registered and is awaiting your approval.\n\n"
+                f"Username: {new_user.username}\n"
+                f"Name:     {name}\n"
+                f"Email:    {new_user.email or '(not provided)'}\n\n"
+                f"Review at /admin/accounts/user/?is_approved__exact=0\n\n"
+                f"Skål! 🍯"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=admin_emails,
+            fail_silently=True,
+        )
 
 
 class CustomLogoutView(LogoutView):
