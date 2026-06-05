@@ -14,7 +14,7 @@
   --amber-200: #fde68a;
   --amber-100: #fef3c7;
   --cream-50:  #fef9ef;
-  --cream-100: #fde8a0;
+  --cream-100: #f8d860;
   --white:     #ffffff;
   --border:    #e9d5a1;
 
@@ -849,6 +849,7 @@ body.dark .pending-banner { background: #2a1800; border-color: var(--amber-600);
 .calc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .calc-table th, .calc-table td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: center; }
 .calc-table thead th { background: var(--amber-200); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brown-700); }
+.calc-table tbody tr { background: var(--cream-100); }
 .calc-table thead th.sortable { user-select: none; }
 .calc-table thead th.sortable:hover { background: var(--amber-400); color: var(--brown-900); }
 .calc-table thead th.sortable::after { content: ' ⇅'; opacity: 0.45; font-size: 0.65rem; }
