@@ -126,9 +126,10 @@ h3 { font-size: 0.9rem; font-weight: 600; color: var(--brown-900); }
 }
 
 /* ── Sidebar ──────────────────────────────────────────────── */
+/* Sidebar is always dark — do not let dark mode invert it */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--brown-950);
+  background: #1c0a00;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -223,6 +224,59 @@ h3 { font-size: 0.9rem; font-weight: 600; color: var(--brown-900); }
   color: rgba(253,230,138,0.5);
 }
 .sidebar-user a.logout-link:hover { color: var(--amber-200); }
+
+/* ── Sidebar bottom: profile panel ───────────────────────── */
+.sidebar-bottom { position: relative; }
+
+.sidebar-user {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.sidebar-user:hover { background: rgba(255,255,255,0.05); }
+
+.sidebar-user-caret {
+  margin-left: auto;
+  font-size: 0.55rem;
+  color: rgba(253,230,138,0.4);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.sidebar-bottom.open .sidebar-user-caret { transform: rotate(180deg); }
+
+.sidebar-profile-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 0; right: 0;
+  background: #110500;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  display: none;
+  flex-direction: column;
+  padding: 0.25rem 0;
+}
+.sidebar-profile-panel.open { display: flex; }
+
+.sidebar-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.8rem;
+  color: rgba(253,230,138,0.8);
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.sidebar-panel-item:hover { background: rgba(255,255,255,0.07); color: var(--amber-200); text-decoration: none; }
+.sidebar-panel-item.danger  { color: rgba(255,120,120,0.7); }
+.sidebar-panel-item.danger:hover { color: #fca5a5; }
+.sidebar-panel-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.2rem 0; }
 
 /* Hamburger toggle (mobile only) */
 .sidebar-toggle {
