@@ -140,9 +140,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
             user_batches.filter(bottled_done=True).order_by('-bottled_date').first()
         )
         ctx['recent_images'] = (
-            BatchImage.objects.filter(batch__user=user)
+            BatchImage.objects.filter(
+                models.Q(batch__user=user) | models.Q(batch__is_public=True)
+            )
             .select_related('batch')
-            .order_by('-id')[:10]
+            .order_by('-id')[:20]
         )
         # Legacy keys — still used by current home.html template
         ctx['newest_recipe'] = Recipe.objects.filter(
