@@ -83,13 +83,26 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
         initial = super().get_initial()
         recipe_pk = self.request.GET.get('recipe')
         if recipe_pk:
-            try:
-                recipe = Recipe.objects.get(pk=recipe_pk)
+            recipe = Recipe.objects.filter(
+                pk=recipe_pk
+            ).filter(
+                models.Q(user=self.request.user)
+                | models.Q(is_public=True)
+                | models.Q(user__isnull=True)
+            ).first()
+            if recipe:
                 initial['recipe'] = recipe
                 initial['name'] = recipe.name
-            except Recipe.DoesNotExist:
-                pass
         return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['recipe'].queryset = Recipe.objects.filter(
+            models.Q(user=self.request.user)
+            | models.Q(is_public=True)
+            | models.Q(user__isnull=True)
+        )
+        return form
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -109,6 +122,15 @@ class BatchUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.get_object().user == self.request.user
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['recipe'].queryset = Recipe.objects.filter(
+            models.Q(user=self.request.user)
+            | models.Q(is_public=True)
+            | models.Q(user__isnull=True)
+        )
+        return form
 
     def form_valid(self, form):
         response = super().form_valid(form)

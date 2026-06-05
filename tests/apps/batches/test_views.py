@@ -83,6 +83,29 @@ class TestStartBatchFromRecipe:
 
 
 @pytest.mark.django_db
+class TestStartBatchFromRecipeVisibility:
+    def test_cannot_prepopulate_from_private_other_user_recipe(
+        self, client, other_user, user
+    ):
+        """Private recipe owned by another user must not leak via ?recipe= param."""
+        from apps.recipes.models import Recipe
+        private_recipe = Recipe.objects.create(
+            user=other_user, name='Secret Recipe', batch_size='1.0',
+            instructions='Secret', is_public=False,
+        )
+        client.login(username='testbrewer', password='testpass123')
+        response = client.get(
+            reverse('batches:create') + f'?recipe={private_recipe.pk}'
+        )
+        assert response.status_code == 200
+        form = response.context['form']
+        # initial should NOT contain the private recipe
+        assert form.initial.get('recipe') is None
+        assert form.initial.get('name') is None
+        assert b'Secret Recipe' not in response.content
+
+
+@pytest.mark.django_db
 class TestUpdateChecklistNote:
     def test_save_note_for_valid_field(self, auth_client, batch):
         response = auth_client.post(
