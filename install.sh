@@ -182,6 +182,15 @@ echo
 read -rp "  $(echo -e "${BOLD}EMAIL_HOST${RESET} [skip]: ")" EMAIL_HOST
 EMAIL_HOST="${EMAIL_HOST:-}"
 if [[ -n "$EMAIL_HOST" ]]; then
+    # Gmail-specific guidance
+    if [[ "${EMAIL_HOST,,}" == *"gmail.com"* ]]; then
+        echo
+        echo -e "  ${YELLOW}Gmail setup requires an App Password — not your regular password.${RESET}"
+        echo "  1. Enable 2-Step Verification: myaccount.google.com/security"
+        echo "  2. Create an App Password:     myaccount.google.com/apppasswords"
+        echo "  3. Use the generated 16-character password when prompted below."
+        echo
+    fi
     prompt EMAIL_PORT "SMTP port" "587"
     read -rp "  $(echo -e "${BOLD}EMAIL_USE_TLS${RESET} [True]: ")" EMAIL_USE_TLS
     EMAIL_USE_TLS="${EMAIL_USE_TLS:-True}"
