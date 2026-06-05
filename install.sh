@@ -102,7 +102,7 @@ fi
 
 # ── Secret key ────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  1 / 5 — Secret Key${RESET}"
+echo -e "${BOLD}  1 / 6 — Secret Key${RESET}"
 hr
 echo "  A cryptographically random key will be generated for you."
 echo "  You can also paste your own (leave blank to auto-generate)."
@@ -118,7 +118,7 @@ echo
 
 # ── Debug mode ────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  2 / 5 — Debug Mode${RESET}"
+echo -e "${BOLD}  2 / 6 — Debug Mode${RESET}"
 hr
 echo "  Set to True only for local development. Never True in production."
 echo
@@ -130,7 +130,7 @@ echo
 
 # ── Database ──────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  3 / 5 — Data Storage${RESET}"
+echo -e "${BOLD}  3 / 6 — Data Storage${RESET}"
 hr
 echo "  Skål stores your recipes and batches in a private database."
 echo "  These credentials are only used internally — you won't need them again"
@@ -145,7 +145,7 @@ echo
 
 # ── Allowed hosts ─────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  4 / 5 — Access & Networking${RESET}"
+echo -e "${BOLD}  4 / 6 — Access & Networking${RESET}"
 hr
 echo "  The hostname or IP address users will use to reach Skål."
 echo "  Use 'localhost' for local use, or your server's domain/IP for remote access."
@@ -160,7 +160,7 @@ echo
 
 # ── Superuser ─────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  5 / 5 — Admin Account${RESET}"
+echo -e "${BOLD}  5 / 6 — Admin Account${RESET}"
 hr
 echo "  This account is created automatically on first run."
 echo "  Use it to log in and manage the app."
@@ -170,6 +170,35 @@ prompt DJANGO_SUPERUSER_EMAIL    "Email address" ""
 prompt_secret DJANGO_SUPERUSER_PASSWORD "Password"
 echo
 ok "Admin account: $DJANGO_SUPERUSER_USERNAME <$DJANGO_SUPERUSER_EMAIL>"
+echo
+
+# ── Email (optional) ──────────────────────────────────────────────────────────
+hr
+echo -e "${BOLD}  6 / 6 — Email (optional)${RESET}"
+hr
+echo "  Skål can send email notifications (e.g. account approval alerts)."
+echo "  Leave EMAIL_HOST blank to skip — emails will be printed to the console log."
+echo
+read -rp "  $(echo -e "${BOLD}EMAIL_HOST${RESET} [skip]: ")" EMAIL_HOST
+EMAIL_HOST="${EMAIL_HOST:-}"
+if [[ -n "$EMAIL_HOST" ]]; then
+    prompt EMAIL_PORT "SMTP port" "587"
+    read -rp "  $(echo -e "${BOLD}EMAIL_USE_TLS${RESET} [True]: ")" EMAIL_USE_TLS
+    EMAIL_USE_TLS="${EMAIL_USE_TLS:-True}"
+    [[ "${EMAIL_USE_TLS,,}" == "false" || "$EMAIL_USE_TLS" == "0" ]] && EMAIL_USE_TLS="False" || EMAIL_USE_TLS="True"
+    prompt EMAIL_HOST_USER     "SMTP username / address" ""
+    prompt_secret EMAIL_HOST_PASSWORD "SMTP password"
+    prompt DEFAULT_FROM_EMAIL  "From address" "Skal <noreply@${DJANGO_ALLOWED_HOSTS%%,*}>"
+    echo
+    ok "Email configured: $EMAIL_HOST (port $EMAIL_PORT)"
+else
+    EMAIL_PORT="587"
+    EMAIL_USE_TLS="True"
+    EMAIL_HOST_USER=""
+    EMAIL_HOST_PASSWORD=""
+    DEFAULT_FROM_EMAIL="Skal <noreply@localhost>"
+    warn "Email skipped — notifications will be logged to the console only."
+fi
 echo
 
 # ── Summary ───────────────────────────────────────────────────────────────────
@@ -186,6 +215,7 @@ echo -e "  Port                ${HOST_PORT}"
 echo -e "  Admin username      ${DJANGO_SUPERUSER_USERNAME}"
 echo -e "  Admin email         ${DJANGO_SUPERUSER_EMAIL}"
 echo -e "  Admin password      ${RED}(hidden)${RESET}"
+echo -e "  Email host          ${EMAIL_HOST:-${YELLOW}(none — console only)${RESET}}"
 hr
 echo
 read -rp "  Write .env and continue? [Y/n] " confirm
@@ -203,6 +233,12 @@ DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
 DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
 DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
 DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+EMAIL_HOST=${EMAIL_HOST}
+EMAIL_PORT=${EMAIL_PORT}
+EMAIL_USE_TLS=${EMAIL_USE_TLS}
+EMAIL_HOST_USER=${EMAIL_HOST_USER}
+EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
 EOF
 
 ok ".env written to $ENV_FILE"

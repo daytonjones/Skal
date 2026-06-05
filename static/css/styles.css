@@ -573,6 +573,7 @@ body.dark .pending-banner { background: #2a1800; border-color: var(--amber-600);
 }
 
 .stat-tile.highlight { border-color: var(--amber-400); background: var(--amber-200); }
+body.dark .stat-tile.highlight { background: #2a1500; border-color: var(--amber-600); }
 
 .stat-value {
   font-family: var(--font-serif);

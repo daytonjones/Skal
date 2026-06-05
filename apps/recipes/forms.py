@@ -78,11 +78,13 @@ class RecipeIngredientForm(forms.ModelForm):
             self.fields['ingredient_name'].initial = self.instance.ingredient.name
 
     def save(self, commit=True):
-        name = self.cleaned_data.get('ingredient_name')
-        ingredient, _ = Ingredient.objects.get_or_create(
-            name=name,
-            defaults={'type': Ingredient.TYPE_ADDITIVE}
-        )
+        name = self.cleaned_data.get('ingredient_name', '').strip()
+        try:
+            ingredient = Ingredient.objects.get(name__iexact=name)
+        except Ingredient.DoesNotExist:
+            ingredient = Ingredient.objects.create(name=name, type=Ingredient.TYPE_ADDITIVE)
+        except Ingredient.MultipleObjectsReturned:
+            ingredient = Ingredient.objects.filter(name__iexact=name).first()
         self.instance.ingredient = ingredient
         return super().save(commit=commit)
 
