@@ -1,0 +1,26 @@
+<li class="checklist-item" id="chk-{{ field_base }}">
+  <input type="checkbox"
+    {% if done %}checked{% endif %}
+    hx-post="{% url 'batches:update_checklist' batch.pk %}"
+    hx-vals='{"field": "{{ field_base }}_done", "value": "{% if done %}false{% else %}true{% endif %}"}'
+    hx-target="#chk-{{ field_base }}"
+    hx-swap="outerHTML"
+  >
+  <div class="checklist-item-body">
+    <span class="checklist-step-name">{{ label }}</span>
+    {% if date %}
+      <div class="checklist-date">{{ date }}</div>
+    {% endif %}
+    <input
+      type="text"
+      class="note-input"
+      placeholder="Add a note..."
+      value="{{ note }}"
+      hx-post="{% url 'batches:checklist_note' batch.pk %}"
+      hx-trigger="blur changed"
+      hx-vals='{"field": "{{ field_base }}_note"}'
+      hx-swap="none"
+      name="note"
+    >
+  </div>
+</li>
