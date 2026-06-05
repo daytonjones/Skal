@@ -1,111 +1,111 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}{% if object %}Edit{% else %}New{% endif %} Recipe{% endblock %}
 
 {% block content %}
 <div class="detail-panel">
-  <h1 class="text-2xl mb-4">{% if object %}Edit{% else %}New{% endif %} Recipe</h1>
+  <h1>{% if object %}Edit Recipe{% else %}New Recipe{% endif %}</h1>
 
   <form method="post">
     {% csrf_token %}
     {{ form.non_field_errors }}
 
-    <div class="form-group">
-      {{ form.name.label_tag }}<br>
-      {{ form.name }} {{ form.name.errors }}
-    </div>
+    <div class="form-group">{{ form.name.label_tag }}{{ form.name }}{{ form.name.errors }}</div>
+    <div class="form-group">{{ form.batch_size.label_tag }}{{ form.batch_size }}{{ form.batch_size.errors }}</div>
+    <div class="form-group">{{ form.instructions.label_tag }}{{ form.instructions }}{{ form.instructions.errors }}</div>
 
-    <div class="form-group">
-      {{ form.batch_size.label_tag }}<br>
-      {{ form.batch_size }} {{ form.batch_size.errors }}
-    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+    <h2>Primary Ingredients</h2>
 
-    <div class="form-group">
-      {{ form.instructions.label_tag }}<br>
-      {{ form.instructions }} {{ form.instructions.errors }}
-    </div>
-
-    <h2>Honey</h2>
-    <table class="form-table">
-      <thead><tr><th>Honey</th><th>Quantity (lbs)</th></tr></thead>
+    <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:0.75rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--brown-700);font-size:0.72rem;text-transform:uppercase;">Ingredient</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--brown-700);font-size:0.72rem;text-transform:uppercase;">Quantity</th>
+        </tr>
+      </thead>
       <tbody>
         <tr>
-          <td>{{ form.honey }}<br>{{ form.honey.errors }}</td>
-          <td>{{ form.honey_quantity }}<br>{{ form.honey_quantity.errors }}</td>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">Honey</label>
+            {{ form.honey }}<br>{{ form.honey.errors }}
+          </td>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">lbs</label>
+            {{ form.honey_quantity }}<br>{{ form.honey_quantity.errors }}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">Water</label>
+            {{ form.water }}<br>{{ form.water.errors }}
+          </td>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">gal</label>
+            {{ form.water_quantity }}<br>{{ form.water_quantity.errors }}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">Yeast</label>
+            {{ form.yeast }}<br>{{ form.yeast.errors }}
+          </td>
+          <td style="padding:0.35rem 0.5rem;">
+            <label style="font-size:0.72rem;text-transform:uppercase;margin-bottom:0.2rem;">Qty</label>
+            {{ form.yeast_quantity }}<br>{{ form.yeast_quantity.errors }}
+          </td>
         </tr>
       </tbody>
     </table>
-    <datalist id="honey-list">
-      {% for name in all_honey %}<option value="{{ name }}"></option>{% endfor %}
-    </datalist>
 
-    <h2>Water</h2>
-    <table class="form-table">
-      <thead><tr><th>Water</th><th>Quantity (gal)</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>{{ form.water }}<br>{{ form.water.errors }}</td>
-          <td>{{ form.water_quantity }}<br>{{ form.water_quantity.errors }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <datalist id="water-list">
-      {% for name in all_water %}<option value="{{ name }}"></option>{% endfor %}
-    </datalist>
+    <datalist id="honey-list">{% for n in all_honey %}<option value="{{ n }}">{% endfor %}</datalist>
+    <datalist id="water-list">{% for n in all_water %}<option value="{{ n }}">{% endfor %}</datalist>
+    <datalist id="yeast-list">{% for n in all_yeast %}<option value="{{ n }}">{% endfor %}</datalist>
 
-    <h2>Yeast</h2>
-    <table class="form-table">
-      <thead><tr><th>Yeast</th><th>Quantity</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>{{ form.yeast }}<br>{{ form.yeast.errors }}</td>
-          <td>{{ form.yeast_quantity }}<br>{{ form.yeast_quantity.errors }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <datalist id="yeast-list">
-      {% for name in all_yeast %}<option value="{{ name }}"></option>{% endfor %}
-    </datalist>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+    <h2>Additional Ingredients</h2>
 
-    <h2>Other Ingredients</h2>
     {{ ingredient_formset.management_form }}
     {{ ingredient_formset.non_form_errors }}
+    <datalist id="ingredient-list">{% for n in all_ingredients %}<option value="{{ n }}">{% endfor %}</datalist>
 
-    <datalist id="ingredient-list">
-      {% for name in all_ingredients %}<option value="{{ name }}"></option>{% endfor %}
-    </datalist>
-
-    <table class="form-table">
-      <thead><tr><th>Ingredient</th><th>Quantity</th><th>Remove?</th></tr></thead>
+    <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:0.5rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--brown-700);font-size:0.72rem;text-transform:uppercase;">Ingredient</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--brown-700);font-size:0.72rem;text-transform:uppercase;">Quantity</th>
+          <th style="padding:0.4rem 0.5rem;color:var(--brown-700);font-size:0.72rem;text-transform:uppercase;">Remove?</th>
+        </tr>
+      </thead>
       <tbody id="ingredient-rows">
-        {% for form in ingredient_formset %}
+        {% for subform in ingredient_formset %}
           <tr>
-            <td>{{ form.ingredient_name.errors }}<br>{{ form.ingredient_name }}</td>
-            <td>{{ form.quantity.errors }}<br>{{ form.quantity }}</td>
-            <td>{{ form.DELETE }}</td>
+            <td style="padding:0.35rem 0.5rem;">{{ subform.ingredient_name.errors }}{{ subform.ingredient_name }}</td>
+            <td style="padding:0.35rem 0.5rem;">{{ subform.quantity.errors }}{{ subform.quantity }}</td>
+            <td style="padding:0.35rem 0.5rem;text-align:center;">{{ subform.DELETE }}</td>
           </tr>
         {% endfor %}
-        <tr id="empty-form-row" style="display: none;">
-          <td>{{ ingredient_formset.empty_form.ingredient_name }}</td>
-          <td>{{ ingredient_formset.empty_form.quantity }}</td>
-          <td>{{ ingredient_formset.empty_form.DELETE }}</td>
+        <tr id="empty-form-row" style="display:none;">
+          <td style="padding:0.35rem 0.5rem;">{{ ingredient_formset.empty_form.ingredient_name }}</td>
+          <td style="padding:0.35rem 0.5rem;">{{ ingredient_formset.empty_form.quantity }}</td>
+          <td style="padding:0.35rem 0.5rem;text-align:center;">{{ ingredient_formset.empty_form.DELETE }}</td>
         </tr>
       </tbody>
     </table>
+    <button type="button" id="add-ingredient" class="btn btn-ghost" style="font-size:0.8rem;">+ Add ingredient</button>
 
-    <button type="button" id="add-ingredient" class="button secondary">
-      + Add another ingredient
-    </button>
-
-    <div class="form-group mt-4">
-      <label>
-        {{ form.is_public }} Public (visible to all users)
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+      {{ form.is_public }}
+      <label for="{{ form.is_public.id_for_label }}" style="text-transform:none;font-size:0.875rem;color:var(--brown-900);margin:0;">
+        Make this recipe public (visible to all users)
       </label>
     </div>
 
-    <button type="submit" class="button">Save</button>
-    <a href="{% url 'recipes:index' %}" class="button secondary">Cancel</a>
+    <div class="btn-group" style="margin-top:1.25rem;">
+      <button type="submit" class="btn btn-primary">Save Recipe</button>
+      <a href="{% url 'recipes:index' %}" class="btn btn-secondary">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}
@@ -113,4 +113,3 @@
 {% block extra_js %}
 <script src="{% static 'js/recipes.js' %}"></script>
 {% endblock %}
-
