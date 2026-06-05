@@ -8,6 +8,7 @@ from django.views.generic import (
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from datetime import date
 
@@ -132,6 +133,7 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         response = super().form_valid(form)
+        messages.success(self.request, f'Batch "{self.object.name}" created.')
 
         for i, img in enumerate(self.request.FILES.getlist('images')):
             caption = self.request.POST.get(f'caption_{i}', '')
@@ -159,6 +161,7 @@ class BatchUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        messages.success(self.request, f'Batch "{self.object.name}" saved.')
         for i, img in enumerate(self.request.FILES.getlist('images')):
             caption = self.request.POST.get(f'caption_{i}', '')
             BatchImage.objects.create(batch=self.object, image=img, caption=caption)
@@ -173,12 +176,19 @@ class BatchDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.get_object().user == self.request.user
 
+    def delete(self, request, *args, **kwargs):
+        batch = self.get_object()
+        messages.success(request, f'Batch "{batch.name}" deleted.')
+        return super().delete(request, *args, **kwargs)
+
 
 @login_required
 def toggle_visibility(request, pk):
     batch = get_object_or_404(Batch, pk=pk, user=request.user)
     batch.is_public = not batch.is_public
     batch.save()
+    state = 'public' if batch.is_public else 'private'
+    messages.success(request, f'"{batch.name}" is now {state}.')
     return redirect('batches:detail', pk=pk)
 
 
