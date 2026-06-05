@@ -48,30 +48,21 @@
   <h2 style="margin-bottom:1rem;">About the Author</h2>
   <div style="display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap;">
     <div style="flex-shrink:0;">
-      {% if request.user.avatar %}
-        <img src="{{ request.user.avatar.url }}"
-             alt="{{ request.user.get_full_name|default:request.user.username }}"
-             style="width:80px;height:80px;border-radius:50%;object-fit:cover;
-                    border:3px solid var(--amber-400);">
-      {% else %}
-        <img src="{{ request.user.email|gravatar_url:80 }}"
-             alt="{{ request.user.get_full_name|default:request.user.username }}"
-             style="width:80px;height:80px;border-radius:50%;
-                    border:3px solid var(--amber-400);">
-      {% endif %}
+      <img src="{{ 'jones.dayton@gmail.com'|gravatar_url:80 }}"
+           alt="Dayton Jones"
+           style="width:80px;height:80px;border-radius:50%;border:3px solid var(--amber-400);">
     </div>
     <div style="flex:1;min-width:0;">
       <h3 style="font-family:var(--font-serif);font-size:1.2rem;margin-bottom:0.25rem;">
-        {{ request.user.get_full_name|default:request.user.username }}
+        Dayton Jones
       </h3>
       <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.75rem;">
-        Mead maker · Software developer · Skål project author
+        Mead maker · DevOps Engineer · Skål project author
       </p>
       <p style="font-size:0.9rem;line-height:1.75;margin-bottom:0.75rem;">
-        Skål started as a personal project to scratch a very specific itch: a clean, opinionated
-        brewing tracker built by a homebrewer, for homebrew mead. No bloat, no subscription,
-        no cloud dependency — just a self-hosted companion that lives on your own server and
-        speaks the language of the cellar.
+        Skål started as a personal project to scratch a very specific itch: a clean brewing tracker
+        built by a homebrewer, for homebrew mead. No bloat, no subscription, no cloud dependency —
+        just a self-hosted companion that lives on your own server and speaks the language of the cellar.
       </p>
       <p style="font-size:0.9rem;line-height:1.75;">
         Built with Django, PostgreSQL, and a deep respect for honey.
