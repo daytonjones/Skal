@@ -117,6 +117,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
         ).order_by('-pk').first()
         ctx['newest_batch'] = user_batches.order_by('-pk').first()
 
+        if user.is_staff:
+            ctx['pending_approvals'] = User.objects.filter(is_approved=False).count()
+
         return ctx
 
 

@@ -3,6 +3,12 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+{% if pending_approvals %}
+<div class="pending-banner">
+  <span>🔔 <strong>{{ pending_approvals }} account{{ pending_approvals|pluralize }} pending approval.</strong></span>
+  <a href="/admin/accounts/user/?is_approved__exact=0" class="pending-banner-link">Review in admin →</a>
+</div>
+{% endif %}
 <div class="dash-greeting">
   <div>
     <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
