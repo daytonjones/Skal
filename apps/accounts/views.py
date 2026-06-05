@@ -15,7 +15,7 @@ from django.utils.dateformat import format as datefmt
 from .forms import SignUpForm, ProfileForm, CustomPasswordChangeForm
 from .models import User
 from apps.recipes.models import Recipe, RecipeIngredient
-from apps.batches.models import Batch
+from apps.batches.models import Batch, BatchImage
 
 import csv
 import io
@@ -77,13 +77,38 @@ class HomeView(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
 
+        user_batches = Batch.objects.filter(user=user)
+        active_batches = user_batches.filter(bottled_done=False).order_by('-primary_date')
+
+        # Average ABV from batches that have both OG and FG
+        completed = user_batches.filter(fg__isnull=False)
+        avg_abv = None
+        if completed.exists():
+            total_abv = sum(
+                (76.08 * (float(b.og) - float(b.fg)) / (1.775 - float(b.og)))
+                * (float(b.fg) / 0.794)
+                for b in completed
+            )
+            avg_abv = round(total_abv / completed.count(), 1)
+
+        ctx['active_batches'] = active_batches
+        ctx['total_batches'] = user_batches.count()
+        ctx['active_count'] = active_batches.count()
+        ctx['avg_abv'] = avg_abv
+        ctx['total_recipes'] = Recipe.objects.filter(user=user).count()
+        ctx['last_bottled'] = (
+            user_batches.filter(bottled_done=True).order_by('-bottled_date').first()
+        )
+        ctx['recent_images'] = (
+            BatchImage.objects.filter(batch__user=user)
+            .select_related('batch')
+            .order_by('-id')[:10]
+        )
+        # Legacy keys — still used by current home.html template
         ctx['newest_recipe'] = Recipe.objects.filter(
             models.Q(user=user) | models.Q(is_public=True) | models.Q(user__isnull=True)
         ).order_by('-pk').first()
-
-        ctx['newest_batch'] = Batch.objects.filter(
-            models.Q(user=user) | models.Q(is_public=True)
-        ).order_by('-pk').first()
+        ctx['newest_batch'] = user_batches.order_by('-pk').first()
 
         return ctx
 
