@@ -380,7 +380,7 @@ input[type="checkbox"] {
 
 /* ── Card / Panel ─────────────────────────────────────────── */
 .card {
-  background: var(--white);
+  background: var(--cream-100);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem;
@@ -486,14 +486,14 @@ input[type="checkbox"] {
 }
 
 .stat-tile {
-  background: var(--white);
+  background: var(--cream-100);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0.75rem;
   text-align: center;
 }
 
-.stat-tile.highlight { border-color: var(--amber-200); background: var(--amber-100); }
+.stat-tile.highlight { border-color: var(--amber-400); background: var(--amber-200); }
 
 .stat-value {
   font-family: var(--font-serif);
@@ -520,7 +520,7 @@ input[type="checkbox"] {
 
 /* Active fermentation rows inside dashboard */
 .fermentation-row {
-  background: var(--white);
+  background: var(--cream-100);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.75rem;
@@ -608,7 +608,7 @@ input[type="checkbox"] {
 .batch-rows { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .batch-row {
-  background: var(--white);
+  background: var(--cream-100);
   border: 1px solid var(--border);
   border-left: 4px solid var(--stage-planned);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -761,7 +761,7 @@ input[type="checkbox"] {
 .recipe-rows { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .recipe-row {
-  background: var(--white);
+  background: var(--cream-100);
   border: 1px solid var(--border);
   border-left: 4px solid var(--amber-200);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -824,8 +824,8 @@ input[type="checkbox"] {
 
 .calc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .calc-table th, .calc-table td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: center; }
-.calc-table thead th { background: var(--amber-100); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brown-700); }
-.calc-table tbody tr:hover { background: var(--cream-50); }
+.calc-table thead th { background: var(--amber-200); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brown-700); }
+.calc-table tbody tr:hover { background: var(--amber-200); }
 .calc-table tbody tr.highlight { background: var(--amber-100); font-weight: 600; }
 
 .batch-builder {
@@ -956,6 +956,8 @@ input[type="checkbox"] {
   margin-top: 1rem;
   align-items: start;
 }
+/* Override card sibling margin so grid columns start at the same height */
+.info-grid .card + .card { margin-top: 0; }
 .info-grid dl dt { font-weight: 700; margin-top: 0.75rem; color: var(--brown-900); font-size: 0.9rem; }
 .info-grid dl dd { margin-left: 1rem; font-size: 0.85rem; color: var(--brown-700); margin-top: 0.2rem; line-height: 1.5; }
 

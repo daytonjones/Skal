@@ -161,16 +161,16 @@ echo
 hr
 echo -e "${BOLD}  Summary${RESET}"
 hr
-echo -e "  SECRET_KEY                 ${GREEN}${SECRET_KEY:0:20}…${RESET}"
-echo -e "  DEBUG                      ${DEBUG}"
-echo -e "  POSTGRES_DB                ${POSTGRES_DB}"
-echo -e "  POSTGRES_USER              ${POSTGRES_USER}"
-echo -e "  POSTGRES_PASSWORD          ${RED}(hidden)${RESET}"
-echo -e "  DJANGO_ALLOWED_HOSTS       ${DJANGO_ALLOWED_HOSTS}"
-echo -e "  HOST_PORT                  ${HOST_PORT}"
-echo -e "  DJANGO_SUPERUSER_USERNAME  ${DJANGO_SUPERUSER_USERNAME}"
-echo -e "  DJANGO_SUPERUSER_EMAIL     ${DJANGO_SUPERUSER_EMAIL}"
-echo -e "  DJANGO_SUPERUSER_PASSWORD  ${RED}(hidden)${RESET}"
+echo -e "  Secret key          ${GREEN}${SECRET_KEY:0:20}…${RESET}"
+echo -e "  Debug mode          ${DEBUG}"
+echo -e "  Database name       ${POSTGRES_DB}"
+echo -e "  Database user       ${POSTGRES_USER}"
+echo -e "  Database password   ${RED}(hidden)${RESET}"
+echo -e "  Hostname / IP       ${DJANGO_ALLOWED_HOSTS}"
+echo -e "  Port                ${HOST_PORT}"
+echo -e "  Admin username      ${DJANGO_SUPERUSER_USERNAME}"
+echo -e "  Admin email         ${DJANGO_SUPERUSER_EMAIL}"
+echo -e "  Admin password      ${RED}(hidden)${RESET}"
 hr
 echo
 read -rp "  Write .env and continue? [Y/n] " confirm
