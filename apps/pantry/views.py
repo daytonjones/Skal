@@ -1,6 +1,11 @@
+import json
+import urllib.error
+import urllib.request
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -70,6 +75,37 @@ def edit_pantry_item(request, pk):
         messages.success(request, f"{item.ingredient.name} updated.")
         return redirect('pantry:index')
     return render(request, 'pantry/edit.html', {'item': item})
+
+
+@login_required
+def barcode_lookup(request):
+    code = request.GET.get('code', '').strip()
+    if not code.isdigit() or not (8 <= len(code) <= 14):
+        return JsonResponse({'found': False, 'error': 'Invalid barcode'})
+
+    url = f'https://world.openfoodfacts.org/api/v2/product/{code}.json'
+    req = urllib.request.Request(
+        url,
+        headers={'User-Agent': 'Skål-Brewing-App/2.0'},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+
+        if data.get('status') == 1:
+            p = data.get('product', {})
+            name = (p.get('product_name_en') or p.get('product_name') or '').strip()
+            brand = (p.get('brands') or '').split(',')[0].strip()
+            if brand and name and brand.lower() not in name.lower():
+                display = f"{name} — {brand}"
+            else:
+                display = name or brand
+            if display:
+                return JsonResponse({'found': True, 'name': display, 'code': code})
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, TimeoutError):
+        pass
+
+    return JsonResponse({'found': False, 'code': code})
 
 
 @login_required
