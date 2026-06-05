@@ -129,7 +129,10 @@ h3 { font-size: 0.9rem; font-weight: 600; color: var(--brown-900); }
 /* Sidebar is always dark — do not let dark mode invert it */
 .sidebar {
   width: var(--sidebar-width);
-  background: #1c0a00;
+  background-color: #1c0a00;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='60'%3E%3Cg fill='none' stroke='rgba(200,140,30,0.10)' stroke-width='1'%3E%3Cpolygon points='0,0 17.5,10 17.5,30 0,40 -17.5,30 -17.5,10'/%3E%3Cpolygon points='35,0 52.5,10 52.5,30 35,40 17.5,30 17.5,10'/%3E%3Cpolygon points='17.5,30 35,40 35,60 17.5,70 0,60 0,40'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 35px 60px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
