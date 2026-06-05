@@ -64,7 +64,7 @@
     bee.textContent = '🐝';
     document.body.appendChild(bee);
 
-    var lastPx = -100, lastPy = -100, facingRight = true;
+    var lastPx = -100, lastPy = -100, facingRight = false;
     var DIST = 18;
     var COLORS = ['#f59e0b','#d97706','#fde68a','#fbbf24','#f59e0b'];
 
@@ -75,8 +75,8 @@
 
       var dx = x - lastPx;
       if (Math.abs(dx) > 2) {
-        if (dx < 0 && facingRight)  { bee.style.transform = 'translate(-2px,-14px) scaleX(-1)'; facingRight = false; }
-        if (dx > 0 && !facingRight) { bee.style.transform = 'translate(-2px,-14px) scaleX(1)';  facingRight = true; }
+        if (dx > 0 && !facingRight) { bee.style.transform = 'translate(-2px,-14px) scaleX(-1)'; facingRight = true; }
+        if (dx < 0 && facingRight)  { bee.style.transform = 'translate(-2px,-14px) scaleX(1)';  facingRight = false; }
       }
 
       if (Math.hypot(x - lastPx, y - lastPy) >= DIST) {
