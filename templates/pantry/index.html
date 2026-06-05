@@ -161,12 +161,12 @@ function doLookup(code) {
     .then(function(data) {
       if (data.found && data.name) {
         document.getElementById('ingredient-name-input').value = data.name;
-        barcodeStatus.innerHTML = '<span style="color:#15803d;">✓ Found: <strong>' +
-          data.name.replace(/</g,'&lt;') + '</strong> — name pre-filled below.</span>';
+        barcodeStatus.textContent = '✓ Found: ' + data.name + ' — name pre-filled below.';
+        barcodeStatus.style.color = '#15803d';
         document.getElementById('ingredient-name-input').focus();
       } else {
-        barcodeStatus.innerHTML =
-          '<span style="color:var(--brown-700);">Barcode not in product database — enter the name manually below.</span>';
+        barcodeStatus.textContent = 'Barcode not in product database — enter the name manually below.';
+        barcodeStatus.style.color = '';
         document.getElementById('ingredient-name-input').focus();
       }
     })
@@ -232,21 +232,33 @@ function onCameraScanSuccess(code) {
 function showCameraResult(data) {
   document.getElementById('scan-status').textContent = '';
   var el = document.getElementById('scan-result');
+  el.innerHTML = '';
+
+  var box = document.createElement('div');
+  var p   = document.createElement('p');
+  var btn = document.createElement('button');
+
   if (data.found && data.name) {
-    var safe = data.name.replace(/</g, '&lt;');
-    el.innerHTML =
-      '<div style="background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:6px;padding:.75rem;margin-bottom:.75rem;">' +
-        '<p style="margin:0 0 .5rem;font-weight:600;color:#15803d;">✓ Found: ' + safe + '</p>' +
-        '<button class="btn btn-primary" style="flex:1;width:100%;" ' +
-          'onclick="useCameraResult(\'' + data.name.replace(/'/g, "\\'") + '\')">Use this name</button>' +
-      '</div>';
+    box.style.cssText = 'background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:6px;padding:.75rem;margin-bottom:.75rem;';
+    p.style.cssText   = 'margin:0 0 .5rem;font-weight:600;color:#15803d;';
+    p.textContent     = '✓ Found: ' + data.name;
+    btn.className     = 'btn btn-primary';
+    btn.style.width   = '100%';
+    btn.textContent   = 'Use this name';
+    btn.addEventListener('click', function() { useCameraResult(data.name); });
   } else {
-    el.innerHTML =
-      '<div style="background:rgba(180,83,9,.08);border:1px solid var(--amber-400);border-radius:6px;padding:.75rem;">' +
-        '<p style="margin:0 0 .5rem;color:var(--brown-700);">Not found — enter name manually.</p>' +
-        '<button class="btn btn-secondary" style="width:100%;" onclick="closeScanner()">Enter manually</button>' +
-      '</div>';
+    box.style.cssText = 'background:rgba(180,83,9,.08);border:1px solid var(--amber-400);border-radius:6px;padding:.75rem;';
+    p.style.cssText   = 'margin:0 0 .5rem;color:var(--brown-700);';
+    p.textContent     = 'Not found — enter name manually.';
+    btn.className     = 'btn btn-secondary';
+    btn.style.width   = '100%';
+    btn.textContent   = 'Enter manually';
+    btn.addEventListener('click', closeScanner);
   }
+
+  box.appendChild(p);
+  box.appendChild(btn);
+  el.appendChild(box);
 }
 
 function useCameraResult(name) {
