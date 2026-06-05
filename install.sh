@@ -190,6 +190,8 @@ if [[ -n "$EMAIL_HOST" ]]; then
         echo "  2. Create an App Password:     myaccount.google.com/apppasswords"
         echo "  3. Use the generated 16-character password when prompted below."
         echo "     Enter it WITHOUT spaces (omit the spaces Google shows for readability)."
+        echo -e "  ${YELLOW}Note:${RESET} Gmail will override the From address with your Gmail account address."
+        echo "  To control the From address, use a transactional mail service (Mailgun, etc.)."
         echo
     fi
     prompt EMAIL_PORT "SMTP port" "587"
