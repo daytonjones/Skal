@@ -1,57 +1,76 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}{% if object %}Edit{% else %}New{% endif %} Batch{% endblock %}
 
 {% block content %}
-<div class="container mx-auto mt-6">
-  <div class="calc-section">
-    <h1>{% if object %}Edit{% else %}New{% endif %} Batch</h1>
+<div class="detail-panel">
+  <h1>{% if object %}Edit Batch{% else %}New Batch{% endif %}</h1>
 
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
 
-      <!-- Batch fields -->
-      <div class="form-group">{{ form.recipe.label_tag }}<br>{{ form.recipe }} {{ form.recipe.errors }}</div>
-      <div class="form-group">{{ form.name.label_tag }}<br>{{ form.name }} {{ form.name.errors }}</div>
-      <div class="form-group">{{ form.batch_size.label_tag }}<br>{{ form.batch_size }} {{ form.batch_size.errors }}</div>
-      <div class="form-group">{{ form.og.label_tag }}<br>{{ form.og }} {{ form.og.errors }}</div>
-      <div class="form-group">{{ form.fg.label_tag }}<br>{{ form.fg }} {{ form.fg.errors }}</div>
-      <div class="form-group">{{ form.primary_date.label_tag }}<br>{{ form.primary_date }} {{ form.primary_date.errors }}</div>
-      <div class="form-group">{{ form.secondary_date.label_tag }}<br>{{ form.secondary_date }} {{ form.secondary_date.errors }}</div>
-      <div class="form-group">{{ form.bottling_date.label_tag }}<br>{{ form.bottling_date }} {{ form.bottling_date.errors }}</div>
-      <div class="form-group">{{ form.notes.label_tag }}<br>{{ form.notes }} {{ form.notes.errors }}</div>
-      <div class="form-group">{{ form.is_public.label_tag }}<br>{{ form.is_public }} {{ form.is_public.errors }}</div>
+    <h2 style="margin-top:1rem;">Batch Details</h2>
 
-      <!-- Checklist -->
-      <h2 class="mt-6">Batch Checklist</h2>
-      <div class="form-group">{{ form.create_must_done }} Create Must {{ form.create_must_date }}</div>
-      <div class="form-group">{{ form.pitch_yeast_done }} Pitch Yeast {{ form.pitch_yeast_date }}</div>
-      <div class="form-group">{{ form.fo_24h_done }} FO 24h {{ form.fo_24h_date }}</div>
-      <div class="form-group">{{ form.fo_48h_done }} FO 48h {{ form.fo_48h_date }}</div>
-      <div class="form-group">{{ form.fo_72h_done }} FO 72h {{ form.fo_72h_date }}</div>
-      <div class="form-group">{{ form.fo_1_3_break_done }} FO 1/3 Sugar Break {{ form.fo_1_3_break_date }}</div>
-      <div class="form-group">{{ form.rack_secondary_done }} Racked to Secondary {{ form.rack_secondary_date }}</div>
-      <div class="form-group">{{ form.bottled_done }} Bottled {{ form.bottled_date }}</div>
+    <div class="form-group">{{ form.recipe.label_tag }}{{ form.recipe }}{{ form.recipe.errors }}</div>
+    <div class="form-group">{{ form.name.label_tag }}{{ form.name }}{{ form.name.errors }}</div>
 
-      <!-- Images -->
-      <div class="form-group">
-        <label for="id_images">Upload Batch Images</label><br>
-        <input type="file" name="images" id="id_images" multiple>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+      <div class="form-group">{{ form.batch_size.label_tag }}{{ form.batch_size }}{{ form.batch_size.errors }}</div>
+      <div class="form-group">{{ form.og.label_tag }}{{ form.og }}{{ form.og.errors }}</div>
+      <div class="form-group">{{ form.fg.label_tag }}{{ form.fg }}{{ form.fg.errors }}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+      <div class="form-group">{{ form.primary_date.label_tag }}{{ form.primary_date }}{{ form.primary_date.errors }}</div>
+      <div class="form-group">{{ form.secondary_date.label_tag }}{{ form.secondary_date }}{{ form.secondary_date.errors }}</div>
+      <div class="form-group">{{ form.bottling_date.label_tag }}{{ form.bottling_date }}{{ form.bottling_date.errors }}</div>
+    </div>
+
+    <div class="form-group">{{ form.notes.label_tag }}{{ form.notes }}{{ form.notes.errors }}</div>
+    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+      {{ form.is_public }}
+      <label for="{{ form.is_public.id_for_label }}" style="text-transform:none;font-size:0.875rem;color:var(--brown-900);margin:0;">
+        Make this batch public
+      </label>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
+    <h2>Checklist</h2>
+    <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.75rem;">
+      Check off completed steps. Dates auto-fill when checked.
+    </p>
+
+    {% for step_done, step_date, label in checklist_steps %}
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+      <div style="display:flex;align-items:center;gap:0.4rem;min-width:180px;">
+        {{ step_done }}
+        <label for="{{ step_done.id_for_label }}" style="text-transform:none;font-size:0.85rem;font-weight:500;color:var(--brown-900);margin:0;">
+          {{ label }}
+        </label>
       </div>
-      <div id="image-preview-container" class="grid grid-cols-2 gap-4 mt-4"></div>
+      <div style="flex:1;">{{ step_date }}</div>
+    </div>
+    {% endfor %}
 
-      <button type="submit" class="button">
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
+    <h2>Photos</h2>
+    <div class="form-group">
+      <label for="id_images">Upload Images</label>
+      <input type="file" name="images" id="id_images" multiple accept="image/*">
+    </div>
+    <div id="image-preview-container" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;"></div>
+
+    <div class="btn-group" style="margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary">
         {% if object %}Save Changes{% else %}Create Batch{% endif %}
       </button>
-      <a href="{% url 'batches:index' %}" class="button secondary">Cancel</a>
-    </form>
-  </div>
+      <a href="{% url 'batches:index' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/batches.js' %}"></script>
 {% endblock %}
-
