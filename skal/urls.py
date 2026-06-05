@@ -32,6 +32,10 @@ urlpatterns = [
         "calculators/",
         include(("apps.calculators.urls", "calculators"), namespace="calculators"),
     ),
+    path(
+        "pantry/",
+        include(("apps.pantry.urls", "pantry"), namespace="pantry"),
+    ),
 ]
 
 # In DEBUG only, serve media files through Django

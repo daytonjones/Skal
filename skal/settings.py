@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "apps.batches",
     "apps.calculators",
     "apps.yeast",
+    "apps.pantry",
 ]
 
 MIDDLEWARE = [
