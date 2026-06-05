@@ -36,9 +36,17 @@ class PantryView(LoginRequiredMixin, View):
 
     def post(self, request):
         name = request.POST.get('ingredient_name', '').strip()
-        ing_type = request.POST.get('ingredient_type', Ingredient.TYPE_ADDITIVE)
         quantity = request.POST.get('quantity', '').strip()
         notes = request.POST.get('notes', '').strip()
+
+        # Accept label ("Honey") or value ("honey"); default to additive
+        _label_map = {label.lower(): val for val, label in Ingredient.TYPE_CHOICES}
+        _type_raw = request.POST.get('ingredient_type', '').strip().lower()
+        ing_type = (
+            _label_map.get(_type_raw)
+            or (_type_raw if _type_raw in dict(Ingredient.TYPE_CHOICES) else None)
+            or Ingredient.TYPE_ADDITIVE
+        )
 
         if not name:
             messages.error(request, "Please enter an ingredient name.")
