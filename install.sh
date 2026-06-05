@@ -115,42 +115,46 @@ echo
 
 # ── Database ──────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  3 / 5 — PostgreSQL Database${RESET}"
+echo -e "${BOLD}  3 / 5 — Data Storage${RESET}"
 hr
-echo "  These credentials are used by both the app and the Postgres container."
+echo "  Skål stores your recipes and batches in a private database."
+echo "  These credentials are only used internally — you won't need them again"
+echo "  unless you're restoring a backup or connecting an external tool."
 echo
 prompt POSTGRES_DB   "Database name"     "skal"
 prompt POSTGRES_USER "Database user"     "skaluser"
 prompt_secret POSTGRES_PASSWORD "Database password"
 echo
-ok "Database: $POSTGRES_DB / $POSTGRES_USER"
+ok "Storage configured: $POSTGRES_DB"
 echo
 
 # ── Allowed hosts ─────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  4 / 5 — Allowed Hosts & Port${RESET}"
+echo -e "${BOLD}  4 / 5 — Access & Networking${RESET}"
 hr
-echo "  Comma-separated list of hostnames/IPs the app will serve."
-echo "  Examples: localhost,127.0.0.1   or   mybrewery.example.com"
+echo "  The hostname or IP address users will use to reach Skål."
+echo "  Use 'localhost' for local use, or your server's domain/IP for remote access."
+echo "  Multiple values can be comma-separated: e.g. myserver.com,192.168.1.10"
 echo
-prompt DJANGO_ALLOWED_HOSTS "DJANGO_ALLOWED_HOSTS" "localhost,127.0.0.1"
-prompt HOST_PORT "Host port (the port you'll open in your browser)" "8000"
+prompt DJANGO_ALLOWED_HOSTS "Hostname or IP address" "localhost,127.0.0.1"
+prompt HOST_PORT "Port number" "8000"
 echo
-ok "Hosts: $DJANGO_ALLOWED_HOSTS"
-ok "Port:  $HOST_PORT"
+ok "Address: $DJANGO_ALLOWED_HOSTS"
+ok "Port:    $HOST_PORT"
 echo
 
 # ── Superuser ─────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  5 / 5 — Admin Superuser${RESET}"
+echo -e "${BOLD}  5 / 5 — Admin Account${RESET}"
 hr
 echo "  This account is created automatically on first run."
+echo "  Use it to log in and manage the app."
 echo
-prompt DJANGO_SUPERUSER_USERNAME "Admin username" "admin"
-prompt DJANGO_SUPERUSER_EMAIL    "Admin email"    ""
-prompt_secret DJANGO_SUPERUSER_PASSWORD "Admin password"
+prompt DJANGO_SUPERUSER_USERNAME "Username" "admin"
+prompt DJANGO_SUPERUSER_EMAIL    "Email address" ""
+prompt_secret DJANGO_SUPERUSER_PASSWORD "Password"
 echo
-ok "Superuser: $DJANGO_SUPERUSER_USERNAME <$DJANGO_SUPERUSER_EMAIL>"
+ok "Admin account: $DJANGO_SUPERUSER_USERNAME <$DJANGO_SUPERUSER_EMAIL>"
 echo
 
 # ── Summary ───────────────────────────────────────────────────────────────────

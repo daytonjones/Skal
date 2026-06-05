@@ -71,11 +71,11 @@ body::before {
   position: fixed;
   inset: 0;
   background: url("/static/images/mead_background.png") no-repeat center center / cover;
-  opacity: 0.15;
+  opacity: 0.30;
   z-index: -1;
   pointer-events: none;
 }
-body.dark::before { opacity: 0.05; }
+body.dark::before { opacity: 0.12; }
 
 a { color: var(--amber-600); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -922,9 +922,24 @@ input[type="checkbox"] {
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   margin-top: 1rem;
+  align-items: start;
 }
-.info-grid dl dt { font-weight: 700; margin-top: 0.75rem; color: var(--brown-900); }
-.info-grid dl dd { margin-left: 1rem; font-size: 0.875rem; color: var(--brown-700); margin-top: 0.15rem; }
+.info-grid dl dt { font-weight: 700; margin-top: 0.75rem; color: var(--brown-900); font-size: 0.9rem; }
+.info-grid dl dd { margin-left: 1rem; font-size: 0.85rem; color: var(--brown-700); margin-top: 0.2rem; line-height: 1.5; }
+
+.info-history p {
+  margin-bottom: 0.85rem;
+  line-height: 1.75;
+  font-size: 0.925rem;
+}
+.info-history p:last-child { margin-bottom: 0; }
+.info-history ul {
+  list-style: disc;
+  margin: 0.25rem 0 0.85rem 1.5rem;
+  line-height: 1.75;
+  font-size: 0.925rem;
+}
+.info-history ul li { margin-bottom: 0.4rem; }
 
 /* ── Batch Images ─────────────────────────────────────────── */
 .batch-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 0.75rem; margin-top: 1rem; }
