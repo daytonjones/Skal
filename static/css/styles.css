@@ -97,17 +97,19 @@ body {
   100% { opacity: 0; transform: translate(var(--dx), calc(-50% - 18px)) scale(0.25); }
 }
 
-/* Background image — always visible at low opacity */
+/* Background image — URL injected via {% static %} in base.html to survive collectstatic */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: url("/static/images/mead_background.png") no-repeat center center / cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
   opacity: 0.30;
   z-index: -1;
   pointer-events: none;
 }
-body.dark::before { opacity: 0.12; }
+body.dark::before { opacity: 0.20; }
 
 a { color: var(--amber-600); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -461,6 +463,28 @@ input[type="checkbox"] {
 .progress-fill[data-stage="bottled"]   { background: var(--stage-bottled); }
 
 /* ── Dashboard ────────────────────────────────────────────── */
+/* ── Pending approval banner (staff only) ─────────────────── */
+.pending-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fef3c7;
+  border: 1px solid var(--amber-400);
+  border-left: 4px solid var(--amber-600);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--brown-900);
+  gap: 1rem;
+}
+.pending-banner-link {
+  color: var(--amber-600);
+  font-weight: 600;
+  white-space: nowrap;
+}
+body.dark .pending-banner { background: #2a1800; border-color: var(--amber-600); }
+
 .dash-greeting {
   display: flex;
   align-items: baseline;
@@ -825,6 +849,11 @@ input[type="checkbox"] {
 .calc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .calc-table th, .calc-table td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: center; }
 .calc-table thead th { background: var(--amber-200); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brown-700); }
+.calc-table thead th.sortable { user-select: none; }
+.calc-table thead th.sortable:hover { background: var(--amber-400); color: var(--brown-900); }
+.calc-table thead th.sortable::after { content: ' ⇅'; opacity: 0.45; font-size: 0.65rem; }
+.calc-table thead th.sortable[data-sort-dir="asc"]::after  { content: ' ↑'; opacity: 1; }
+.calc-table thead th.sortable[data-sort-dir="desc"]::after { content: ' ↓'; opacity: 1; }
 .calc-table tbody tr:hover { background: var(--amber-200); }
 .calc-table tbody tr.highlight { background: var(--amber-100); font-weight: 600; }
 

@@ -39,13 +39,13 @@
 <table class="calc-table" id="yeast-table" style="font-size:0.85rem;">
   <thead>
     <tr>
-      <th style="cursor:pointer;">Name</th>
-      <th style="cursor:pointer;">Type</th>
-      <th style="cursor:pointer;">Tolerance</th>
-      <th style="cursor:pointer;">Attenuation</th>
-      <th>Temp Range</th>
-      <th>Best For</th>
-      <th>Notes</th>
+      <th class="sortable">Name</th>
+      <th class="sortable">Type</th>
+      <th class="sortable">Tolerance</th>
+      <th class="sortable">Attenuation</th>
+      <th class="sortable">Temp Range</th>
+      <th class="sortable">Best For</th>
+      <th class="sortable">Notes</th>
     </tr>
   </thead>
   <tbody>
@@ -82,22 +82,33 @@
 {% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const table = document.getElementById("yeast-table");
-  const headers = table.querySelectorAll("th");
-  let sortDir = 1;
-  headers.forEach(function(header, index) {
-    header.addEventListener("click", function() {
-      const tbody = table.querySelector("tbody");
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      const isNum = !isNaN(parseFloat(rows[0]?.cells[index]?.textContent));
+  var table = document.getElementById("yeast-table");
+  var headers = Array.from(table.querySelectorAll("th.sortable"));
+  var dirs = headers.map(function() { return 1; }); // 1=asc, -1=desc per column
+
+  headers.forEach(function(th, colIdx) {
+    th.addEventListener("click", function() {
+      var tbody = table.querySelector("tbody");
+      var rows = Array.from(tbody.querySelectorAll("tr"));
+      if (rows.length < 2 || rows[0].cells.length === 1) return; // empty state row
+
+      var dir = dirs[colIdx];
+      var firstVal = rows[0].cells[colIdx].textContent.trim().replace('%','');
+      var isNum = firstVal !== '' && !isNaN(parseFloat(firstVal));
+
       rows.sort(function(a, b) {
-        const at = a.cells[index]?.textContent.trim() || '';
-        const bt = b.cells[index]?.textContent.trim() || '';
-        return isNum ? sortDir * (parseFloat(at) - parseFloat(bt))
-                     : sortDir * at.localeCompare(bt);
+        var av = a.cells[colIdx].textContent.trim().replace('%','');
+        var bv = b.cells[colIdx].textContent.trim().replace('%','');
+        return isNum ? dir * (parseFloat(av) - parseFloat(bv))
+                     : dir * av.localeCompare(bv);
       });
-      sortDir *= -1;
+      dirs[colIdx] *= -1;
       rows.forEach(function(r) { tbody.appendChild(r); });
+
+      // Update sort indicators
+      headers.forEach(function(h, i) {
+        h.dataset.sortDir = (i === colIdx) ? (dir === 1 ? 'asc' : 'desc') : '';
+      });
     });
   });
 });
