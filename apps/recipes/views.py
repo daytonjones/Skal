@@ -148,6 +148,7 @@ class RecipeCreateView(LoginRequiredMixin, CreateView):
         formset.instance = self.object
         formset.save()
 
+        messages.success(self.request, f'Recipe "{self.object.name}" created.')
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -228,6 +229,7 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
             self._update_primary_ingredients(form)
             formset.instance = self.object
             formset.save()
+            messages.success(self.request, f'Recipe "{self.object.name}" updated.')
             return HttpResponseRedirect(self.get_success_url())
         return self.render_to_response(
             self.get_context_data(form=form, ingredient_formset=formset)
@@ -269,12 +271,19 @@ class RecipeDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return Recipe.objects.filter(user=self.request.user)
 
+    def delete(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        messages.success(request, f'Recipe "{recipe.name}" deleted.')
+        return super().delete(request, *args, **kwargs)
+
 
 @login_required
 def toggle_visibility(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
     recipe.is_public = not recipe.is_public
     recipe.save()
+    state = 'public' if recipe.is_public else 'private'
+    messages.success(request, f'"{recipe.name}" is now {state}.')
     return redirect('recipes:detail', pk=pk)
 
 

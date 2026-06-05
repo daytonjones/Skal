@@ -5,6 +5,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import CreateView, TemplateView, UpdateView
@@ -122,6 +123,10 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Profile updated.')
+        return super().form_valid(form)
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
