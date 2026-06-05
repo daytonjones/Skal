@@ -1,60 +1,61 @@
 {% extends "base.html" %}
-{% block title %}{{ request.user.get_full_name|default:request.user.username }}’s Profile{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
-  <h1>{{ request.user.get_full_name|default:request.user.username }}’s Profile</h1>
-  <p><i>Uses <a href="https://gravatar.com" target="_blank">Gravatar</a> for your profile pic</i></p>
+<div class="detail-panel">
+  <h1>Profile</h1>
+  <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:1.25rem;">
+    Profile picture uses <a href="https://gravatar.com" target="_blank">Gravatar</a> based on your email.
+  </p>
 
-  <form method="post" enctype="multipart/form-data">
+  <h2>Account Info</h2>
+  <form method="post" enctype="multipart/form-data" style="margin-bottom:1.5rem;">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="button primary">
-      Save Changes
-    </button>
+    {% for field in form %}
+      <div class="form-group">
+        {{ field.label_tag }}
+        {{ field }}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
 
-  <hr>
-
+  <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
   <h2>Change Password</h2>
-  <form method="post" action="{% url 'accounts:password_change' %}">
+  <form method="post" action="{% url 'accounts:password_change' %}" style="margin-bottom:1.5rem;">
     {% csrf_token %}
-    {{ password_form.as_p }}
-    <button type="submit" class="button primary">
-      Update Password
-    </button>
+    {% for field in password_form %}
+      <div class="form-group">
+        {{ field.label_tag }}
+        {{ field }}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-secondary">Update Password</button>
   </form>
 
-  <hr>
-
-  <h2>Log Out</h2>
-  <form method="post" action="{% url 'accounts:logout' %}">
+  <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
+  <h2>Export Your Data</h2>
+  <form method="post" action="{% url 'accounts:export_user_data' %}">
     {% csrf_token %}
-    <button type="submit" class="button secondary">
-      Log Out
-    </button>
-  </form>
-
-  <hr class="my-6" />
-  <h2 class="text-xl font-semibold mb-2">Export Your Data</h2>
-  <form method="post" action="{% url 'accounts:export_user_data' %}" class="space-y-4">
-    {% csrf_token %}
-    <div>
-      <label for="format" class="block font-medium">Select Format:</label>
-      <select name="format" id="format" class="border border-gray-300 rounded p-2 w-full">
+    <div class="form-group">
+      <label for="format">Format</label>
+      <select name="format" id="format" style="width:auto;">
         <option value="json">JSON</option>
         <option value="csv">CSV</option>
         <option value="txt">Text</option>
-        <option value="pdf">PDF (Styled)</option>
-        <option value="sql">SQL Database Dump</option>
+        <option value="pdf">PDF</option>
+        <option value="sql">SQL Dump</option>
       </select>
     </div>
-    <div class="flex items-center">
-      <input type="checkbox" name="include_public" id="include_public" class="mr-2" />
-      <label for="include_public">Include public recipes and batches</label>
+    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+      <input type="checkbox" name="include_public" id="include_public" style="width:auto;">
+      <label for="include_public" style="text-transform:none;font-size:0.875rem;color:var(--brown-900);margin:0;">
+        Include public recipes and batches
+      </label>
     </div>
-    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-      Download Export
-    </button>
+    <button type="submit" class="btn btn-secondary">Download Export</button>
   </form>
+</div>
 {% endblock %}
-
