@@ -124,6 +124,11 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['password_form'] = CustomPasswordChangeForm(self.request.user)
+        return ctx
+
     def form_valid(self, form):
         messages.success(self.request, 'Profile updated.')
         return super().form_valid(form)
