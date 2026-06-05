@@ -57,12 +57,44 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Bee cursor — hide default cursor everywhere */
+*, *::before, *::after { cursor: none !important; }
+
 body {
   font-family: var(--font-ui);
   background-color: var(--cream-50);
   color: var(--brown-900);
   min-height: 100vh;
   position: relative;
+}
+
+/* ── Bee Cursor ───────────────────────────────────────────── */
+.bee-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  font-size: 1rem;
+  line-height: 1;
+  user-select: none;
+  will-change: left, top;
+  transition: none;
+  /* offset so the bee's stinger tip aligns with the click point */
+  transform: translate(-2px, -14px);
+}
+
+.pollen {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99998;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pollenDrift 0.65s ease-out forwards;
+}
+
+@keyframes pollenDrift {
+  0%   { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+  50%  { opacity: 0.5; }
+  100% { opacity: 0; transform: translate(var(--dx), calc(-50% - 18px)) scale(0.25); }
 }
 
 /* Background image — always visible at low opacity */

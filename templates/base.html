@@ -55,5 +55,51 @@
     })();
   </script>
   {% block extra_js %}{% endblock %}
+
+  <script>
+  (function() {
+    var bee = document.createElement('div');
+    bee.className = 'bee-cursor';
+    bee.textContent = '🐝';
+    document.body.appendChild(bee);
+
+    var lastPx = -100, lastPy = -100, facingRight = true;
+    var DIST = 18;
+    var COLORS = ['#f59e0b','#d97706','#fde68a','#fbbf24','#f59e0b'];
+
+    document.addEventListener('mousemove', function(e) {
+      var x = e.clientX, y = e.clientY;
+      bee.style.left = x + 'px';
+      bee.style.top  = y + 'px';
+
+      var dx = x - lastPx;
+      if (Math.abs(dx) > 2) {
+        if (dx < 0 && facingRight)  { bee.style.transform = 'translate(-2px,-14px) scaleX(-1)'; facingRight = false; }
+        if (dx > 0 && !facingRight) { bee.style.transform = 'translate(-2px,-14px) scaleX(1)';  facingRight = true; }
+      }
+
+      if (Math.hypot(x - lastPx, y - lastPy) >= DIST) {
+        lastPx = x; lastPy = y;
+        var dot = document.createElement('div');
+        dot.className = 'pollen';
+        var size  = 3 + Math.random() * 4;
+        var offX  = (Math.random() - 0.5) * 10;
+        var drift = (Math.random() - 0.5) * 20;
+        dot.style.cssText =
+          'left:'   + (x + offX) + 'px;' +
+          'top:'    + (y - 2)    + 'px;' +
+          'width:'  + size       + 'px;' +
+          'height:' + size       + 'px;' +
+          'background:' + COLORS[Math.floor(Math.random() * COLORS.length)] + ';' +
+          '--dx:'   + drift      + 'px';
+        document.body.appendChild(dot);
+        setTimeout(function() { dot.remove(); }, 680);
+      }
+    });
+
+    document.addEventListener('mouseleave', function() { bee.style.opacity = '0'; });
+    document.addEventListener('mouseenter', function() { bee.style.opacity = '1'; });
+  })();
+  </script>
 </body>
 </html>
