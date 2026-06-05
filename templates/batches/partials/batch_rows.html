@@ -1,9 +1,51 @@
+{% load static %}
+<div class="batch-rows" id="batch-rows">
 {% for batch in batches %}
-<div class="batch-row" data-stage="{{ batch.stage }}">
-  <span>{{ batch.name }}</span>
-  <span>{{ batch.stage }}</span>
-  <span>{{ batch.checklist_progress }}%</span>
-</div>
+  <a href="{% url 'batches:detail' batch.pk %}" class="batch-row" data-stage="{{ batch.stage }}">
+    <div class="flask" data-stage="{{ batch.stage }}"
+         style="--fill: {{ batch.checklist_progress }}%"></div>
+    <div class="batch-row-info">
+      <div class="batch-row-name">{{ batch.name }}
+        {% if batch.user != request.user %}
+          <span style="font-weight:400;font-size:0.75rem;color:var(--brown-700);">
+            ({{ batch.user.get_full_name|default:batch.user.username }})
+          </span>
+        {% endif %}
+      </div>
+      <div class="batch-row-meta">
+        {{ batch.primary_date }} · {{ batch.batch_size }} gal
+      </div>
+    </div>
+    <span class="badge badge-{{ batch.stage }}">{{ batch.stage|capfirst }}</span>
+    <div class="batch-row-abv">
+      {% if batch.fg %}
+        <div class="abv-value" style="color:var(--stage-{{ batch.stage }});">
+          {% with og=batch.og|floatformat:3 fg=batch.fg|floatformat:3 %}
+          {{ batch.og }}
+          {% endwith %}
+        </div>
+        <div class="abv-label">→ {{ batch.fg }}</div>
+      {% else %}
+        <div class="abv-value" style="color:var(--brown-700);">—</div>
+        <div class="abv-label">FG TBD</div>
+      {% endif %}
+    </div>
+    <div class="batch-row-progress">
+      <div class="progress-track">
+        <div class="progress-fill" data-stage="{{ batch.stage }}"
+             style="width:{{ batch.checklist_progress }}%"></div>
+      </div>
+      <span class="steps-label">{{ batch.checklist_progress }}%</span>
+    </div>
+    {% if batch.user == request.user %}
+      <a href="{% url 'batches:edit' batch.pk %}" class="btn btn-ghost no-print"
+         onclick="event.stopPropagation();" style="padding:0.25rem 0.5rem;font-size:0.8rem;">✏️</a>
+    {% endif %}
+  </a>
 {% empty %}
-<p>No batches found.</p>
+  <div class="empty-state">
+    <p>Your cellar is empty.</p>
+    <a href="{% url 'batches:create' %}" class="btn btn-primary">Start your first batch →</a>
+  </div>
 {% endfor %}
+</div>
