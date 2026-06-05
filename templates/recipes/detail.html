@@ -1,42 +1,30 @@
 {% extends "base.html" %}
-{% load static %}
-
 {% block title %}{{ recipe.name }}{% endblock %}
 
 {% block content %}
 <div class="detail-panel">
-  <h1 class="text-2xl">
-    {{ recipe.name }}
-    {% if recipe.user and request.user != recipe.user %}
-      ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Admin" }})
-    {% endif %}
-  </h1>
-
-  <p class="mb-2"><strong>Visibility:</strong>
-    {{ recipe.is_public|yesno:"Public,Private" }}
-  </p>
-
-  {% if request.user == recipe.user %}
-    <form method="post" action="{% url 'recipes:toggle_visibility' recipe.pk %}">
-      {% csrf_token %}
-      <div class="button-group no-print">
-        <button type="submit" class="btn btn-sm btn-outline-secondary">
-          {% if recipe.is_public %}
-            Make Private
-          {% else %}
-            Make Public
-          {% endif %}
-        </button>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;gap:0.75rem;flex-wrap:wrap;">
+    <div>
+      <h1>{{ recipe.name }}
+        {% if recipe.user and request.user != recipe.user %}
+          <span style="font-size:0.8rem;font-weight:400;color:var(--brown-700);">
+            ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Skål" }})
+          </span>
+        {% elif not recipe.user %}
+          <span style="font-size:0.8rem;font-weight:400;color:var(--brown-700);">(Skål)</span>
+        {% endif %}
+      </h1>
+      <div style="margin-top:0.3rem;">
+        <span class="badge {% if recipe.is_public %}badge-public{% else %}badge-private{% endif %}">
+          {{ recipe.is_public|yesno:"Public,Private" }}
+        </span>
+        <span style="font-size:0.8rem;color:var(--brown-700);margin-left:0.5rem;">{{ recipe.batch_size }} gal</span>
       </div>
-    </form>
-  {% endif %}
-
-  <p class="mb-4">
-    <strong>Batch Size:</strong> {{ recipe.batch_size }} gal
-  </p>
+    </div>
+  </div>
 
   <h2>Ingredients</h2>
-  <ul>
+  <ul style="list-style:disc inside;font-size:0.875rem;margin:0.5rem 0 1rem 0.5rem;line-height:1.7;">
     {% for ri in ingredients %}
       <li>{{ ri.quantity }} {{ ri.ingredient.name }}</li>
     {% empty %}
@@ -45,29 +33,39 @@
   </ul>
 
   <h2>Instructions</h2>
-  <div class="prose">
-    {{ recipe.instructions|linebreaks }}
-  </div>
+  <div style="font-size:0.875rem;line-height:1.7;white-space:pre-wrap;margin-bottom:1.25rem;">{{ recipe.instructions }}</div>
 
   {% if request.user == recipe.user %}
-    <div class="button-group mt-6 no-print">
-      <button type="button" onclick="window.location.href='{% url 'recipes:edit' recipe.pk %}'" class="button primary">
-        ✏️ Edit Recipe
-      </button>
-      <button type="button" onclick="window.location.href='{% url 'recipes:delete' recipe.pk %}'" class="button primary">
-        🗑️ Delete Recipe
-      </button>
+    <div class="btn-group no-print" style="margin-bottom:0.75rem;">
+      <a href="{% url 'batches:create' %}?recipe={{ recipe.pk }}" class="btn btn-primary">🍺 Start a Batch</a>
+      <form method="post" action="{% url 'recipes:clone' recipe.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">📋 Clone Recipe</button>
+      </form>
+    </div>
+    <div class="btn-group no-print" style="margin-bottom:0.75rem;">
+      <a href="{% url 'recipes:edit' recipe.pk %}" class="btn btn-secondary">✏️ Edit</a>
+      <a href="{% url 'recipes:delete' recipe.pk %}" class="btn btn-danger">🗑️ Delete</a>
+      <form method="post" action="{% url 'recipes:toggle_visibility' recipe.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost">
+          {{ recipe.is_public|yesno:"Make Private,Make Public" }}
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="btn-group no-print" style="margin-bottom:0.75rem;">
+      <a href="{% url 'batches:create' %}?recipe={{ recipe.pk }}" class="btn btn-primary">🍺 Start a Batch</a>
+      <form method="post" action="{% url 'recipes:clone' recipe.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">📋 Clone to My Recipes</button>
+      </form>
     </div>
   {% endif %}
 
-  <div class="button-group mt-4 no-print">
-    <button type="button" onclick="window.location.href='{% url 'recipes:index' %}'" class="button secondary">
-      🔙 Back to Recipes
-    </button>
-    <button type="button" onclick="window.print()" class="button primary">
-      🖨️ Print Recipe
-    </button>
+  <div class="btn-group no-print">
+    <a href="{% url 'recipes:index' %}" class="btn btn-ghost">← Recipes</a>
+    <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
   </div>
 </div>
 {% endblock %}
-
