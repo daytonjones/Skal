@@ -31,6 +31,10 @@ else
   echo "⚠️  DJANGO_SUPERUSER_{USERNAME,EMAIL,PASSWORD} not fully set — skipping superuser creation."
 fi
 
+# Ensure media upload directory exists and is writable
+mkdir -p /app/media
+chmod 755 /app/media
+
 echo "🚀 Launching application…"
 exec "$@"
 
