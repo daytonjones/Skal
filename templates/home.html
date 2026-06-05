@@ -91,9 +91,11 @@
 {% if recent_images %}
 <div class="photo-strip-section">
   <p class="section-label">From the Cellar</p>
-  <div class="photo-strip">
+  <div class="cellar-slideshow" id="cellarSlideshow">
     {% for img in recent_images %}
-    <a href="{% url 'batches:detail' img.batch.pk %}" title="{{ img.batch.name }}">
+    <a href="{% url 'batches:detail' img.batch.pk %}"
+       class="cellar-slide{% if forloop.first %} active{% endif %}"
+       title="{{ img.batch.name }}">
       <img src="{{ img.image.url }}" alt="{{ img.caption|default:img.batch.name }}">
     </a>
     {% endfor %}
@@ -102,6 +104,20 @@
 {% endif %}
 
 <script>
+  (function() {
+    const show = document.getElementById('cellarSlideshow');
+    if (show) {
+      const slides = show.querySelectorAll('.cellar-slide');
+      if (slides.length > 1) {
+        let cur = 0;
+        setInterval(function() {
+          slides[cur].classList.remove('active');
+          cur = (cur + 1) % slides.length;
+          slides[cur].classList.add('active');
+        }, 10000);
+      }
+    }
+  })();
   (function() {
     const btn = document.getElementById('play-skal');
     const player = document.getElementById('player-skal');
