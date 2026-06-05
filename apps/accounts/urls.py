@@ -6,7 +6,8 @@ from .views import (
     SignUpView,
     ProfileUpdateView,
     CustomPasswordChangeView,
-    export_user_data,  # ✅ NEW
+    export_user_data,
+    toggle_theme,
 )
 
 app_name = "accounts"
@@ -17,6 +18,7 @@ urlpatterns = [
     path("signup/", SignUpView.as_view(),               name="signup"),
     path("profile/", ProfileUpdateView.as_view(),       name="profile"),
     path("password/", CustomPasswordChangeView.as_view(), name="password_change"),
-    path("export/", export_user_data,                   name="export_user_data"),  # ✅ NEW
+    path("export/", export_user_data,                   name="export_user_data"),
+    path("theme/toggle/", toggle_theme,                 name="toggle_theme"),
 ]
 

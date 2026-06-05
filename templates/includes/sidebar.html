@@ -40,18 +40,67 @@
     </li>
   </ul>
 
-  <div class="sidebar-user">
-    {% if request.user.avatar %}
-      <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
-    {% else %}
-      <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
-    {% endif %}
-    <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
-    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
-      {% csrf_token %}
-      <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:rgba(253,230,138,0.5);padding:0;">
-        Sign out
-      </button>
-    </form>
+  <div class="sidebar-bottom" id="sidebar-bottom">
+    <!-- Profile panel — appears above the avatar button -->
+    <div class="sidebar-profile-panel" id="sidebar-profile-panel">
+      <a href="{% url 'accounts:profile' %}" class="sidebar-panel-item">
+        <span>⚙️</span> Profile Settings
+      </a>
+      <hr class="sidebar-panel-divider">
+      <form method="post" action="{% url 'accounts:toggle_theme' %}" style="display:contents;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="sidebar-panel-item">
+          {% if request.user.theme == 'dark' %}
+            <span>☀️</span> Switch to Light
+          {% else %}
+            <span>🌙</span> Switch to Dark
+          {% endif %}
+        </button>
+      </form>
+      <a href="{% url 'accounts:password_change' %}" class="sidebar-panel-item">
+        <span>🔑</span> Change Password
+      </a>
+      <hr class="sidebar-panel-divider">
+      <form method="post" action="{% url 'accounts:logout' %}" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="sidebar-panel-item danger">
+          <span>🚪</span> Sign Out
+        </button>
+      </form>
+    </div>
+
+    <!-- Avatar button -->
+    <div class="sidebar-user" id="sidebar-user-btn">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+      {% else %}
+        <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+      {% endif %}
+      <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+      <span class="sidebar-user-caret">▲</span>
+    </div>
   </div>
 </aside>
+
+<script>
+(function() {
+  var bottom = document.getElementById('sidebar-bottom');
+  var btn    = document.getElementById('sidebar-user-btn');
+  var panel  = document.getElementById('sidebar-profile-panel');
+  if (!btn || !panel) return;
+
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var open = panel.classList.toggle('open');
+    bottom.classList.toggle('open', open);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!bottom.contains(e.target)) {
+      panel.classList.remove('open');
+      bottom.classList.remove('open');
+    }
+  });
+})();
+</script>

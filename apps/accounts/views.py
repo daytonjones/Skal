@@ -29,6 +29,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.enums import TA_LEFT
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.serializers.json import DjangoJSONEncoder
 
 
@@ -148,6 +149,15 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = "accounts/password_change.html"
     success_url = reverse_lazy("accounts:profile")
     login_url = reverse_lazy("accounts:login")
+
+
+@login_required
+@require_POST
+def toggle_theme(request):
+    user = request.user
+    user.theme = 'dark' if user.theme == 'light' else 'light'
+    user.save(update_fields=['theme'])
+    return redirect(request.POST.get('next', '/'))
 
 
 @login_required
