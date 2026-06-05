@@ -1,198 +1,105 @@
 {% extends "base.html" %}
-{% load static %}
-
 {% block title %}Yeast Reference{% endblock %}
 
-{% block extra_css %}
-<style>
-  .yeast-panel {
-    background-color: rgba(255,255,255,0.75);
-    padding: 1rem;
-    border-radius: .5rem;
-    margin-top: 1rem;
-  }
-  body.dark .yeast-panel {
-    background-color: rgba(30,30,30,0.85);
-    color: #e0e0e0;
-  }
-  .yeast-panel h1 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  .yeast-panel table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .yeast-panel th,
-  .yeast-panel td {
-    border: 1px solid #ccc;
-    padding: 0.5rem;
-    text-align: left;
-    cursor: pointer;
-  }
-  .yeast-panel th {
-    background-color: #f0f0f0;
-  }
-  body.dark .yeast-panel th {
-    background-color: #333;
-  }
-  .filter-form {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end;
-  }
-  .filter-form input,
-  .filter-form select {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: .25rem;
-  }
-  body.dark .filter-form input,
-  body.dark .filter-form select {
-    background-color: #333;
-    color: #e0e0e0;
-    border-color: #555;
-  }
-  .pagination {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-  .pagination a, .pagination span {
-    padding: 0.4rem 0.7rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #333;
-  }
-  .pagination .current {
-    font-weight: bold;
-    background: #4a90e2;
-    color: #fff;
-    border-color: #4a90e2;
-  }
-  body.dark .pagination a,
-  body.dark .pagination span {
-    color: #eee;
-    border-color: #555;
-  }
-  body.dark .pagination .current {
-    background: #4a90e2;
-    color: #fff;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container mx-auto mt-6">
-  <div class="yeast-panel">
-    <h1>Yeast Reference</h1>
-
-    <form method="get" class="filter-form">
-      <div>
-        <label for="q">Search:</label><br>
-        <input type="text" name="q" id="q" placeholder="Name or Notes..." value="{{ q }}">
-      </div>
-      <div>
-        <label for="tolerance">Tolerance:</label><br>
-        <select name="tolerance" id="tolerance">
-          <option value="">— any —</option>
-          {% for t in tolerance_options %}
-            <option value="{{ t }}" {% if tolerance|default:'' == t|stringformat:"s" %}selected{% endif %}>{{ t }}%</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label for="attenuation">Attenuation:</label><br>
-        <select name="attenuation" id="attenuation">
-          <option value="">— any —</option>
-          {% for a in attenuation_options %}
-            <option value="{{ a }}" {% if attenuation|default:'' == a|stringformat:"s" %}selected{% endif %}>{{ a }}%</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <button type="submit" class="button secondary">Filter</button>
-      </div>
-    </form>
-
-    <table id="yeast-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Tolerance (%)</th>
-          <th>Attenuation (%)</th>
-          <th>Temperature Range</th>
-          <th>Suggested Style</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for yeast in page_obj.object_list %}
-          <tr>
-            <td>{{ yeast.name }}</td>
-            <td>{{ yeast.type }}</td>
-            <td>{{ yeast.tolerance }}</td>
-            <td>{{ yeast.attenuation }}</td>
-            <td>{{ yeast.temp_range }}</td>
-            <td>{{ yeast.mead_style }}</td>
-            <td>{{ yeast.notes }}</td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="7"><em>No yeast strains found.</em></td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-      {% if page_obj.has_previous %}
-        <a href="?{% if q %}q={{ q }}&{% endif %}{% if tolerance %}tolerance={{ tolerance }}&{% endif %}{% if attenuation %}attenuation={{ attenuation }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
-      {% endif %}
-      <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?{% if q %}q={{ q }}&{% endif %}{% if tolerance %}tolerance={{ tolerance }}&{% endif %}{% if attenuation %}attenuation={{ attenuation }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
-      {% endif %}
-    </div>
-    {% endif %}
-  </div>
+<div class="page-header">
+  <h1 class="page-title">Yeast Reference</h1>
 </div>
+
+<form method="get" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;margin-bottom:1rem;">
+  <div>
+    <label>Search</label>
+    <input type="text" name="q" placeholder="Name or notes..." value="{{ q }}" style="width:200px;">
+  </div>
+  <div>
+    <label>Tolerance</label>
+    <select name="tolerance" style="width:auto;">
+      <option value="">Any</option>
+      {% for t in tolerance_options %}
+        <option value="{{ t }}" {% if tolerance|default:'' == t|stringformat:"s" %}selected{% endif %}>{{ t }}%</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Attenuation</label>
+    <select name="attenuation" style="width:auto;">
+      <option value="">Any</option>
+      {% for a in attenuation_options %}
+        <option value="{{ a }}" {% if attenuation|default:'' == a|stringformat:"s" %}selected{% endif %}>{{ a }}%</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  {% if q or tolerance or attenuation %}
+    <a href="{% url 'yeast' %}" class="btn btn-ghost">Clear</a>
+  {% endif %}
+</form>
+
+<div style="overflow-x:auto;">
+<table class="calc-table" id="yeast-table" style="font-size:0.85rem;">
+  <thead>
+    <tr>
+      <th style="cursor:pointer;">Name</th>
+      <th style="cursor:pointer;">Type</th>
+      <th style="cursor:pointer;">Tolerance</th>
+      <th style="cursor:pointer;">Attenuation</th>
+      <th>Temp Range</th>
+      <th>Best For</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for yeast in page_obj.object_list %}
+    <tr>
+      <td style="font-weight:600;">{{ yeast.name }}</td>
+      <td><span class="badge {% if yeast.type == 'dry' %}badge-public{% else %}badge-private{% endif %}">{{ yeast.type }}</span></td>
+      <td>{{ yeast.tolerance }}%</td>
+      <td>{{ yeast.attenuation }}%</td>
+      <td style="white-space:nowrap;">{{ yeast.temp_range }}</td>
+      <td>{{ yeast.mead_style }}</td>
+      <td style="font-size:0.78rem;color:var(--brown-700);">{{ yeast.notes }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" style="text-align:center;color:var(--brown-700);padding:1.5rem;">No yeast strains found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div style="display:flex;justify-content:center;gap:0.5rem;margin-top:1rem;">
+  {% if page_obj.has_previous %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if tolerance %}tolerance={{ tolerance }}&{% endif %}{% if attenuation %}attenuation={{ attenuation }}&{% endif %}page={{ page_obj.previous_page_number }}" class="btn btn-secondary">← Prev</a>
+  {% endif %}
+  <span class="btn btn-ghost" style="cursor:default;">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if tolerance %}tolerance={{ tolerance }}&{% endif %}{% if attenuation %}attenuation={{ attenuation }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   const table = document.getElementById("yeast-table");
   const headers = table.querySelectorAll("th");
-  let sortDirection = 1;
-
-  headers.forEach((header, index) => {
-    header.addEventListener("click", () => {
+  let sortDir = 1;
+  headers.forEach(function(header, index) {
+    header.addEventListener("click", function() {
       const tbody = table.querySelector("tbody");
       const rows = Array.from(tbody.querySelectorAll("tr"));
-      const isNumeric = !isNaN(parseFloat(rows[0]?.cells[index].textContent));
-
-      rows.sort((a, b) => {
-        const aText = a.cells[index].textContent.trim();
-        const bText = b.cells[index].textContent.trim();
-
-        return isNumeric
-          ? sortDirection * (parseFloat(aText) - parseFloat(bText))
-          : sortDirection * aText.localeCompare(bText);
+      const isNum = !isNaN(parseFloat(rows[0]?.cells[index]?.textContent));
+      rows.sort(function(a, b) {
+        const at = a.cells[index]?.textContent.trim() || '';
+        const bt = b.cells[index]?.textContent.trim() || '';
+        return isNum ? sortDir * (parseFloat(at) - parseFloat(bt))
+                     : sortDir * at.localeCompare(bt);
       });
-
-      sortDirection *= -1;
-
-      rows.forEach(row => tbody.appendChild(row));
+      sortDir *= -1;
+      rows.forEach(function(r) { tbody.appendChild(r); });
     });
   });
 });
 </script>
 {% endblock %}
-

@@ -2,26 +2,59 @@
 {% block title %}Login or Register{% endblock %}
 
 {% block content %}
-  <h1>Welcome to Skål</h1>
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-brand">
+      <h1>Skål</h1>
+      <p>Your mead brewing companion</p>
+    </div>
 
-  <div class="auth-forms">
-    <section class="login-section">
-      <h2>Login</h2>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="showTab('login')">Login</div>
+      <div class="auth-tab" id="tab-signup" onclick="showTab('signup')">Register</div>
+    </div>
+
+    <div id="form-login">
       <form method="post" action="{% url 'accounts:login' %}">
         {% csrf_token %}
-        {{ login_form.as_p }}
-        <button type="submit">Login</button>
+        {% for field in login_form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;">
+          Sign In
+        </button>
       </form>
-    </section>
+    </div>
 
-    <section class="signup-section">
-      <h2>Register</h2>
+    <div id="form-signup" style="display:none;">
       <form method="post" action="{% url 'accounts:signup' %}">
         {% csrf_token %}
-        {{ signup_form.as_p }}
-        <button type="submit">Sign Up</button>
+        {% for field in signup_form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;">
+          Create Account
+        </button>
       </form>
-    </section>
+    </div>
   </div>
-{% endblock %}
+</div>
 
+<script>
+function showTab(tab) {
+  document.getElementById('form-login').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('form-signup').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+}
+{% if signup_form.errors %}showTab('signup');{% endif %}
+</script>
+{% endblock %}
