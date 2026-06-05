@@ -1,8 +1,33 @@
+<div class="recipe-rows" id="recipe-rows">
 {% for recipe in recipes %}
-<div class="recipe-row">
-  <span>{{ recipe.name }}</span>
-  <span>{{ recipe.batch_size }} gal</span>
-</div>
+  <a href="{% url 'recipes:detail' recipe.pk %}" class="recipe-row">
+    <div class="recipe-row-info">
+      <div class="recipe-row-name">{{ recipe.name }}
+        {% if recipe.user and request.user != recipe.user %}
+          <span style="font-weight:400;font-size:0.75rem;color:var(--brown-700);">
+            ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Skål" }})
+          </span>
+        {% elif not recipe.user %}
+          <span style="font-weight:400;font-size:0.75rem;color:var(--brown-700);">(Skål)</span>
+        {% endif %}
+      </div>
+      <div class="recipe-row-meta">
+        {{ recipe.batch_size }} gal ·
+        {{ recipe.recipeingredient_set.count }} ingredient{{ recipe.recipeingredient_set.count|pluralize }}
+      </div>
+    </div>
+    <span class="badge {% if recipe.is_public %}badge-public{% else %}badge-private{% endif %}">
+      {{ recipe.is_public|yesno:"Public,Private" }}
+    </span>
+    {% if recipe.user == request.user %}
+      <a href="{% url 'recipes:edit' recipe.pk %}" class="btn btn-ghost no-print"
+         onclick="event.stopPropagation();" style="padding:0.25rem 0.5rem;font-size:0.8rem;">✏️</a>
+    {% endif %}
+  </a>
 {% empty %}
-<p>No recipes found.</p>
+  <div class="empty-state">
+    <p>No recipes found.</p>
+    <a href="{% url 'recipes:create' %}" class="btn btn-primary">Create your first recipe →</a>
+  </div>
 {% endfor %}
+</div>
