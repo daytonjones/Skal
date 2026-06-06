@@ -1,159 +1,129 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}{{ batch.name }}{% endblock %}
 
 {% block content %}
-<div class="detail-panel" data-batch-id="{{ batch.id }}">
-  <h1 class="text-2xl">
-    {{ batch.name }}
-    {% if batch.user and request.user != batch.user %}
-      ({{ batch.user.get_full_name|default:batch.user.username|default:"Admin" }})
-    {% endif %}
-  </h1>
+<div class="detail-panel">
 
-  <p><strong>Batch Size:</strong> {{ batch.batch_size }} gal</p>
-  <p><strong>OG:</strong> {{ batch.og }}</p>
-  <p><strong>FG:</strong> {{ batch.fg }}</p>
-  <p><strong>Primary Date:</strong> {{ batch.primary_date }}</p>
-  <p><strong>Secondary Date:</strong> {{ batch.secondary_date }}</p>
-  <p><strong>Bottling Date:</strong> {{ batch.bottling_date }}</p>
-
-  <h2>Checklist</h2>
-  <div id="progress-container" class="my-4">
-    <div class="bg-gray-200 rounded h-4">
-      <div id="progress-bar" class="bg-green-500 h-4 rounded" style="width:0%"></div>
+  <div class="detail-hero">
+    <div class="flask flask-lg" data-stage="{{ batch.stage }}"
+         style="--fill: {{ batch.checklist_progress }}%; color: var(--stage-{{ batch.stage }})"></div>
+    <div class="detail-hero-info">
+      <h1>{{ batch.name }}
+        {% if batch.user and request.user != batch.user %}
+          <span style="font-size:0.8rem;font-weight:400;color:var(--brown-700);">
+            ({{ batch.user.get_full_name|default:batch.user.username }})
+          </span>
+        {% endif %}
+      </h1>
+      <div class="meta">
+        {{ batch.primary_date }} · {{ batch.batch_size }} gal ·
+        <span class="badge badge-{{ batch.stage }}">{{ batch.stage|capfirst }}</span>
+        <span class="badge {% if batch.is_public %}badge-public{% else %}badge-private{% endif %}">
+          {{ batch.is_public|yesno:"Public,Private" }}
+        </span>
+      </div>
+      {% if batch.recipe %}
+        <div class="meta" style="margin-top:0.2rem;">
+          Recipe: <a href="{% url 'recipes:detail' batch.recipe.pk %}">{{ batch.recipe.name }}</a>
+        </div>
+      {% endif %}
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="detail-stat-value">{{ batch.og|floatformat:3 }}</div>
+          <div class="detail-stat-label">OG</div>
+        </div>
+        {% if batch.fg %}
+          <div class="detail-stat">
+            <div class="detail-stat-value">{{ batch.fg|floatformat:3 }}</div>
+            <div class="detail-stat-label">FG</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-value" style="color:var(--stage-{{ batch.stage }});">{{ abv|floatformat:1 }}%</div>
+            <div class="detail-stat-label">ABV</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-value">{{ calories|floatformat:0 }}</div>
+            <div class="detail-stat-label">Cal/5oz</div>
+          </div>
+        {% endif %}
+      </div>
     </div>
-    <p id="progress-text" class="text-sm mt-1">0% complete</p>
   </div>
 
-  <ul id="checklist">
-    <li>
-      <input type="checkbox" class="chk" data-field="create_must_done" {% if batch.create_must_done %}checked{% endif %}>
-      Create Must <span class="chk-date">{% if batch.create_must_date %}{{ batch.create_must_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="pitch_yeast_done" {% if batch.pitch_yeast_done %}checked{% endif %}>
-      Pitch Yeast <span class="chk-date">{% if batch.pitch_yeast_date %}{{ batch.pitch_yeast_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="fo_24h_done" {% if batch.fo_24h_done %}checked{% endif %}>
-      FO 24h <span class="chk-date">{% if batch.fo_24h_date %}{{ batch.fo_24h_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="fo_48h_done" {% if batch.fo_48h_done %}checked{% endif %}>
-      FO 48h <span class="chk-date">{% if batch.fo_48h_date %}{{ batch.fo_48h_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="fo_72h_done" {% if batch.fo_72h_done %}checked{% endif %}>
-      FO 72h <span class="chk-date">{% if batch.fo_72h_date %}{{ batch.fo_72h_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="fo_1_3_break_done" {% if batch.fo_1_3_break_done %}checked{% endif %}>
-      FO 1/3 Sugar Break <span class="chk-date">{% if batch.fo_1_3_break_date %}{{ batch.fo_1_3_break_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="rack_secondary_done" {% if batch.rack_secondary_done %}checked{% endif %}>
-      Racked to Secondary <span class="chk-date">{% if batch.rack_secondary_date %}{{ batch.rack_secondary_date }}{% endif %}</span>
-    </li>
-    <li>
-      <input type="checkbox" class="chk" data-field="bottled_done" {% if batch.bottled_done %}checked{% endif %}>
-      Bottled <span class="chk-date">{% if batch.bottled_date %}{{ batch.bottled_date }}{% endif %}</span>
-    </li>
-  </ul>
-
-  <p><strong>ABV:</strong>
-    {% if abv %}{{ abv|floatformat:2 }}%{% else %}<em>N/A</em>{% endif %}
-  </p>
-
-  <p><strong>Estimated Calories per Glass:</strong>
-    {% if calories %}{{ calories|floatformat:0 }} cal (5oz){% else %}<em>N/A</em>{% endif %}
-  </p>
-
-  <h2>Notes</h2>
-  <div class="prose">{{ batch.notes|linebreaks }}</div>
-
-  <p><strong>Visibility:</strong>
-    {{ batch.is_public|yesno:"Public,Private" }}
-  </p>
-
-  {% if request.user == batch.user %}
-    <div class="button-group mt-6 no-print">
-      <button type="button" onclick="window.location.href='{% url 'batches:edit' batch.pk %}'" class="button primary">
-        ✏️ Edit Batch
-      </button>
-      <button type="button" onclick="window.location.href='{% url 'batches:delete' batch.pk %}'" class="button primary">
-        🗑️ Delete Batch
-      </button>
+  <div style="margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+      <h2 style="margin:0;">Checklist</h2>
+      <span style="font-size:0.8rem;color:var(--brown-700);" id="progress-text">{{ batch.checklist_progress }}% complete</span>
     </div>
+    <div class="progress-track" style="margin-bottom:0.75rem;">
+      <div class="progress-fill" id="progress-bar" data-stage="{{ batch.stage }}"
+           style="width:{{ batch.checklist_progress }}%"></div>
+    </div>
+
+    <ul class="checklist" id="checklist">
+      {% with b=batch %}
+      {% include "batches/partials/checklist_item.html" with field_base="create_must"   label="Create Must"           done=b.create_must_done    date=b.create_must_date   note=b.create_must_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="pitch_yeast"  label="Pitch Yeast"           done=b.pitch_yeast_done   date=b.pitch_yeast_date  note=b.pitch_yeast_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="fo_24h"       label="Fermaid O — 24h"       done=b.fo_24h_done        date=b.fo_24h_date       note=b.fo_24h_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="fo_48h"       label="Fermaid O — 48h"       done=b.fo_48h_done        date=b.fo_48h_date       note=b.fo_48h_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="fo_72h"       label="Fermaid O — 72h"       done=b.fo_72h_done        date=b.fo_72h_date       note=b.fo_72h_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="fo_1_3_break" label="1/3 Sugar Break"       done=b.fo_1_3_break_done  date=b.fo_1_3_break_date note=b.fo_1_3_break_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="rack_secondary" label="Rack to Secondary"  done=b.rack_secondary_done date=b.rack_secondary_date note=b.rack_secondary_note %}
+      {% include "batches/partials/checklist_item.html" with field_base="bottled"      label="Bottled"               done=b.bottled_done        date=b.bottled_date      note=b.bottled_note %}
+      {% endwith %}
+    </ul>
+  </div>
+
+  {% if batch.notes %}
+  <div style="margin-bottom:1.25rem;">
+    <h2>Notes</h2>
+    <div style="font-size:0.875rem;line-height:1.6;white-space:pre-wrap;">{{ batch.notes }}</div>
+  </div>
   {% endif %}
 
-  <div class="button-group mt-4 no-print">
-    <button type="button" onclick="window.location.href='{% url 'batches:index' %}'" class="button secondary">
-      🔙 Back to Batches
-    </button>
-    <button type="button" onclick="window.print()" class="button primary">
-      🖨️ Print Batch
-    </button>
+  {% if request.user == batch.user %}
+    <div class="btn-group no-print" style="margin-bottom:1rem;">
+      <a href="{% url 'batches:edit' batch.pk %}" class="btn btn-primary">✏️ Edit Batch</a>
+      <a href="{% url 'batches:delete' batch.pk %}" class="btn btn-danger">🗑️ Delete</a>
+      <form method="post" action="{% url 'batches:toggle_visibility' batch.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">
+          {{ batch.is_public|yesno:"Make Private,Make Public" }}
+        </button>
+      </form>
+    </div>
+  {% endif %}
+  <div class="btn-group no-print">
+    <a href="{% url 'batches:index' %}" class="btn btn-secondary">← Cellar</a>
+    <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
   </div>
 
   {% if images %}
-    <div class="batch-images">
-      <h2>Images</h2>
+    <div class="batch-images" style="margin-top:1.5rem;">
+      <h2>Photos</h2>
       {% for img in images %}
         <div>
-          <img src="{{ img.image.url }}" alt="{{ img.caption }}">
-          {% if img.caption %}
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ img.caption }}</p>
-          {% endif %}
+          <img src="{{ img.image.url }}" alt="{{ img.caption|default:batch.name }}">
+          {% if img.caption %}<p>{{ img.caption }}</p>{% endif %}
         </div>
       {% endfor %}
     </div>
   {% endif %}
+
 </div>
 
 <script>
-function updateProgress() {
-  const checks = document.querySelectorAll("#checklist .chk");
-  const total = checks.length;
-  let done = 0;
-  checks.forEach(c => { if (c.checked) done++; });
-  const pct = Math.round((done / total) * 100);
-  document.getElementById("progress-bar").style.width = pct + "%";
-  document.getElementById("progress-text").innerText = pct + "% complete";
-}
-
-function saveChecklist(field, value, checkbox) {
-  const batchId = document.querySelector(".detail-panel").dataset.batchId;
-  fetch(`/batches/${batchId}/update-checklist/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": "{{ csrf_token }}",
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: `field=${field}&value=${value}`
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success && data.date !== undefined) {
-      const dateSpan = checkbox.parentElement.querySelector(".chk-date");
-      dateSpan.textContent = data.date ? `- ${data.date}` : "";
-    }
-    if (!data.success) {
-      alert("Error updating checklist: " + (data.error || "unknown"));
-    }
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("#checklist .chk").forEach(c => {
-    c.addEventListener("change", (e) => {
-      updateProgress();
-      saveChecklist(e.target.dataset.field, e.target.checked, e.target);
-    });
-  });
-  updateProgress();
+document.addEventListener('htmx:afterSwap', function(e) {
+  if (e.target.closest('#checklist')) {
+    const checks = document.querySelectorAll('#checklist input[type="checkbox"]');
+    const done = Array.from(checks).filter(c => c.checked).length;
+    const pct = Math.round((done / checks.length) * 100);
+    const bar = document.getElementById('progress-bar');
+    const txt = document.getElementById('progress-text');
+    if (bar) bar.style.width = pct + '%';
+    if (txt) txt.textContent = pct + '% complete';
+  }
 });
 </script>
 {% endblock %}
-

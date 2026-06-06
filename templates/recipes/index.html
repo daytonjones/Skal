@@ -1,76 +1,52 @@
 {% extends "base.html" %}
-{% load static %}
-
 {% block title %}Recipes{% endblock %}
 
-{% block extra_css %}{% endblock %}
-
 {% block content %}
-<div class="container mx-auto mt-6">
-  <h1 class="text-2xl font-semibold mb-4">Recipes</h1>
-
-  <button
-    onclick="window.location.href='{% url 'recipes:create' %}'"
-    class="button primary"
-  >
-    + Add New Recipe
-  </button>
-
-  <div class="recipes-panel">
-    <label for="recipe-select" class="block mb-2 font-medium">
-      Select a recipe:
-    </label>
-    <select
-      id="recipe-select"
-      onchange="if(this.value) window.location=this.value"
-    >
-      <option value="">— choose one —</option>
-      {% for recipe in recipes %}
-        <option value="{% url 'recipes:detail' recipe.pk %}">
-          {{ recipe.name }} ({{ recipe.batch_size }} gal)
-          {% if recipe.user and request.user != recipe.user %}
-            ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Admin" }})
-          {% endif %}
-        </option>
-      {% empty %}
-        <option value="">No recipes yet</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  {% if featured %}
-  <span class="line-span"></span>
-  <h1> Featured Recipe:</h1>
-    <div class="featured-recipe-panel">
-      <h1>
-        {{ featured.name }}
-        {% if featured.user and request.user != featured.user %}
-          ({{ featured.user.get_full_name|default:featured.user.username|default:"Admin" }})
-        {% endif %}
-      </h1>
-      <p><strong>Batch Size:</strong> {{ featured.batch_size }} gal</p>
-
-      <h2>Ingredients</h2>
-      <ul>
-        {% for ri in featured.recipeingredient_set.all|dictsort:"order" %}
-          <li>{{ ri.quantity }} {{ ri.ingredient.name }}</li>
-        {% empty %}
-          <li><em>No ingredients listed.</em></li>
-        {% endfor %}
-      </ul>
-
-      <h2>Instructions</h2>
-      <div class="prose">
-        {{ featured.instructions|linebreaks }}
-      </div>
-
-      <div class="mt-6">
-        <a href="{% url 'recipes:detail' featured.pk %}" class="button secondary">
-          View Full Details
-        </a>
-      </div>
-    </div>
-  {% endif %}
+<div class="page-header">
+  <h1 class="page-title">Recipes</h1>
+  <a href="{% url 'recipes:create' %}" class="btn btn-primary">+ New Recipe</a>
 </div>
-{% endblock %}
 
+<div class="search-bar" style="margin-bottom:1rem;">
+  <input
+    type="search"
+    name="q"
+    id="recipe-search"
+    placeholder="Search recipes..."
+    value="{{ q }}"
+    hx-get="{% url 'recipes:index' %}"
+    hx-trigger="input changed delay:300ms, search"
+    hx-target="#recipe-rows"
+    hx-swap="outerHTML"
+    autocomplete="off"
+  >
+</div>
+
+{% include "recipes/partials/recipe_rows.html" %}
+
+{% if featured %}
+<div class="featured-panel">
+  <h2>Featured Recipe</h2>
+  <h3>
+    <a href="{% url 'recipes:detail' featured.pk %}">{{ featured.name }}</a>
+    {% if featured.user and request.user != featured.user %}
+      <span style="font-weight:400;font-size:0.8rem;color:var(--brown-700);">
+        ({{ featured.user.get_full_name|default:featured.user.username|default:"Skål" }})
+      </span>
+    {% elif not featured.user %}
+      <span style="font-weight:400;font-size:0.8rem;color:var(--brown-700);">(Skål)</span>
+    {% endif %}
+  </h3>
+  <p style="font-size:0.82rem;color:var(--brown-700);margin-bottom:0.75rem;">
+    {{ featured.batch_size }} gal
+  </p>
+  <h3 style="font-size:0.82rem;color:var(--brown-700);text-transform:uppercase;letter-spacing:0.5px;">Ingredients</h3>
+  <ul style="list-style:disc inside;font-size:0.875rem;margin:0.25rem 0 0.75rem 0.5rem;">
+    {% for ri in featured.recipeingredient_set.all %}
+      <li>{{ ri.quantity }} {{ ri.ingredient.name }}</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'recipes:detail' featured.pk %}" class="btn btn-secondary">View Full Recipe →</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% if messages %}
+<div class="toast-container" id="toast-container">
+  {% for message in messages %}
+  <div class="toast {% if message.tags == 'error' %}toast-error{% endif %}" role="alert">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+<script>
+  (function() {
+    const toasts = document.querySelectorAll('.toast');
+    toasts.forEach(function(t) {
+      setTimeout(function() {
+        t.classList.add('toast-hiding');
+        setTimeout(function() { t.remove(); }, 300);
+      }, 3500);
+    });
+  })();
+</script>
+{% endif %}

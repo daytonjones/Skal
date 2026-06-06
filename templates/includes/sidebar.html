@@ -1,0 +1,126 @@
+{% load static gravatar %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">Skål</div>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'recipes:index' %}" {% if 'recipes' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">📜</span>
+        <span class="nav-label">Recipes</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'batches:index' %}" {% if 'batches' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🍺</span>
+        <span class="nav-label">Batches</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'calculators:index' %}" {% if 'calculators' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🧮</span>
+        <span class="nav-label">Calculators</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'pantry:index' %}" {% if request.resolver_match.app_name == 'pantry' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🧺</span>
+        <span class="nav-label">Pantry</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'yeast' %}" {% if request.resolver_match.url_name == 'yeast' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🦠</span>
+        <span class="nav-label">Yeast Info</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'info' %}" {% if request.resolver_match.url_name == 'info' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">Mead History</span>
+      </a>
+    </li>
+    {% if ai_enabled %}
+    <li>
+      <a href="{% url 'ai:chat' %}" {% if request.resolver_match.app_name == 'ai' %}aria-current="page"{% endif %}>
+        <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="nav-bjorn-icon">
+        <span class="nav-label">Ask Bjorn</span>
+      </a>
+    </li>
+    {% endif %}
+    <li>
+      <a href="{% url 'about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">ℹ️</span>
+        <span class="nav-label">About</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-bottom" id="sidebar-bottom">
+    <!-- Profile panel — appears above the avatar button -->
+    <div class="sidebar-profile-panel" id="sidebar-profile-panel">
+      <a href="{% url 'accounts:profile' %}" class="sidebar-panel-item">
+        <span>⚙️</span> Profile Settings
+      </a>
+      <hr class="sidebar-panel-divider">
+      <form method="post" action="{% url 'accounts:toggle_theme' %}" style="display:contents;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="sidebar-panel-item">
+          {% if request.user.theme == 'dark' %}
+            <span>☀️</span> Switch to Light
+          {% else %}
+            <span>🌙</span> Switch to Dark
+          {% endif %}
+        </button>
+      </form>
+      <a href="{% url 'accounts:password_change' %}" class="sidebar-panel-item">
+        <span>🔑</span> Change Password
+      </a>
+      <hr class="sidebar-panel-divider">
+      <form method="post" action="{% url 'accounts:logout' %}" style="display:contents;">
+        {% csrf_token %}
+        <button type="submit" class="sidebar-panel-item danger">
+          <span>🚪</span> Sign Out
+        </button>
+      </form>
+    </div>
+
+    <!-- Avatar button -->
+    <div class="sidebar-user" id="sidebar-user-btn">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+      {% else %}
+        <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="user-avatar">
+      {% endif %}
+      <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+      <span class="sidebar-user-caret">▲</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function() {
+  var bottom = document.getElementById('sidebar-bottom');
+  var btn    = document.getElementById('sidebar-user-btn');
+  var panel  = document.getElementById('sidebar-profile-panel');
+  if (!btn || !panel) return;
+
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var open = panel.classList.toggle('open');
+    bottom.classList.toggle('open', open);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!bottom.contains(e.target)) {
+      panel.classList.remove('open');
+      bottom.classList.remove('open');
+    }
+  });
+})();
+</script>

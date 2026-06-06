@@ -1,3 +1,6 @@
+# Brainstorming / superpowers
+.superpowers/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *$py.class
@@ -59,6 +62,8 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+media/
+staticfiles/
 
 # Flask stuff:
 instance/
@@ -160,4 +165,5 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-screenshots
+# screenshots intentionally tracked in repo for README
+.playwright-mcp/
