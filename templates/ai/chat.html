@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static gravatar %}
 {% block title %}Ask Bjorn{% endblock %}
 
 {% block content %}
@@ -21,6 +21,12 @@
     <div class="chat-message {{ msg.role }}">
       {% if msg.role == 'assistant' %}
       <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="chat-avatar">
+      {% elif msg.role == 'user' %}
+      {% if request.user.avatar %}
+      <img src="{{ request.user.avatar.url }}" alt="You" class="chat-avatar">
+      {% else %}
+      <img src="{{ request.user.email|gravatar_url:40 }}" alt="You" class="chat-avatar">
+      {% endif %}
       {% endif %}
       <div class="chat-bubble">{{ msg.content|linebreaksbr }}</div>
     </div>
@@ -46,6 +52,7 @@
   const form     = document.getElementById('chat-form');
   const input    = document.getElementById('chat-input');
   const BJORN_IMG = "{% static 'img/bjorn_skal.png' %}";
+  const USER_IMG  = "{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}{{ request.user.email|gravatar_url:40 }}{% endif %}";
 
   function scrollBottom() {
     messages.scrollTop = messages.scrollHeight;
@@ -62,7 +69,9 @@
     // Show user's message immediately
     const userDiv = document.createElement('div');
     userDiv.className = 'chat-message user';
-    userDiv.innerHTML = '<div class="chat-bubble">' + escHtml(msg) + '</div>';
+    userDiv.innerHTML =
+      '<img src="' + USER_IMG + '" alt="You" class="chat-avatar">' +
+      '<div class="chat-bubble">' + escHtml(msg) + '</div>';
     messages.appendChild(userDiv);
 
     // Show typing indicator
