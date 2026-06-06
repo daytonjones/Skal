@@ -1216,6 +1216,57 @@ body.dark .chat-messages { background: #1e1200; }
   margin-bottom: 0.25rem;
 }
 
+.chat-recipe-card {
+  margin-left: 2.5rem;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--amber-400);
+  border-radius: var(--radius);
+  background: var(--amber-100);
+  color: var(--brown-900);
+  max-width: 75%;
+  font-size: 0.875rem;
+}
+
+body.dark .chat-recipe-card {
+  background: #3b2200;
+  color: #fef3c7;
+  border-color: var(--amber-600);
+}
+
+.chat-recipe-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+  color: var(--brown-900);
+}
+
+body.dark .chat-recipe-title { color: var(--amber-200); }
+
+.chat-recipe-rows { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.chat-recipe-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-recipe-label {
+  font-weight: 600;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.chat-recipe-notes {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--brown-700);
+}
+
+body.dark .chat-recipe-notes { color: var(--amber-200); }
+
 .chat-input-row {
   display: flex;
   gap: 0.5rem;

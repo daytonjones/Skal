@@ -4,8 +4,32 @@
   <div class="chat-bubble">{{ reply|linebreaksbr }}</div>
 </div>
 {% if pending_recipe %}
-<div class="chat-save-row">
-  <form method="post" action="{% url 'ai:save_recipe' %}">
+<div class="chat-recipe-card">
+  <div class="chat-recipe-title">{{ pending_recipe.name }}</div>
+  <div class="chat-recipe-rows">
+    <div class="chat-recipe-row">
+      <span class="chat-recipe-label">Batch size</span>
+      <span>{{ pending_recipe.batch_size }} gal</span>
+    </div>
+    <div class="chat-recipe-row">
+      <span class="chat-recipe-label">Honey</span>
+      <span>{{ pending_recipe.honey_name }}{% if pending_recipe.honey_quantity %} — {{ pending_recipe.honey_quantity }}{% endif %}</span>
+    </div>
+    <div class="chat-recipe-row">
+      <span class="chat-recipe-label">Yeast</span>
+      <span>{{ pending_recipe.yeast }}</span>
+    </div>
+    {% for extra in pending_recipe.additional_ingredients %}
+    <div class="chat-recipe-row">
+      <span class="chat-recipe-label">{{ extra.name }}</span>
+      <span>{{ extra.quantity }}</span>
+    </div>
+    {% endfor %}
+    {% if pending_recipe.instructions %}
+    <div class="chat-recipe-notes">{{ pending_recipe.instructions }}</div>
+    {% endif %}
+  </div>
+  <form method="post" action="{% url 'ai:save_recipe' %}" style="margin-top:0.75rem;">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">
       📜 Add "{{ pending_recipe.name }}" to My Recipes
