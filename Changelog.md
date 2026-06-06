@@ -4,42 +4,61 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-
-## \[2.0.0] - 2025-07-17
+## [2.1.0] - 2026-06-06
 
 ### Added
 
-* Completely rewritten/revamped
-* Complete recipe management (create, edit, delete, view)
-* Batch tracking with primary/secondary/bottling dates and notes
-* Image uploads and drag-and-drop galleries with reordering and captions
-* ABV calculation based on supplied SG
-* Estimated calorie calculation per 5 oz. glass
-* Full authentication (login, registration, profiles)
-* Theme toggle (light/dark) stored in user profile
-* Gravatar support for profile picture
-* Export options for PDF, JSON, CSV, TXT, and SQL
-* Public/private visibility for recipes and batches
-* Session-based authentication using cookies
-* Centralized CSS for dark/light mode compatibility
-* Responsive UI
-* Yeast reference table with sorting, filtering, pagination
+* **Bjorn AI assistant** — Viking-themed brewing guide powered by Anthropic Claude or OpenAI. Scoped to mead/homebrewing topics only. Accessible via sidebar when `AI_PROVIDER` is configured.
+* **AI recipe saving** — Bjorn can suggest structured recipes using tool calling; a save card appears in chat with full ingredient details. One click saves to your recipe list.
+* **AI usage tracking** — Per-user token usage recorded to the database; weekly summary emailed to Django admins via `send_ai_report` management command and scheduler service.
+* **Batch image slideshow** — Home dashboard replaced static thumbnail strip with a 10-second auto-advancing slideshow of the user's own and public batch photos.
+* **TOSNA 3.0 nutrient schedule** — Batch checklist updated to TOSNA 3.0 guidelines with manufacturer-recommended quantities. Added nutrient selector to batch builder.
+* **SG/Brix calculator linking** — SG and Brix fields in the calculator now stay in sync; adjusting one updates the other.
+* **Pagination** — Recipe and batch lists paginate at 20 per page. Search and stage filters are preserved across page changes.
+* **Interactive install script** — `install.sh` walks through all configuration options including AI assistant setup, writes `.env`, builds containers, and reports status.
 
 ### Changed
 
-* Moved inline styles to centralized stylesheet
-* Separated yeast data logic and template rendering
-* Restructured project layout for modularity
-
-### Fixed
-
-* SQL export now returns full data
-* PDF exports include dynamic ABV and calorie values
-* Fixed image upload preview and batch image sequencing
+* Removed redundant edit (pencil) buttons from recipe and batch list rows — click any row to navigate to the detail/edit view.
+* Fixed N+1 query issues in recipe list, recipe detail, and batch list views (`select_related`, `prefetch_related`).
+* Fixed AI system prompt builder using wrong field name (`volume_gallons` → `batch_size`) and incorrect M2M traversal on ingredients.
+* Moved module-level imports (logger, PantryItem) out of method bodies.
+* HTMX search/filter swaps now use `outerHTML` for correct DOM replacement.
 
 ---
 
-## \[1.0.0] - 2024-12-01
+## [2.0.0] - 2025-07-17
+
+### Added
+
+* Completely rewritten from FastAPI/SQLite to Django/PostgreSQL
+* Complete recipe management (create, edit, delete, view, clone, export)
+* Batch tracking with primary/secondary/bottling dates, checklist, and notes
+* Image uploads and drag-and-drop galleries with reordering and captions
+* ABV calculation using alternate formula; calorie estimation per 5 oz glass
+* Full authentication (login, registration, profile, admin approval flow)
+* Light/dark theme toggle stored in user profile
+* Gravatar support for profile pictures
+* Export options: PDF, JSON, CSV, TXT, SQL
+* Public/private visibility for recipes and batches
+* Ingredient pantry with recipe gap detection
+* Yeast reference table with sorting, filtering, pagination
+* Responsive UI with mobile support
+
+### Changed
+
+* Moved inline styles to centralized stylesheet with CSS custom properties
+* Restructured project layout for modularity (per-app Django apps)
+
+### Fixed
+
+* SQL export returns complete data
+* PDF exports include dynamic ABV and calorie values
+* Image upload preview and batch image sequencing
+
+---
+
+## [1.0.0] - 2024-12-01
 
 ### Added
 
@@ -53,10 +72,4 @@ All notable changes to this project will be documented in this file.
 * Docker and virtual environment support for deployment
 * Basic UI with recipe and ABV views
 
-### Usage Notes
-
-* Default login credentials and browser prompts added
-* TiltPi linking instructions available in the app
-
 ---
-

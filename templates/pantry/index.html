@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}My Pantry{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🧺 My Pantry</h1>
+</div>
+
+<!-- Add ingredient card -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <h2 style="margin-bottom:1rem;">Add Ingredient</h2>
+  <form method="post" action="{% url 'pantry:index' %}" id="add-form">
+    {% csrf_token %}
+
+    <!-- Barcode lookup row -->
+    <div class="form-group">
+      <label>Barcode lookup <span style="font-weight:400;text-transform:none;letter-spacing:0;">— focus this field, then scan with a barcode scanner or type a barcode number</span></label>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="text" id="barcode-input" inputmode="numeric" autocomplete="off"
+               placeholder="Focus here and scan, or type a barcode…"
+               style="flex:1;font-family:monospace;letter-spacing:0.05em;">
+        <button type="button" id="scan-camera-btn" class="btn btn-secondary"
+                title="Scan with camera (mobile)" style="flex-shrink:0;">📷</button>
+      </div>
+      <p id="barcode-status" style="font-size:0.78rem;margin-top:0.3rem;min-height:1.1em;color:var(--brown-700);"></p>
+    </div>
+
+    <!-- Ingredient name + type + quantity -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;">
+      <div class="form-group" style="margin-bottom:0;flex:2;min-width:160px;">
+        <label>Ingredient name</label>
+        <input type="text" name="ingredient_name" id="ingredient-name-input"
+               list="ingredient-list" placeholder="e.g. Wildflower Honey"
+               required autocomplete="off">
+        <datalist id="ingredient-list">
+          {% for ing in all_ingredients %}
+            <option value="{{ ing.name }}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:110px;">
+        <label>Type <span style="font-weight:400;text-transform:none;letter-spacing:0;">(if new)</span></label>
+        <input type="text" name="ingredient_type" list="ingredient-type-list"
+               placeholder="Honey / Yeast / Additive" autocomplete="off">
+        <datalist id="ingredient-type-list">
+          {% for value, label in ingredient_types %}
+            <option value="{{ label }}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:110px;">
+        <label>Quantity on hand</label>
+        <input type="text" name="quantity" placeholder="e.g. 3 lbs">
+      </div>
+      <div style="flex-shrink:0;">
+        <button type="submit" class="btn btn-primary">+ Add</button>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:0.75rem;margin-bottom:0;">
+      <label>Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <input type="text" name="notes" placeholder="e.g. expires June 2026">
+    </div>
+  </form>
+</div>
+
+<!-- Pantry list -->
+{% if items %}
+  {% regroup items by ingredient.get_type_display as grouped %}
+  {% for group in grouped %}
+  <div class="card" style="margin-bottom:1rem;">
+    <h2 style="margin-bottom:0.75rem;">{{ group.grouper }}</h2>
+    <table class="calc-table" style="font-size:0.875rem;">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Ingredient</th>
+          <th style="text-align:left;">Quantity</th>
+          <th style="text-align:left;">Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in group.list %}
+        <tr>
+          <td style="text-align:left;font-weight:600;">{{ item.ingredient.name }}</td>
+          <td style="text-align:left;">{{ item.quantity|default:"—" }}</td>
+          <td style="text-align:left;font-size:0.8rem;color:var(--brown-700);">{{ item.notes|default:"" }}</td>
+          <td style="text-align:right;white-space:nowrap;">
+            <a href="{% url 'pantry:edit' item.pk %}" class="btn btn-secondary"
+               style="padding:0.25rem 0.6rem;font-size:0.75rem;">Edit</a>
+            <form method="post" action="{% url 'pantry:delete' item.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger"
+                      style="padding:0.25rem 0.6rem;font-size:0.75rem;"
+                      onclick="return confirm('Remove {{ item.ingredient.name }} from pantry?')">
+                Remove
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card" style="text-align:center;color:var(--brown-700);padding:2rem;">
+    Your pantry is empty. Add ingredients above to track what you have on hand.
+  </div>
+{% endif %}
+
+<!-- Camera scan modal (mobile / secondary) -->
+<div id="scan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--cream-100);border-radius:10px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 style="margin:0;">📷 Camera Scan</h2>
+      <button onclick="closeScanner()" class="btn btn-ghost" style="padding:0.25rem 0.5rem;">✕</button>
+    </div>
+    <div id="qr-reader" style="width:100%;border-radius:6px;overflow:hidden;"></div>
+    <p id="scan-status" style="font-size:0.8rem;color:var(--brown-700);margin-top:0.5rem;min-height:1.2em;text-align:center;"></p>
+    <div id="scan-result" style="margin-top:0.75rem;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0 0.75rem;">
+    <button onclick="closeScanner()" class="btn btn-secondary" style="width:100%;">Cancel</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Hardware / USB barcode scanner ─────────────────────────────────────────
+// Scanners type characters very fast then send Enter. We auto-trigger lookup
+// on Enter keypress, or after 400 ms debounce once 8+ digits are present.
+var barcodeInput  = document.getElementById('barcode-input');
+var barcodeStatus = document.getElementById('barcode-status');
+var lookupTimer;
+
+barcodeInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    clearTimeout(lookupTimer);
+    doLookup(this.value.trim());
+  }
+});
+
+barcodeInput.addEventListener('input', function() {
+  var code = this.value.trim();
+  clearTimeout(lookupTimer);
+  if (code.length >= 8 && /^\d+$/.test(code)) {
+    lookupTimer = setTimeout(function() { doLookup(code); }, 400);
+  } else {
+    barcodeStatus.textContent = '';
+  }
+});
+
+function doLookup(code) {
+  if (!code || !/^\d{8,14}$/.test(code)) {
+    barcodeStatus.textContent = 'Enter 8–14 digit barcode.';
+    return;
+  }
+  barcodeStatus.textContent = '🔍 Looking up…';
+  fetch('{% url "pantry:barcode_lookup" %}?code=' + encodeURIComponent(code))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.found && data.name) {
+        document.getElementById('ingredient-name-input').value = data.name;
+        barcodeStatus.textContent = '✓ Found: ' + data.name + ' — name pre-filled below.';
+        barcodeStatus.style.color = '#15803d';
+        document.getElementById('ingredient-name-input').focus();
+      } else {
+        barcodeStatus.textContent = 'Barcode not in product database — enter the name manually below.';
+        barcodeStatus.style.color = '';
+        document.getElementById('ingredient-name-input').focus();
+      }
+    })
+    .catch(function() {
+      barcodeStatus.textContent = 'Lookup failed — enter name manually.';
+    });
+}
+
+// ── Camera scanner (mobile / secondary) ────────────────────────────────────
+var _scanner = null;
+document.getElementById('scan-camera-btn').addEventListener('click', openScanModal);
+
+function openScanModal() {
+  var modal = document.getElementById('scan-modal');
+  modal.style.display = 'flex';
+  document.getElementById('scan-result').innerHTML = '';
+  document.getElementById('scan-status').textContent = 'Loading camera…';
+
+  if (typeof Html5Qrcode !== 'undefined') {
+    startScanner();
+  } else {
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    s.onload = startScanner;
+    s.onerror = function() {
+      document.getElementById('scan-status').textContent =
+        'Could not load camera library. Use a barcode scanner or enter manually.';
+    };
+    document.head.appendChild(s);
+  }
+}
+
+function startScanner() {
+  document.getElementById('scan-status').textContent = 'Starting camera…';
+  _scanner = new Html5Qrcode('qr-reader');
+  _scanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 280, height: 120 } },
+    onCameraScanSuccess,
+    function() {}
+  ).then(function() {
+    document.getElementById('scan-status').textContent = 'Aim camera at barcode…';
+  }).catch(function(err) {
+    document.getElementById('scan-status').textContent =
+      'Camera unavailable — use a barcode scanner or enter manually.';
+    _scanner = null;
+  });
+}
+
+function onCameraScanSuccess(code) {
+  if (!_scanner) return;
+  var sc = _scanner; _scanner = null;
+  sc.stop().catch(function() {});
+  document.getElementById('qr-reader').innerHTML = '';
+  document.getElementById('scan-status').textContent = '🔍 Looking up…';
+
+  fetch('{% url "pantry:barcode_lookup" %}?code=' + encodeURIComponent(code))
+    .then(function(r) { return r.json(); })
+    .then(showCameraResult)
+    .catch(function() { showCameraResult({ found: false, code: code }); });
+}
+
+function showCameraResult(data) {
+  document.getElementById('scan-status').textContent = '';
+  var el = document.getElementById('scan-result');
+  el.innerHTML = '';
+
+  var box = document.createElement('div');
+  var p   = document.createElement('p');
+  var btn = document.createElement('button');
+
+  if (data.found && data.name) {
+    box.style.cssText = 'background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:6px;padding:.75rem;margin-bottom:.75rem;';
+    p.style.cssText   = 'margin:0 0 .5rem;font-weight:600;color:#15803d;';
+    p.textContent     = '✓ Found: ' + data.name;
+    btn.className     = 'btn btn-primary';
+    btn.style.width   = '100%';
+    btn.textContent   = 'Use this name';
+    btn.addEventListener('click', function() { useCameraResult(data.name); });
+  } else {
+    box.style.cssText = 'background:rgba(180,83,9,.08);border:1px solid var(--amber-400);border-radius:6px;padding:.75rem;';
+    p.style.cssText   = 'margin:0 0 .5rem;color:var(--brown-700);';
+    p.textContent     = 'Not found — enter name manually.';
+    btn.className     = 'btn btn-secondary';
+    btn.style.width   = '100%';
+    btn.textContent   = 'Enter manually';
+    btn.addEventListener('click', closeScanner);
+  }
+
+  box.appendChild(p);
+  box.appendChild(btn);
+  el.appendChild(box);
+}
+
+function useCameraResult(name) {
+  document.getElementById('ingredient-name-input').value = name;
+  closeScanner();
+  document.getElementById('ingredient-name-input').focus();
+}
+
+function closeScanner() {
+  if (_scanner) { var sc = _scanner; _scanner = null; sc.stop().catch(function(){}); }
+  document.getElementById('qr-reader').innerHTML = '';
+  document.getElementById('scan-modal').style.display = 'none';
+}
+
+document.getElementById('scan-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeScanner();
+});
+</script>
+{% endblock %}

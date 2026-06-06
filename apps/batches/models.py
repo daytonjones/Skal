@@ -70,6 +70,17 @@ class Batch(models.Model):
     bottled_date = models.DateField(blank=True, null=True)
     # -------------------------
 
+    # --- Checklist notes ---
+    create_must_note    = models.TextField(blank=True, default='')
+    pitch_yeast_note    = models.TextField(blank=True, default='')
+    fo_24h_note         = models.TextField(blank=True, default='')
+    fo_48h_note         = models.TextField(blank=True, default='')
+    fo_72h_note         = models.TextField(blank=True, default='')
+    fo_1_3_break_note   = models.TextField(blank=True, default='')
+    rack_secondary_note = models.TextField(blank=True, default='')
+    bottled_note        = models.TextField(blank=True, default='')
+    # -------------------------
+
     class Meta:
         ordering = ['-primary_date']
 
@@ -96,6 +107,25 @@ class Batch(models.Model):
         if self.primary_date:
             self.name = _unique_batch_name(self.name, self.primary_date)
         super().save(*args, **kwargs)
+
+    @property
+    def stage(self):
+        if self.bottled_done:
+            return 'bottled'
+        if self.rack_secondary_done:
+            return 'secondary'
+        if self.pitch_yeast_done:
+            return 'active'
+        return 'planned'
+
+    @property
+    def checklist_progress(self):
+        done = [
+            self.create_must_done, self.pitch_yeast_done,
+            self.fo_24h_done, self.fo_48h_done, self.fo_72h_done,
+            self.fo_1_3_break_done, self.rack_secondary_done, self.bottled_done,
+        ]
+        return int((sum(done) / 8) * 100)
 
     def __str__(self):
         return self.name

@@ -1,62 +1,106 @@
-<!-- templates/base.html -->
 {% load static gravatar %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Skål — {% block title %}{% endblock %}</title>
-
   <link rel="icon" href="{% static 'images/skal.ico' %}" type="image/x-icon">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>body::before { background-image: url("{% static 'images/mead_background.png' %}"); }</style>
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.user.is_authenticated and request.user.theme == 'dark' %}dark{% endif %}">
-  {% if request.user.is_authenticated %}
-  <header class="menu-bar">
-  <nav class="nav-container">
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="nav-toggle-label">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
 
-    <ul class="menu nav-links">
-      <li><a href="{% url 'home' %}">Home</a></li>
-      <li><a href="{% url 'info' %}">Mead History & Types</a></li>
-      <li><a href="{% url 'yeast' %}">Yeast Info</a></li>
-      <li><a href="{% url 'calculators:index' %}">Calculators</a></li>
-      <li><a href="{% url 'recipes:index' %}">Recipes</a></li>
-      <li><a href="{% url 'batches:index' %}">Batches</a></li>
-      <li>
-        <a href="{% url 'accounts:profile' %}">
-          {% if request.user.avatar %}
-            <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="avatar-icon">
-          {% else %}
-            <img src="{{ request.user.email|gravatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="avatar-icon">
-          {% endif %}
-          Profile
-        </a>
-      </li>
-    </ul>
-  </nav>
-</header>
+  {% if request.user.is_authenticated %}
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+
+    <div class="app-shell">
+      {% include "includes/sidebar.html" %}
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
   {% endif %}
 
-  <main>
-    {% block content %}{% endblock %}
-  </main>
+        <main class="main-content">
+          {% include "includes/toast.html" %}
+          {% block content %}{% endblock %}
+        </main>
 
-  <footer class="site-footer">
-    <span class="line-span"></span>
-    <p>
-      Skål ©{% now "Y" %} Dayton Jones
-    </p>
-  </footer>
+  {% if request.user.is_authenticated %}
+        <footer class="site-footer">
+          Skål &copy;{% now "Y" %} Dayton Jones
+        </footer>
+      </div>
+    </div>
+  {% endif %}
 
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"
+          integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+          crossorigin="anonymous" defer></script>
+  <script>
+    // Mobile sidebar toggle
+    (function() {
+      const toggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('sidebar');
+      if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+          sidebar.classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+          if (sidebar.classList.contains('open') &&
+              !sidebar.contains(e.target) &&
+              e.target !== toggle) {
+            sidebar.classList.remove('open');
+          }
+        });
+      }
+    })();
+  </script>
   {% block extra_js %}{% endblock %}
+
+  <script>
+  (function() {
+    var bee = document.createElement('div');
+    bee.className = 'bee-cursor';
+    bee.textContent = '🐝';
+    document.body.appendChild(bee);
+
+    var lastPx = -100, lastPy = -100, facingRight = false;
+    var DIST = 18;
+    var COLORS = ['#f59e0b','#d97706','#fde68a','#fbbf24','#f59e0b'];
+
+    document.addEventListener('mousemove', function(e) {
+      var x = e.clientX, y = e.clientY;
+      bee.style.left = x + 'px';
+      bee.style.top  = y + 'px';
+
+      var dx = x - lastPx;
+      if (Math.abs(dx) > 2) {
+        if (dx > 0 && !facingRight) { bee.style.transform = 'translate(-2px,-14px) scaleX(-1)'; facingRight = true; }
+        if (dx < 0 && facingRight)  { bee.style.transform = 'translate(-2px,-14px) scaleX(1)';  facingRight = false; }
+      }
+
+      if (Math.hypot(x - lastPx, y - lastPy) >= DIST) {
+        lastPx = x; lastPy = y;
+        var dot = document.createElement('div');
+        dot.className = 'pollen';
+        var size  = 3 + Math.random() * 4;
+        var offX  = (Math.random() - 0.5) * 10;
+        var drift = (Math.random() - 0.5) * 20;
+        dot.style.cssText =
+          'left:'   + (x + offX) + 'px;' +
+          'top:'    + (y - 2)    + 'px;' +
+          'width:'  + size       + 'px;' +
+          'height:' + size       + 'px;' +
+          'background:' + COLORS[Math.floor(Math.random() * COLORS.length)] + ';' +
+          '--dx:'   + drift      + 'px';
+        document.body.appendChild(dot);
+        setTimeout(function() { dot.remove(); }, 680);
+      }
+    });
+
+    document.addEventListener('mouseleave', function() { bee.style.opacity = '0'; });
+    document.addEventListener('mouseenter', function() { bee.style.opacity = '1'; });
+  })();
+  </script>
 </body>
 </html>
-

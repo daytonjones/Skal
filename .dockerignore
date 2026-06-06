@@ -1,0 +1,10 @@
+.git
+.env
+media/
+staticfiles/
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.coverage
+screenshots

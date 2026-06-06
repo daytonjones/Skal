@@ -1,0 +1,50 @@
+<div class="recipe-rows" id="recipe-rows">
+{% for recipe in recipes %}
+  <a href="{% url 'recipes:detail' recipe.pk %}" class="recipe-row">
+    <div class="recipe-row-info">
+      <div class="recipe-row-name">{{ recipe.name }}
+        {% if recipe.user and request.user != recipe.user %}
+          <span style="font-weight:400;font-size:0.75rem;color:var(--brown-700);">
+            ({{ recipe.user.get_full_name|default:recipe.user.username|default:"Skål" }})
+          </span>
+        {% elif not recipe.user %}
+          <span style="font-weight:400;font-size:0.75rem;color:var(--brown-700);">(Skål)</span>
+        {% endif %}
+      </div>
+      <div class="recipe-row-meta">
+        {{ recipe.batch_size }} gal ·
+        {{ recipe.recipeingredient_set.count }} ingredient{{ recipe.recipeingredient_set.count|pluralize }}
+      </div>
+    </div>
+    <span class="badge {% if recipe.is_public %}badge-public{% else %}badge-private{% endif %}">
+      {{ recipe.is_public|yesno:"Public,Private" }}
+    </span>
+  </a>
+{% empty %}
+  <div class="empty-state">
+    <p>No recipes found.</p>
+    <a href="{% url 'recipes:create' %}" class="btn btn-primary">Create your first recipe →</a>
+  </div>
+{% endfor %}
+{% if is_paginated %}
+<div class="pagination-controls">
+  {% if page_obj.has_previous %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'recipes:index' %}?page={{ page_obj.previous_page_number }}&q={{ q }}"
+     hx-target="#recipe-rows"
+     hx-swap="outerHTML">← Prev</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">← Prev</span>
+  {% endif %}
+  <span class="page-info">{{ page_obj.number }} of {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'recipes:index' %}?page={{ page_obj.next_page_number }}&q={{ q }}"
+     hx-target="#recipe-rows"
+     hx-swap="outerHTML">Next →</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">Next →</span>
+  {% endif %}
+</div>
+{% endif %}
+</div>

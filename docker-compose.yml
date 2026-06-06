@@ -3,12 +3,26 @@ services:
   web:
     build: .
     entrypoint: ["/app/entrypoint.sh"]
-    command: gunicorn skal.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn skal.wsgi:application --bind 0.0.0.0:8000 --access-logfile -
     volumes:
       - .:/app
-      - media_volume:/app/media
     ports:
       - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - skal_db
+
+  scheduler:
+    build: .
+    entrypoint: []
+    command: >
+      sh -c "while true; do
+        sleep 604800;
+        python manage.py send_ai_report;
+      done"
+    volumes:
+      - .:/app
     env_file:
       - .env
     depends_on:
@@ -31,5 +45,4 @@ services:
 
 volumes:
   postgres_data:
-  media_volume:
 

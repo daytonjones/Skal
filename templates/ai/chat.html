@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static gravatar %}
+{% block title %}Ask Bjorn{% endblock %}
+
+{% block content %}
+<div class="bjorn-header">
+  <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="bjorn-header-avatar">
+  <div>
+    <h1>Bjorn</h1>
+    <p class="subtext">Your Mead Guide</p>
+  </div>
+</div>
+
+<div class="chat-container">
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-message bjorn">
+      <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="chat-avatar">
+      <div class="chat-bubble">Hail, brewer! I am Bjorn — ask me anything about mead, fermentation, or your recipes. What shall we brew?</div>
+    </div>
+    {% for msg in history %}
+    <div class="chat-message {{ msg.role }}">
+      {% if msg.role == 'assistant' %}
+      <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="chat-avatar">
+      {% elif msg.role == 'user' %}
+      {% if request.user.avatar %}
+      <img src="{{ request.user.avatar.url }}" alt="You" class="chat-avatar">
+      {% else %}
+      <img src="{{ request.user.email|gravatar_url:40 }}" alt="You" class="chat-avatar">
+      {% endif %}
+      {% endif %}
+      <div class="chat-bubble">{{ msg.content|linebreaksbr }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form id="chat-form"
+        hx-post="{% url 'ai:send' %}"
+        hx-target="#chat-messages"
+        hx-swap="beforeend"
+        class="chat-input-row">
+    {% csrf_token %}
+    <input type="text" name="message" id="chat-input"
+           placeholder="Ask Bjorn anything about mead…"
+           autocomplete="off" required>
+    <button type="submit" class="btn btn-primary">Send</button>
+  </form>
+</div>
+
+<script>
+(function() {
+  const messages = document.getElementById('chat-messages');
+  const form     = document.getElementById('chat-form');
+  const input    = document.getElementById('chat-input');
+  const BJORN_IMG = "{% static 'img/bjorn_skal.png' %}";
+  const USER_IMG  = "{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}{{ request.user.email|gravatar_url:40 }}{% endif %}";
+
+  function scrollBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  form.addEventListener('htmx:beforeRequest', function() {
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // Show user's message immediately
+    const userDiv = document.createElement('div');
+    userDiv.className = 'chat-message user';
+    userDiv.innerHTML =
+      '<img src="' + USER_IMG + '" alt="You" class="chat-avatar">' +
+      '<div class="chat-bubble">' + escHtml(msg) + '</div>';
+    messages.appendChild(userDiv);
+
+    // Show typing indicator
+    const typing = document.createElement('div');
+    typing.id = 'bjorn-typing';
+    typing.className = 'chat-message bjorn';
+    typing.innerHTML =
+      '<img src="' + BJORN_IMG + '" alt="Bjorn" class="chat-avatar">' +
+      '<div class="chat-bubble typing">Bjorn is thinking…</div>';
+    messages.appendChild(typing);
+
+    scrollBottom();
+  });
+
+  form.addEventListener('htmx:afterRequest', function() {
+    const typing = document.getElementById('bjorn-typing');
+    if (typing) typing.remove();
+    input.value = '';
+    scrollBottom();
+  });
+
+  scrollBottom();
+})();
+</script>
+{% endblock %}

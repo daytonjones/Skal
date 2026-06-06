@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.static import serve
 
 from apps.accounts.views import HomeView
 from apps.yeast.views import YeastListView
@@ -11,8 +11,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", HomeView.as_view(), name="home"),
 
-    # Info page
-    path("info/", TemplateView.as_view(template_name="info.html"), name="info"),
+    path("info/",  TemplateView.as_view(template_name="info.html"),  name="info"),
+    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
 
     path("yeast/", YeastListView.as_view(), name="yeast"),
 
@@ -32,12 +32,20 @@ urlpatterns = [
         "calculators/",
         include(("apps.calculators.urls", "calculators"), namespace="calculators"),
     ),
+    path(
+        "pantry/",
+        include(("apps.pantry.urls", "pantry"), namespace="pantry"),
+    ),
+    path(
+        "ai/",
+        include(("apps.ai.urls", "ai"), namespace="ai"),
+    ),
 ]
 
-# In DEBUG only, serve media files through Django
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT,
-    )
+# Always serve media files regardless of DEBUG setting.
+# django.conf.urls.static.static() is a no-op when DEBUG=False, so we use
+# the serve view directly. Acceptable for a self-hosted personal app.
+urlpatterns += [
+    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+]
 

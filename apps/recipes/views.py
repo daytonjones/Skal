@@ -10,28 +10,41 @@ from django.http import HttpResponseRedirect, Http404
 from django.db import models
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Recipe, Ingredient, RecipeIngredient
 from .forms import RecipeForm, RecipeIngredientFormSet
+from apps.pantry.models import PantryItem
 
 
 class RecipeListView(LoginRequiredMixin, ListView):
     model = Recipe
     template_name = 'recipes/index.html'
     context_object_name = 'recipes'
+    paginate_by = 20
 
     def get_queryset(self):
         user = self.request.user
-        return Recipe.objects.filter(
+        qs = Recipe.objects.filter(
             models.Q(user=user) | models.Q(is_public=True) | models.Q(user__isnull=True)
-        ).distinct()
+        ).select_related('user').prefetch_related('recipeingredient_set__ingredient').distinct()
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        items = ctx.get('recipes') or self.get_queryset()
-        ctx['featured'] = random.choice(list(items)) if items else None
+        page_items = list(ctx['recipes'])
+        ctx['featured'] = random.choice(page_items) if page_items else None
+        ctx['q'] = self.request.GET.get('q', '')
         return ctx
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get('HX-Request'):
+            return render(self.request, 'recipes/partials/recipe_rows.html', context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class RecipeDetailView(LoginRequiredMixin, DetailView):
@@ -47,7 +60,14 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        data['ingredients'] = self.object.recipeingredient_set.order_by('order')
+        data['ingredients'] = (
+            self.object.recipeingredient_set.select_related('ingredient').order_by('order')
+        )
+        data['pantry_ids'] = set(
+            PantryItem.objects
+            .filter(user=self.request.user)
+            .values_list('ingredient_id', flat=True)
+        )
         return data
 
 
@@ -137,6 +157,7 @@ class RecipeCreateView(LoginRequiredMixin, CreateView):
         formset.instance = self.object
         formset.save()
 
+        messages.success(self.request, f'Recipe "{self.object.name}" created.')
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -144,7 +165,9 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
     model = Recipe
     form_class = RecipeForm
     template_name = 'recipes/form.html'
-    success_url = reverse_lazy('recipes:index')
+
+    def get_success_url(self):
+        return reverse_lazy('recipes:detail', kwargs={'pk': self.object.pk})
 
     def get_queryset(self):
         return Recipe.objects.filter(user=self.request.user)
@@ -209,22 +232,45 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
         return data
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         form = self.get_form()
         formset = RecipeIngredientFormSet(request.POST, instance=self.object)
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
-
-            ris = list(self.object.recipeingredient_set.order_by('order'))
-
-            # [Optionally update honey/water/yeast quantities here if needed]
-
+            self._update_primary_ingredients(form)
             formset.instance = self.object
             formset.save()
-
+            messages.success(self.request, f'Recipe "{self.object.name}" updated.')
             return HttpResponseRedirect(self.get_success_url())
-
         return self.render_to_response(
             self.get_context_data(form=form, ingredient_formset=formset)
+        )
+
+    def _update_primary_ingredients(self, form):
+        cd = form.cleaned_data
+
+        honey_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['honey'], defaults={'type': Ingredient.TYPE_HONEY}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=0,
+            defaults={'ingredient': honey_obj, 'quantity': f"{cd['honey_quantity']} lbs"}
+        )
+
+        water_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['water'], defaults={'type': Ingredient.TYPE_ADDITIVE}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=1,
+            defaults={'ingredient': water_obj, 'quantity': f"{cd['water_quantity']} gal"}
+        )
+
+        yeast_obj, _ = Ingredient.objects.get_or_create(
+            name=cd['yeast'], defaults={'type': Ingredient.TYPE_YEAST}
+        )
+        RecipeIngredient.objects.update_or_create(
+            recipe=self.object, order=2,
+            defaults={'ingredient': yeast_obj, 'quantity': cd['yeast_quantity']}
         )
 
 
@@ -236,11 +282,49 @@ class RecipeDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return Recipe.objects.filter(user=self.request.user)
 
+    def delete(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        messages.success(request, f'Recipe "{recipe.name}" deleted.')
+        return super().delete(request, *args, **kwargs)
+
 
 @login_required
 def toggle_visibility(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
     recipe.is_public = not recipe.is_public
     recipe.save()
+    state = 'public' if recipe.is_public else 'private'
+    messages.success(request, f'"{recipe.name}" is now {state}.')
     return redirect('recipes:detail', pk=pk)
+
+
+@login_required
+def clone_recipe(request, pk):
+    if request.method != 'POST':
+        return redirect('recipes:index')
+
+    original = get_object_or_404(Recipe, pk=pk)
+
+    # Only allow cloning own recipes, public recipes, or seeded (user=None) recipes
+    if (original.user != request.user
+            and not original.is_public
+            and original.user is not None):
+        raise Http404
+
+    new_recipe = Recipe.objects.create(
+        user=request.user,
+        name=f'Copy of {original.name}',
+        batch_size=original.batch_size,
+        instructions=original.instructions,
+        is_public=False,
+    )
+    for ri in original.recipeingredient_set.order_by('order'):
+        RecipeIngredient.objects.create(
+            recipe=new_recipe,
+            ingredient=ri.ingredient,
+            quantity=ri.quantity,
+            order=ri.order,
+        )
+    messages.success(request, f'Recipe cloned as "{new_recipe.name}". Edit it below or start a batch.')
+    return redirect('recipes:detail', pk=new_recipe.pk)
 

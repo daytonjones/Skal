@@ -2,59 +2,53 @@
 {% block title %}Batches{% endblock %}
 
 {% block content %}
-<div class="calc-section">
-  <h1>Batches</h1>
-
-  <button
-    type="button"
-    onclick="location.href='{% url 'batches:create' %}'"
-    class="button"
-  >
-    + Add New Batch
-  </button>
-
-  {% if newest_batch %}
-    <div class="calc-section mt-6">
-      <h2>Your Latest Batch</h2>
-      <h3>
-        <a href="{% url 'batches:detail' newest_batch.pk %}">
-          {{ newest_batch.name }}
-        </a>
-      </h3>
-      <p>
-        <strong>OG:</strong> {{ newest_batch.og }}
-        {% if newest_batch.fg %}
-          , <strong>FG:</strong> {{ newest_batch.fg }}
-        {% endif %}
-      </p>
-      {% if newest_batch.primary_date %}
-        <p><strong>Primary Date:</strong> {{ newest_batch.primary_date }}</p>
-      {% endif %}
-    </div>
-  {% endif %}
-
-  {% if batches %}
-    <div class="mt-4">
-      <label for="batch-select">Select a batch:</label>
-      <select
-        id="batch-select"
-        onchange="if (this.value) window.location.href = this.value;"
-        class="mt-2"
-      >
-        <option value="">— Choose one —</option>
-        {% for batch in batches %}
-          <option value="{% url 'batches:detail' batch.pk %}">
-            {{ batch.name }}
-            {% if batch.user and request.user != batch.user %}
-              ({{ batch.user.get_full_name|default:batch.user.username|default:"Admin" }})
-            {% endif %}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-  {% else %}
-    <p class="mt-4">No batches yet.</p>
-  {% endif %}
+<div class="page-header">
+  <h1 class="page-title">Your Cellar</h1>
+  <a href="{% url 'batches:create' %}" class="btn btn-primary">+ New Batch</a>
 </div>
-{% endblock %}
 
+<div class="search-bar">
+  <input
+    type="search"
+    name="q"
+    id="batch-search"
+    placeholder="Search batches..."
+    value="{{ q }}"
+    hx-get="{% url 'batches:index' %}"
+    hx-trigger="input changed delay:300ms, search"
+    hx-target="#batch-rows"
+    hx-swap="outerHTML"
+    hx-include=".stage-btn.active"
+    autocomplete="off"
+  >
+</div>
+
+<div class="stage-filters">
+  <button class="stage-btn {% if not stage %}active{% endif %}"
+          hx-get="{% url 'batches:index' %}"
+          hx-target="#batch-rows"
+          hx-swap="outerHTML"
+          hx-include="#batch-search"
+          hx-vals='{"stage": ""}'>All</button>
+  <button class="stage-btn {% if stage == 'active' %}active{% endif %}"
+          hx-get="{% url 'batches:index' %}"
+          hx-target="#batch-rows"
+          hx-swap="outerHTML"
+          hx-include="#batch-search"
+          hx-vals='{"stage": "active"}'>Active</button>
+  <button class="stage-btn {% if stage == 'secondary' %}active{% endif %}"
+          hx-get="{% url 'batches:index' %}"
+          hx-target="#batch-rows"
+          hx-swap="outerHTML"
+          hx-include="#batch-search"
+          hx-vals='{"stage": "secondary"}'>Secondary</button>
+  <button class="stage-btn {% if stage == 'bottled' %}active{% endif %}"
+          hx-get="{% url 'batches:index' %}"
+          hx-target="#batch-rows"
+          hx-swap="outerHTML"
+          hx-include="#batch-search"
+          hx-vals='{"stage": "bottled"}'>Bottled</button>
+</div>
+
+{% include "batches/partials/batch_rows.html" %}
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static gravatar %}
+{% block title %}About Skål{% endblock %}
+
+{% block content %}
+
+<!-- ── Etymology & Pronunciation ─────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div style="display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap;">
+    <div style="flex:1;min-width:0;">
+      <h1 style="font-family:var(--font-serif);font-size:2rem;margin-bottom:0.15rem;">Skål</h1>
+      <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-700);margin-bottom:0.9rem;">
+        Old Norse &nbsp;·&nbsp; /skɔːl/ &nbsp;·&nbsp;
+        <button id="pronounce-btn"
+                style="background:var(--amber-600);color:#fff;border:none;border-radius:3px;
+                       padding:2px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;
+                       display:inline-flex;align-items:center;gap:0.3rem;vertical-align:middle;">
+          ▶ Hear it
+        </button>
+      </p>
+
+      <p style="font-size:0.95rem;line-height:1.75;margin-bottom:0.85rem;">
+        <em>Skål</em> is an Old Norse word for a communal drinking bowl and, by extension, the act
+        of sharing that vessel at feasts. Over time it evolved into the familiar Scandinavian toast
+        still heard today — an invitation to drink in camaraderie and good health.
+      </p>
+      <p style="font-size:0.95rem;line-height:1.75;margin-bottom:0.85rem;">
+        When you raise a glass and say <strong>"Skål!"</strong> you are echoing a thousand-year-old
+        habit of celebrating togetherness, good drink, and shared prosperity — one simple word
+        capturing both the vessel and the spirit of the toast.
+      </p>
+      <p style="font-size:0.95rem;line-height:1.75;">
+        The word also traces a direct line to the English word <em>scale</em> — both vessel and
+        measure — a reminder that the best things in life are worth weighing carefully before you
+        lift the cup.
+      </p>
+    </div>
+
+    <div style="font-size:4.5rem;line-height:1;opacity:0.25;flex-shrink:0;align-self:center;
+                font-family:var(--font-serif);color:var(--amber-600);">
+      🍯
+    </div>
+  </div>
+</div>
+
+<!-- ── About the Author ───────────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <h2 style="margin-bottom:1rem;">About the Author</h2>
+  <div style="display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap;">
+    <div style="flex-shrink:0;">
+      <img src="{{ 'jones.dayton@gmail.com'|gravatar_url:80 }}"
+           alt="Dayton Jones"
+           style="width:80px;height:80px;border-radius:50%;border:3px solid var(--amber-400);">
+    </div>
+    <div style="flex:1;min-width:0;">
+      <h3 style="font-family:var(--font-serif);font-size:1.2rem;margin-bottom:0.25rem;">
+        Dayton Jones
+      </h3>
+      <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.75rem;">
+        Mead maker · DevOps Engineer · Skål project author
+      </p>
+      <p style="font-size:0.9rem;line-height:1.75;margin-bottom:0.75rem;">
+        Skål started as a personal project to scratch a very specific itch: a clean brewing tracker
+        built by a homebrewer, for homebrew mead. No bloat, no subscription, no cloud dependency —
+        just a self-hosted companion that lives on your own server and speaks the language of the cellar.
+      </p>
+      <p style="font-size:0.9rem;line-height:1.75;margin-bottom:0.75rem;">
+        Built with Django, PostgreSQL, and a deep respect for honey.
+      </p>
+      <a href="https://buymeacoffee.com/daytonjones" target="_blank" rel="noopener noreferrer"
+         style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--amber-600);
+                color:#fff;padding:0.45rem 1rem;border-radius:var(--radius-sm);font-weight:600;
+                font-size:0.85rem;text-decoration:none;transition:background 0.15s;"
+         onmouseover="this.style.background='var(--amber-400)'"
+         onmouseout="this.style.background='var(--amber-600)'">
+        🍺 Buy me a round
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── App Info ───────────────────────────────────────────────────────────── -->
+<div class="card">
+  <h2 style="margin-bottom:0.75rem;">About This App</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:1rem;">
+    <div style="background:var(--cream-50);border-radius:var(--radius-sm);padding:0.75rem;border:1px solid var(--border);">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.8px;color:var(--brown-700);margin-bottom:0.25rem;">Stack</div>
+      <div style="font-size:0.85rem;font-weight:600;">Django 5 · PostgreSQL · HTMX</div>
+    </div>
+    <div style="background:var(--cream-50);border-radius:var(--radius-sm);padding:0.75rem;border:1px solid var(--border);">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.8px;color:var(--brown-700);margin-bottom:0.25rem;">Hosting</div>
+      <div style="font-size:0.85rem;font-weight:600;">Self-hosted · Docker · Gunicorn</div>
+    </div>
+    <div style="background:var(--cream-50);border-radius:var(--radius-sm);padding:0.75rem;border:1px solid var(--border);">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.8px;color:var(--brown-700);margin-bottom:0.25rem;">License</div>
+      <div style="font-size:0.85rem;font-weight:600;">Personal use</div>
+    </div>
+  </div>
+  <p style="font-size:0.8rem;color:var(--brown-700);">
+    Skål is a self-hosted brewing companion. Your recipes, batches, and brewer notes stay on your
+    server. No accounts on third-party services, no telemetry.
+  </p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('pronounce-btn').addEventListener('click', function() {
+  if (!window.speechSynthesis) {
+    this.textContent = '(not supported in this browser)';
+    return;
+  }
+  var u = new SpeechSynthesisUtterance('Skål');
+  u.lang = 'no-NO';
+  u.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+});
+</script>
+{% endblock %}

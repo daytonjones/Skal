@@ -5,6 +5,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import CreateView, TemplateView, UpdateView
@@ -13,8 +14,9 @@ from django.http import HttpResponse, FileResponse, HttpResponseServerError
 from django.utils.dateformat import format as datefmt
 
 from .forms import SignUpForm, ProfileForm, CustomPasswordChangeForm
+from .models import User
 from apps.recipes.models import Recipe, RecipeIngredient
-from apps.batches.models import Batch
+from apps.batches.models import Batch, BatchImage
 
 import csv
 import io
@@ -27,6 +29,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.enums import TA_LEFT
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.serializers.json import DjangoJSONEncoder
 
 
@@ -42,6 +46,10 @@ class CustomLoginView(LoginView):
         return ctx
 
     def form_valid(self, form):
+        user = form.get_user()
+        if not user.is_approved:
+            messages.error(self.request, "Your account is pending admin approval.")
+            return redirect("accounts:login")
         response = super().form_valid(form)
         self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
         return response
@@ -58,10 +66,43 @@ class SignUpView(CreateView):
         return ctx
 
     def form_valid(self, form):
-        user = form.save()
-        auth_login(self.request, user)
-        self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
-        return redirect("home")
+        new_user = form.save()
+        self._notify_admins(new_user)
+        messages.info(
+            self.request,
+            "Account created! You'll be able to log in once an admin approves it."
+        )
+        return redirect("accounts:login")
+
+    def _notify_admins(self, new_user):
+        import logging
+        from django.core.mail import send_mail
+        logger = logging.getLogger(__name__)
+        admin_emails = list(
+            User.objects.filter(is_staff=True)
+            .exclude(email='')
+            .values_list('email', flat=True)
+        )
+        if not admin_emails:
+            logger.warning("No admin emails configured — skipping pending-account notification.")
+            return
+        name = new_user.get_full_name() or new_user.username
+        try:
+            send_mail(
+                subject="New Skål account pending approval",
+                message=(
+                    f"A new user has registered and is awaiting your approval.\n\n"
+                    f"Username: {new_user.username}\n"
+                    f"Name:     {name}\n"
+                    f"Email:    {new_user.email or '(not provided)'}\n\n"
+                    f"Review at /admin/accounts/user/?is_approved__exact=0\n\n"
+                    f"Skål! 🍯"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=admin_emails,
+            )
+        except Exception as exc:
+            logger.error("Failed to send admin notification email: %s", exc)
 
 
 class CustomLogoutView(LogoutView):
@@ -76,19 +117,49 @@ class HomeView(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
 
+        user_batches = Batch.objects.filter(user=user)
+        active_batches = user_batches.filter(bottled_done=False).order_by('-primary_date')
+
+        # Average ABV from batches that have both OG and FG
+        completed = user_batches.filter(fg__isnull=False)
+        avg_abv = None
+        if completed.exists():
+            total_abv = sum(
+                (76.08 * (float(b.og) - float(b.fg)) / (1.775 - float(b.og)))
+                * (float(b.fg) / 0.794)
+                for b in completed
+            )
+            avg_abv = round(total_abv / completed.count(), 1)
+
+        ctx['active_batches'] = active_batches
+        ctx['total_batches'] = user_batches.count()
+        ctx['active_count'] = active_batches.count()
+        ctx['avg_abv'] = avg_abv
+        ctx['total_recipes'] = Recipe.objects.filter(user=user).count()
+        ctx['last_bottled'] = (
+            user_batches.filter(bottled_done=True).order_by('-bottled_date').first()
+        )
+        ctx['recent_images'] = (
+            BatchImage.objects.filter(
+                models.Q(batch__user=user) | models.Q(batch__is_public=True)
+            )
+            .select_related('batch')
+            .order_by('-id')[:20]
+        )
+        # Legacy keys — still used by current home.html template
         ctx['newest_recipe'] = Recipe.objects.filter(
             models.Q(user=user) | models.Q(is_public=True) | models.Q(user__isnull=True)
         ).order_by('-pk').first()
+        ctx['newest_batch'] = user_batches.order_by('-pk').first()
 
-        ctx['newest_batch'] = Batch.objects.filter(
-            models.Q(user=user) | models.Q(is_public=True)
-        ).order_by('-pk').first()
+        if user.is_staff:
+            ctx['pending_approvals'] = User.objects.filter(is_approved=False).count()
 
         return ctx
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = settings.AUTH_USER_MODEL
+    model = User
     form_class = ProfileForm
     template_name = "accounts/profile.html"
     success_url = reverse_lazy("accounts:profile")
@@ -97,12 +168,33 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['password_form'] = CustomPasswordChangeForm(self.request.user)
+        return ctx
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Profile updated.')
+        return super().form_valid(form)
+
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     form_class = CustomPasswordChangeForm
     template_name = "accounts/password_change.html"
     success_url = reverse_lazy("accounts:profile")
     login_url = reverse_lazy("accounts:login")
+
+
+@login_required
+@require_POST
+def toggle_theme(request):
+    user = request.user
+    user.theme = 'dark' if user.theme == 'light' else 'light'
+    user.save(update_fields=['theme'])
+    next_url = request.POST.get('next', '/')
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        next_url = '/'
+    return redirect(next_url)
 
 
 @login_required

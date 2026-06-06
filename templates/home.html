@@ -1,89 +1,133 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <div class="container mx-auto mt-6">
-    <center>
-    <h1 class="text-2xl font-semibold mb-4 text-center">
-      Welcome to Skål,&nbsp;
-      {% if request.user.get_full_name %}
-        {{ request.user.get_full_name }}!
-      {% else %}
-        {{ request.user.username }}!
-      {% endif %}
-    </h1>
-    </center>
+{% if pending_approvals %}
+<div class="pending-banner">
+  <span>🔔 <strong>{{ pending_approvals }} account{{ pending_approvals|pluralize }} pending approval.</strong></span>
+  <a href="/admin/accounts/user/?is_approved__exact=0" class="pending-banner-link">Review in admin →</a>
+</div>
+{% endif %}
+<div class="dash-greeting">
+  <div>
+    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
+    <p class="subtext">{% now "l, F j" %} · {{ active_count }} batch{{ active_count|pluralize }} fermenting</p>
+  </div>
+  <div class="btn-group">
+    <a href="{% url 'batches:create' %}" class="btn btn-primary">🍯 New Batch</a>
+    <a href="{% url 'recipes:create' %}" class="btn btn-secondary">📜 New Recipe</a>
+  </div>
+</div>
 
-    <center>
-      <button id="play-skal" class="play-btn">▶ <b>Skål</b></button>
-      <audio id="player-skal" preload="auto" style="display:none;">
-        <source src="/static/skal.mp3" type="audio/mpeg">
-      </audio>
-      is an Old Norse word for a communal drinking bowl and, by extension, the act of sharing that vessel at feasts. Over time it evolved into the familiar Scandinavian toast still heard today—an invitation to drink in camaraderie and good health. When you raise a glass and say “Skål!” you are echoing a thousand-year-old habit of celebrating togetherness, good drink, and shared prosperity—one simple word capturing both the vessel and the spirit of the toast.
-    </center>
+<div class="stat-tiles">
+  <div class="stat-tile">
+    <div class="stat-value">{{ total_batches }}</div>
+    <div class="stat-label">Batches</div>
+  </div>
+  <div class="stat-tile highlight">
+    <div class="stat-value">{{ active_count }}</div>
+    <div class="stat-label">Fermenting</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value">{% if avg_abv %}{{ avg_abv }}%{% else %}—{% endif %}</div>
+    <div class="stat-label">Avg ABV</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value">{{ total_recipes }}</div>
+    <div class="stat-label">Recipes</div>
+  </div>
+</div>
 
-    <br><br><br>
-    <center><img src="/static/images/skal.png" alt="Skål" style="max-width: 40%;" /> </center>
-
-    {% if newest_recipe %}
-      <div class="calc-section">
-        <h2>Newest Recipe</h2>
-        <h3>
-          <a href="{% url 'recipes:detail' newest_recipe.pk %}">
-            {{ newest_recipe.name }}
-            {% if newest_recipe.user and request.user != newest_recipe.user %}
-              ({{ newest_recipe.user.get_full_name|default:newest_recipe.user.username|default:"Admin" }})
-            {% endif %}
-          </a>
-        </h3>
-        <p><strong>Batch Size:</strong> {{ newest_recipe.batch_size }} gal</p>
+<div class="dash-body">
+  <div>
+    <p class="section-label">Active Fermentations</p>
+    {% for batch in active_batches %}
+    <div class="fermentation-row">
+      <div class="flask flask-lg" data-stage="{{ batch.stage }}"
+           style="--fill: {{ batch.checklist_progress }}%"></div>
+      <div class="fermentation-info">
+        <div class="fermentation-name">
+          <a href="{% url 'batches:detail' batch.pk %}">{{ batch.name }}</a>
+        </div>
+        <div class="fermentation-meta">
+          {{ batch.stage|capfirst }}
+          · {% if batch.fg %}{{ batch.og|floatformat:3 }} → {{ batch.fg|floatformat:3 }}{% else %}OG {{ batch.og|floatformat:3 }}{% endif %}
+          · {{ batch.checklist_progress }}% complete
+        </div>
       </div>
-    {% endif %}
-
-    {% if newest_batch %}
-      <div class="calc-section mt-6">
-        <h2>Latest Batch</h2>
-        <h3>
-          <a href="{% url 'batches:detail' newest_batch.pk %}">
-            {{ newest_batch.name }}
-          </a>
-        </h3>
-        <p>
-          <strong>OG:</strong> {{ newest_batch.og }}
-          {% if newest_batch.fg %}
-            , <strong>FG:</strong> {{ newest_batch.fg }}
-          {% endif %}
-        </p>
-        {% if newest_batch.primary_date %}
-          <p><strong>Primary Date:</strong> {{ newest_batch.primary_date }}</p>
-        {% endif %}
-      </div>
-    {% endif %}
+    </div>
+    {% empty %}
+    <p style="color:var(--brown-700);font-size:0.875rem;">No active batches.
+      <a href="{% url 'batches:create' %}">Start one →</a>
+    </p>
+    {% endfor %}
   </div>
 
-  <script>
-    (function () {
-      const btn = document.getElementById('play-skal');
-      const player = document.getElementById('player-skal');
-      let playing = false;
+  <div>
+    <p class="section-label">Quick Actions</p>
+    <div class="quick-actions" style="margin-bottom:1rem;">
+      <a href="{% url 'batches:create' %}" class="btn btn-primary">🍯 New Batch</a>
+      <a href="{% url 'recipes:create' %}" class="btn btn-secondary">📜 New Recipe</a>
+      <a href="{% url 'calculators:index' %}" class="btn btn-secondary">🧮 Calculators</a>
+    </div>
 
-      btn.addEventListener('click', () => {
-        if (!playing) {
-          player.play();
-          playing = true;
-          btn.textContent = '⏸ Pause';
-        } else {
-          player.pause();
-          playing = false;
-          btn.textContent = '▶ Play';
-        }
-      });
+    {% if last_bottled %}
+    <p class="section-label">Last Bottled</p>
+    <div class="card" style="padding:0.75rem;">
+      <a href="{% url 'batches:detail' last_bottled.pk %}" style="font-weight:600;color:var(--brown-900);">
+        {{ last_bottled.name }}
+      </a>
+      <p style="font-size:0.75rem;color:var(--stage-bottled);margin-top:0.2rem;">
+        ✓ Bottled
+        {% if last_bottled.bottled_date %}{{ last_bottled.bottled_date }}{% endif %}
+        {% if last_bottled.fg %} · {{ last_bottled.fg|floatformat:3 }} FG{% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>
 
-      player.addEventListener('ended', () => {
-        playing = false;
-        btn.textContent = '▶ Play';
-      });
-    })();
-  </script>
+{% if recent_images %}
+<div class="photo-strip-section">
+  <p class="section-label">From the Cellar</p>
+  <div class="cellar-slideshow" id="cellarSlideshow">
+    {% for img in recent_images %}
+    <a href="{% url 'batches:detail' img.batch.pk %}"
+       class="cellar-slide{% if forloop.first %} active{% endif %}"
+       title="{{ img.batch.name }}">
+      <img src="{{ img.image.url }}" alt="{{ img.caption|default:img.batch.name }}">
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<script>
+  (function() {
+    const show = document.getElementById('cellarSlideshow');
+    if (show) {
+      const slides = show.querySelectorAll('.cellar-slide');
+      if (slides.length > 1) {
+        let cur = 0;
+        setInterval(function() {
+          slides[cur].classList.remove('active');
+          cur = (cur + 1) % slides.length;
+          slides[cur].classList.add('active');
+        }, 10000);
+      }
+    }
+  })();
+  (function() {
+    const btn = document.getElementById('play-skal');
+    const player = document.getElementById('player-skal');
+    if (!btn || !player) return;
+    let playing = false;
+    btn.addEventListener('click', function() {
+      if (!playing) { player.play(); playing = true; btn.textContent = '⏸ Skål'; }
+      else { player.pause(); playing = false; btn.textContent = '▶ Skål'; }
+    });
+    player.addEventListener('ended', function() { playing = false; btn.textContent = '▶ Skål'; });
+  })();
+</script>
 {% endblock %}
-
