@@ -1,134 +1,203 @@
 # Skål
-<!-- GitHub repo metadata -->
+
 [![GitHub release](https://img.shields.io/github/v/release/daytonjones/Skal?sort=semver)](https://github.com/daytonjones/Skal/releases)
 [![GitHub last commit](https://img.shields.io/github/last-commit/daytonjones/Skal)](https://github.com/daytonjones/Skal/commits/main)
 [![GitHub issues](https://img.shields.io/github/issues/daytonjones/Skal)](https://github.com/daytonjones/Skal/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/daytonjones/Skal)](https://github.com/daytonjones/Skal/pulls)
 [![GitHub stars](https://img.shields.io/github/stars/daytonjones/Skal)](https://github.com/daytonjones/Skal/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/daytonjones/Skal)](https://github.com/daytonjones/Skal/network/members)
 [![License](https://img.shields.io/github/license/daytonjones/Skal)](https://github.com/daytonjones/Skal/blob/main/LICENSE)
 
-Skål is a modern web application for managing your mead brewing journey—from crafting recipes to tracking batches and calculating ABV & calories. Designed with the homebrewer in mind, it features an intuitive interface, responsive design, and robust tooling for both casual and meticulous brewers alike.
+**Skål** is a modern web application for managing your mead-making journey — from crafting recipes to tracking fermentation batches, calculating ABV, managing your ingredient pantry, and getting help from an AI brewing assistant. Designed for homebrewers who want a clean, focused tool rather than a spreadsheet.
 
-Though built primarily for meadmakers (it's what I brew!), Skål is just as capable for beer and cider.
-
----
-
-## 🌟 Features
-
-* **Recipe Management**: Create, edit, and browse brewing recipes with detailed ingredients and step-by-step instructions.
-* **Batch Tracking**: Log fermentation batches with OG, FG, primary/secondary/bottle dates, notes, and photo galleries.
-* **Yeast Comparison**: Compare, search, sort various yeasts to see tolerances and suggested uses.
-* **ABV & Calorie Calculator**: Calculates ABV using the alternate formula and estimates calories.
-* **Ingredient Autocomplete**: Ingredient names auto-saved and suggested for quicker input.
-* **Image Support**: Upload and resize images (max 800x800), organized per batch.
-* **Theme Toggle**: Supports light and dark themes, saved per user profile.
-* **User Authentication**: Secure login, registration, and profile customization.
-* **Multi-User Support**: Users can manage their own recipes and batches, or make them public.
-* **Responsive Design**: Built with a sleek, CSS styled interface - and mobile-friendly.
-* **Export Options**: Export your recipes and batches as PDF, CSV, JSON, TXT, or SQL backups.
+Though built with mead in mind, Skål works just as well for beer and cider.
 
 ---
 
-## 🚀 Quick Start (Docker Compose)
+## Features
+
+- **Recipe Management** — Create, edit, browse, and export recipes with ingredients and instructions. Toggle public/private visibility. One-click clone to fork a community recipe.
+- **Batch Tracking** — Log batches from must creation through bottling. Track OG/FG, primary/secondary/bottle dates, notes, and a full TOSNA 3.0 nutrient schedule.
+- **Photo Galleries** — Upload batch photos with captions. A slideshow of your latest brews rotates on the home dashboard.
+- **Bjorn AI Assistant** — Ask Bjorn (your Viking mead guide) brewing questions, get recipe suggestions, and save them directly to your recipe list with one click.
+- **Yeast Reference Table** — Compare yeasts by tolerance, attenuation, and suggested use with sorting and search.
+- **ABV & Calorie Calculator** — Alternate formula ABV, estimated calories per 5 oz glass. SG/Brix fields stay linked.
+- **Pantry** — Track ingredients you have on hand; recipe detail shows what you're missing.
+- **Export** — Download recipes and batches as PDF, CSV, JSON, TXT, or SQL.
+- **Multi-User** — Each user manages their own data; public recipes/batches are visible to all members.
+- **Light & Dark Theme** — Stored per user profile. Automatic Gravatar support.
+- **Pagination** — Recipe and batch lists paginate at 20 per page with search/filter preserved across pages.
+- **Responsive Design** — Works on desktop and mobile.
+
+---
+
+## Screenshots
+
+| Home Dashboard | Recipe List | Batch Detail |
+|---|---|---|
+| ![Home](screenshots/home.png) | ![Recipes](screenshots/recipes.png) | ![Batch](screenshots/batch-detail.png) |
+
+| Bjorn AI Chat | Calculators | Dark Mode |
+|---|---|---|
+| ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) | ![Dark](screenshots/dark-mode.png) |
+
+> **Screenshot instructions** — capture and save to the `screenshots/` folder:
+> - `home.png` — home page showing the batch slideshow and recent activity
+> - `recipes.png` — recipes list with the featured panel visible
+> - `batch-detail.png` — an open batch showing the checklist and photo gallery
+> - `bjorn-chat.png` — the Bjorn AI chat with a recipe suggestion card showing
+> - `calculators.png` — the ABV/calorie calculator with values filled in
+> - `dark-mode.png` — any page with dark mode enabled (sidebar + content)
+
+---
+
+## Quick Start (Docker Compose)
 
 ### Prerequisites
 
-* [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose v2](https://docs.docker.com/compose/install/)
 
-### 1. Clone the Repo
+### Option A — Interactive Install Script (recommended)
+
+```bash
+git clone https://github.com/daytonjones/Skal.git
+cd Skal
+./install.sh
+```
+
+The install script walks you through every configuration option step by step, writes your `.env` file, builds and starts the containers, and optionally configures the Bjorn AI assistant.
+
+### Option B — Manual Setup
+
+**1. Clone the repo**
 
 ```bash
 git clone https://github.com/daytonjones/Skal.git
 cd Skal
 ```
 
-### 2. Create a `.env` File
-(replace the values in '{}')
+**2. Create a `.env` file**
+
 ```dotenv
-SECRET_KEY={your-secret-key}
+SECRET_KEY=your-secret-key-here
 DEBUG=False
 POSTGRES_DB=skal
 POSTGRES_USER=skaluser
-POSTGRES_PASSWORD={skalpass}
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,{yourdomain.com}
+POSTGRES_PASSWORD=yourpassword
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com
 DJANGO_SUPERUSER_USERNAME=admin
-DJANGO_SUPERUSER_EMAIL=admin@{example.com}
-DJANGO_SUPERUSER_PASSWORD={password123}
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+DJANGO_SUPERUSER_PASSWORD=yourpassword
+
+# Optional — Bjorn AI assistant (leave blank to disable)
+AI_PROVIDER=anthropic
+AI_API_KEY=sk-ant-...
 ```
 
-### 3. Start Services
+**3. Build and start**
 
 ```bash
 docker compose up --build -d
 ```
 
-The app will automatically apply migrations, seed some recipes,  and create the superuser on first run.
+The app applies migrations, seeds starter recipes, and creates the superuser on first run.
 
-### 4. Access the App
+**4. Visit [http://localhost:8000](http://localhost:8000)**
 
-Visit [http://localhost:8000](http://localhost:8000)
-
-### 4. Create a user and login
+Log in as your superuser, then go to **Admin → Users** to approve any new registrations.
 
 ---
 
-## 🔧 Configuration Notes
+## Configuration
 
-* **Database**: PostgreSQL service managed via `docker-compose.yml`
-* **Static & Media**: Static files served with Whitenoise; uploaded media goes to `/media/`
-* **Themes**: Toggle stored in user profile, switched via CSS class
-* **CSRF**: Derived from `DJANGO_ALLOWED_HOSTS`
-* **Export**: Recipes/batches exportable in multiple formats (PDF, JSON, CSV, TXT, SQL)
+All configuration is via environment variables in `.env`.
 
----
+### Required
 
-## 📃 Screenshots
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | Django secret key — generate one with `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DEBUG` | `False` for production, `True` for local dev |
+| `POSTGRES_DB` | Database name (default: `skal`) |
+| `POSTGRES_USER` | Database user |
+| `POSTGRES_PASSWORD` | Database password |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames/IPs |
+| `DJANGO_SUPERUSER_USERNAME` | Auto-created admin username |
+| `DJANGO_SUPERUSER_EMAIL` | Admin email |
+| `DJANGO_SUPERUSER_PASSWORD` | Admin password |
 
-* Home Page
+### Optional — Bjorn AI Assistant
 
-  ![screenshot-home](screenshots/homepage.png)
+| Variable | Description |
+|---|---|
+| `AI_PROVIDER` | `anthropic` or `openai` (leave blank to disable Bjorn entirely) |
+| `AI_API_KEY` | Your API key for the chosen provider |
 
-* ABV Calculator
-
-  ![screenshot-abv](screenshots/abv-calculator.png)
-
-* Yeast Info and Comparison
-
-  ![screenshot-yeast](screenshots/yeast-table.png)
----
-
-## 🔄 Usage Overview
-
-* **Home**: Welcome banner, most recent recipe & batch
-* **Recipes**: Sortable list, detail view, edit/delete (if owner), public visibility toggle
-* **Batches**: Track your brews from primary to bottling; upload images and notes
-* **Profile**: Set your display name, avatar, and theme
-* **Calculators**: Input OG/FG to compute ABV and estimated calories
-* **Export**: Download your data for backup or printing
+When `AI_PROVIDER` is set, a "Ask Bjorn" link appears in the sidebar for all logged-in users. The assistant is scoped to mead/homebrewing topics only. Usage (tokens per user) is tracked and emailed to admins weekly.
 
 ---
 
-## 🙌 Contributing
+## Bjorn AI Assistant
+
+Bjorn is a Viking mead-making expert built into Skål. He knows your recipes and active batches, can answer brewing questions, troubleshoot fermentation issues, and suggest new recipes.
+
+**Supported providers:**
+- [Anthropic Claude](https://console.anthropic.com/) — `AI_PROVIDER=anthropic`
+- [OpenAI](https://platform.openai.com/) — `AI_PROVIDER=openai`
+
+**Recipe suggestions:** When Bjorn suggests a recipe, a save card appears in the chat. Click **Add to My Recipes** to save it directly to your recipe list — honey, yeast, additives, and instructions all included.
+
+**Usage reporting:** A weekly email is sent to Django admins summarising token usage per user. You can also run it manually:
+
+```bash
+docker compose exec web python manage.py send_ai_report
+```
+
+---
+
+## Upgrading
+
+Use the upgrade script to safely back up your data and apply new migrations:
+
+```bash
+./upgrade.sh
+```
+
+This creates a timestamped SQL backup in `backups/`, rebuilds the image, and restarts containers.
+
+---
+
+## Usage Overview
+
+| Page | What you can do |
+|---|---|
+| **Home** | See your latest batches as a rotating slideshow; quick links to recent activity |
+| **Recipes** | Browse, search, create, edit, delete, clone, and export recipes; Featured Recipe panel |
+| **Batches** | Track brews from must to bottle; checklist, gravity log, photo gallery, nutrient schedule |
+| **Bjorn** | Chat with your AI brewing guide; save AI-suggested recipes |
+| **Pantry** | Track ingredient stock; see what you have vs. what a recipe needs |
+| **Calculators** | ABV and calorie calculator with linked SG/Brix fields |
+| **Yeast Table** | Search and compare yeast strains |
+| **Profile** | Display name, avatar, theme preference, account settings |
+| **Admin** | Approve users, manage ingredients, view AI usage |
+
+---
+
+## Contributing
 
 1. Fork the repository
-2. Create a new feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes and add tests
-4. Submit a pull request with details
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Write tests and commit your changes
+4. Open a pull request with a description of what changed and why
 
 ---
 
-## 👋 Contact
+## Contact
 
-Dayton Jones
+**Dayton Jones**
 Email: [jones.dayton@gmail.com](mailto:jones.dayton@gmail.com)
 GitHub: [@daytonjones](https://github.com/daytonjones)
 
 ---
 
-## 📚 License
+## License
 
 MIT License. See [LICENSE](LICENSE) for full details.
-
----
-
