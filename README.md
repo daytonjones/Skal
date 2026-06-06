@@ -35,17 +35,9 @@ Though built with mead in mind, Skål works just as well for beer and cider.
 |---|---|---|
 | ![Home](screenshots/home.png) | ![Recipes](screenshots/recipes.png) | ![Batch](screenshots/batch-detail.png) |
 
-| Bjorn AI Chat | Calculators | Dark Mode |
+| Bjorn AI Chat | Calculators | 
 |---|---|---|
-| ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) | ![Dark](screenshots/dark-mode.png) |
-
-> **Screenshot instructions** — capture and save to the `screenshots/` folder:
-> - `home.png` — home page showing the batch slideshow and recent activity
-> - `recipes.png` — recipes list with the featured panel visible
-> - `batch-detail.png` — an open batch showing the checklist and photo gallery
-> - `bjorn-chat.png` — the Bjorn AI chat with a recipe suggestion card showing
-> - `calculators.png` — the ABV/calorie calculator with values filled in
-> - `dark-mode.png` — any page with dark mode enabled (sidebar + content)
+| ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) | 
 
 ---
 
