@@ -17,6 +17,7 @@
     hx-get="{% url 'recipes:index' %}"
     hx-trigger="input changed delay:300ms, search"
     hx-target="#recipe-rows"
+    hx-swap="outerHTML"
     autocomplete="off"
   >
 </div>

@@ -34,6 +34,7 @@ class BatchListView(LoginRequiredMixin, ListView):
     model = Batch
     template_name = 'batches/index.html'
     context_object_name = 'batches'
+    paginate_by = 20
 
     def get_queryset(self):
         user = self.request.user

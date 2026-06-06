@@ -26,4 +26,25 @@
     <a href="{% url 'recipes:create' %}" class="btn btn-primary">Create your first recipe →</a>
   </div>
 {% endfor %}
+{% if is_paginated %}
+<div class="pagination-controls">
+  {% if page_obj.has_previous %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'recipes:index' %}?page={{ page_obj.previous_page_number }}&q={{ q }}"
+     hx-target="#recipe-rows"
+     hx-swap="outerHTML">← Prev</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">← Prev</span>
+  {% endif %}
+  <span class="page-info">{{ page_obj.number }} of {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'recipes:index' %}?page={{ page_obj.next_page_number }}&q={{ q }}"
+     hx-target="#recipe-rows"
+     hx-swap="outerHTML">Next →</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">Next →</span>
+  {% endif %}
+</div>
+{% endif %}
 </div>

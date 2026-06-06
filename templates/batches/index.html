@@ -17,6 +17,7 @@
     hx-get="{% url 'batches:index' %}"
     hx-trigger="input changed delay:300ms, search"
     hx-target="#batch-rows"
+    hx-swap="outerHTML"
     hx-include=".stage-btn.active"
     autocomplete="off"
   >
@@ -26,21 +27,25 @@
   <button class="stage-btn {% if not stage %}active{% endif %}"
           hx-get="{% url 'batches:index' %}"
           hx-target="#batch-rows"
+          hx-swap="outerHTML"
           hx-include="#batch-search"
           hx-vals='{"stage": ""}'>All</button>
   <button class="stage-btn {% if stage == 'active' %}active{% endif %}"
           hx-get="{% url 'batches:index' %}"
           hx-target="#batch-rows"
+          hx-swap="outerHTML"
           hx-include="#batch-search"
           hx-vals='{"stage": "active"}'>Active</button>
   <button class="stage-btn {% if stage == 'secondary' %}active{% endif %}"
           hx-get="{% url 'batches:index' %}"
           hx-target="#batch-rows"
+          hx-swap="outerHTML"
           hx-include="#batch-search"
           hx-vals='{"stage": "secondary"}'>Secondary</button>
   <button class="stage-btn {% if stage == 'bottled' %}active{% endif %}"
           hx-get="{% url 'batches:index' %}"
           hx-target="#batch-rows"
+          hx-swap="outerHTML"
           hx-include="#batch-search"
           hx-vals='{"stage": "bottled"}'>Bottled</button>
 </div>
