@@ -37,10 +37,6 @@
       </div>
       <span class="steps-label">{{ batch.checklist_progress }}%</span>
     </div>
-    {% if batch.user == request.user %}
-      <a href="{% url 'batches:edit' batch.pk %}" class="btn btn-ghost no-print"
-         onclick="event.stopPropagation();" style="padding:0.25rem 0.5rem;font-size:0.8rem;">✏️</a>
-    {% endif %}
   </a>
 {% empty %}
   <div class="empty-state">
