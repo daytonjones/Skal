@@ -35,8 +35,8 @@ Though built with mead in mind, Skål works just as well for beer and cider.
 |---|---|---|
 | ![Home](screenshots/home.png) | ![Recipes](screenshots/recipes.png) | ![Batch](screenshots/batch-detail.png) |
 
-| Bjorn AI Chat | Calculators | 
-|---|---|---|
+ Bjorn AI Chat | Calculators | 
+|---|---|
 | ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) | 
 
 ---
