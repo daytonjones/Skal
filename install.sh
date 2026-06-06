@@ -102,7 +102,7 @@ fi
 
 # ── Secret key ────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  1 / 6 — Secret Key${RESET}"
+echo -e "${BOLD}  1 / 7 — Secret Key${RESET}"
 hr
 echo "  A cryptographically random key will be generated for you."
 echo "  You can also paste your own (leave blank to auto-generate)."
@@ -118,7 +118,7 @@ echo
 
 # ── Debug mode ────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  2 / 6 — Debug Mode${RESET}"
+echo -e "${BOLD}  2 / 7 — Debug Mode${RESET}"
 hr
 echo "  Set to True only for local development. Never True in production."
 echo
@@ -130,7 +130,7 @@ echo
 
 # ── Database ──────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  3 / 6 — Data Storage${RESET}"
+echo -e "${BOLD}  3 / 7 — Data Storage${RESET}"
 hr
 echo "  Skål stores your recipes and batches in a private database."
 echo "  These credentials are only used internally — you won't need them again"
@@ -145,7 +145,7 @@ echo
 
 # ── Allowed hosts ─────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  4 / 6 — Access & Networking${RESET}"
+echo -e "${BOLD}  4 / 7 — Access & Networking${RESET}"
 hr
 echo "  The hostname or IP address users will use to reach Skål."
 echo "  Use 'localhost' for local use, or your server's domain/IP for remote access."
@@ -160,7 +160,7 @@ echo
 
 # ── Superuser ─────────────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  5 / 6 — Admin Account${RESET}"
+echo -e "${BOLD}  5 / 7 — Admin Account${RESET}"
 hr
 echo "  This account is created automatically on first run."
 echo "  Use it to log in and manage the app."
@@ -174,7 +174,7 @@ echo
 
 # ── Email (optional) ──────────────────────────────────────────────────────────
 hr
-echo -e "${BOLD}  6 / 6 — Email (optional)${RESET}"
+echo -e "${BOLD}  6 / 7 — Email (optional)${RESET}"
 hr
 echo "  Skål can send email notifications (e.g. account approval alerts)."
 echo "  Leave EMAIL_HOST blank to skip — emails will be printed to the console log."
@@ -213,6 +213,53 @@ else
 fi
 echo
 
+# ── AI Assistant (optional) ───────────────────────────────────────────────────
+hr
+echo -e "${BOLD}  7 / 7 — AI Assistant (optional)${RESET}"
+hr
+echo "  Bjorn is an AI-powered mead guide built into Skål."
+echo "  He can answer fermentation questions, suggest recipes, and review your batches."
+echo "  Leave blank to skip — Bjorn won't appear anywhere in the app."
+echo
+read -rp "  $(echo -e "${BOLD}Enable Bjorn? [y/N]${RESET}: ")" enable_ai
+AI_PROVIDER=""
+AI_API_KEY=""
+if [[ "${enable_ai,,}" == "y" ]]; then
+    echo
+    echo -e "  ${BOLD}Provider:${RESET}"
+    echo "    1  Anthropic (Claude — Haiku, fast and cost-effective)"
+    echo "    2  OpenAI (ChatGPT — GPT-4o mini)"
+    echo
+    while true; do
+        read -rp "  $(echo -e "${BOLD}Choice${RESET} [1/2]: ")" ai_choice
+        if [[ "$ai_choice" == "1" ]]; then
+            AI_PROVIDER="anthropic"
+            break
+        elif [[ "$ai_choice" == "2" ]]; then
+            AI_PROVIDER="openai"
+            break
+        else
+            warn "Please enter 1 or 2."
+        fi
+    done
+    echo
+    if [[ "$AI_PROVIDER" == "anthropic" ]]; then
+        echo "  Get your API key at: console.anthropic.com"
+    else
+        echo "  Get your API key at: platform.openai.com/api-keys"
+    fi
+    echo
+    while [[ -z "$AI_API_KEY" ]]; do
+        read -rsp "  $(echo -e "${BOLD}API key${RESET}: ")" AI_API_KEY; echo
+        [[ -z "$AI_API_KEY" ]] && warn "API key is required."
+    done
+    echo
+    ok "Bjorn enabled: $AI_PROVIDER"
+else
+    warn "Bjorn skipped — AI assistant will not appear in the app."
+fi
+echo
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 hr
 echo -e "${BOLD}  Summary${RESET}"
@@ -228,6 +275,7 @@ echo -e "  Admin username      ${DJANGO_SUPERUSER_USERNAME}"
 echo -e "  Admin email         ${DJANGO_SUPERUSER_EMAIL}"
 echo -e "  Admin password      ${RED}(hidden)${RESET}"
 echo -e "  Email host          ${EMAIL_HOST:-${YELLOW}(none — console only)${RESET}}"
+echo -e "  AI assistant        ${AI_PROVIDER:-${YELLOW}(disabled)${RESET}}"
 hr
 echo
 read -rp "  Write .env and continue? [Y/n] " confirm
@@ -251,6 +299,8 @@ EMAIL_USE_TLS=${EMAIL_USE_TLS}
 EMAIL_HOST_USER=${EMAIL_HOST_USER}
 EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
 DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+AI_PROVIDER=${AI_PROVIDER}
+AI_API_KEY=${AI_API_KEY}
 EOF
 
 ok ".env written to $ENV_FILE"

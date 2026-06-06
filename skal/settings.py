@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "apps.calculators",
     "apps.yeast",
     "apps.pantry",
+    "apps.ai",
 ]
 
 MIDDLEWARE = [
@@ -97,6 +98,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.ai.context_processors.ai_settings",
             ],
         },
     },
@@ -145,4 +147,23 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Default auto field ---------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email ----------------------------------------------------------------------
+# If EMAIL_HOST is set, use SMTP; otherwise print to console (useful in dev).
+
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if os.environ.get("EMAIL_HOST")
+    else "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST          = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT          = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS       = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER     = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL  = os.environ.get("DEFAULT_FROM_EMAIL", "Skål <noreply@localhost>")
+
+# AI Assistant (Bjorn) -------------------------------------------------------
+AI_PROVIDER = os.environ.get('AI_PROVIDER', '')   # 'anthropic' | 'openai' | ''
+AI_API_KEY  = os.environ.get('AI_API_KEY', '')
 

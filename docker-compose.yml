@@ -13,6 +13,21 @@ services:
     depends_on:
       - skal_db
 
+  scheduler:
+    build: .
+    entrypoint: []
+    command: >
+      sh -c "while true; do
+        sleep 604800;
+        python manage.py send_ai_report;
+      done"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - skal_db
+
   skal_db:
     image: postgres:15
     container_name: skal_db

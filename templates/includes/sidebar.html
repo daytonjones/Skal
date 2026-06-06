@@ -44,6 +44,14 @@
         <span class="nav-label">Mead History</span>
       </a>
     </li>
+    {% if ai_enabled %}
+    <li>
+      <a href="{% url 'ai:chat' %}" {% if request.resolver_match.app_name == 'ai' %}aria-current="page"{% endif %}>
+        <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="nav-bjorn-icon">
+        <span class="nav-label">Ask Bjorn</span>
+      </a>
+    </li>
+    {% endif %}
     <li>
       <a href="{% url 'about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>
         <span class="nav-icon">ℹ️</span>

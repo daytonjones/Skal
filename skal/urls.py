@@ -36,6 +36,10 @@ urlpatterns = [
         "pantry/",
         include(("apps.pantry.urls", "pantry"), namespace="pantry"),
     ),
+    path(
+        "ai/",
+        include(("apps.ai.urls", "ai"), namespace="ai"),
+    ),
 ]
 
 # Always serve media files — Gunicorn doesn't serve /media/ on its own.
