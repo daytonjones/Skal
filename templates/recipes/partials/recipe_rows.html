@@ -19,10 +19,6 @@
     <span class="badge {% if recipe.is_public %}badge-public{% else %}badge-private{% endif %}">
       {{ recipe.is_public|yesno:"Public,Private" }}
     </span>
-    {% if recipe.user == request.user %}
-      <a href="{% url 'recipes:edit' recipe.pk %}" class="btn btn-ghost no-print"
-         onclick="event.stopPropagation();" style="padding:0.25rem 0.5rem;font-size:0.8rem;">✏️ Edit</a>
-    {% endif %}
   </a>
 {% empty %}
   <div class="empty-state">
