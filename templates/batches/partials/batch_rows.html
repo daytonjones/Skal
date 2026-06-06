@@ -44,4 +44,25 @@
     <a href="{% url 'batches:create' %}" class="btn btn-primary">Start your first batch →</a>
   </div>
 {% endfor %}
+{% if is_paginated %}
+<div class="pagination-controls">
+  {% if page_obj.has_previous %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'batches:index' %}?page={{ page_obj.previous_page_number }}&q={{ q }}&stage={{ stage }}"
+     hx-target="#batch-rows"
+     hx-swap="outerHTML">← Prev</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">← Prev</span>
+  {% endif %}
+  <span class="page-info">{{ page_obj.number }} of {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn-secondary"
+     hx-get="{% url 'batches:index' %}?page={{ page_obj.next_page_number }}&q={{ q }}&stage={{ stage }}"
+     hx-target="#batch-rows"
+     hx-swap="outerHTML">Next →</a>
+  {% else %}
+  <span class="btn btn-secondary disabled">Next →</span>
+  {% endif %}
+</div>
+{% endif %}
 </div>

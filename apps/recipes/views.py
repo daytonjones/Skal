@@ -21,6 +21,7 @@ class RecipeListView(LoginRequiredMixin, ListView):
     model = Recipe
     template_name = 'recipes/index.html'
     context_object_name = 'recipes'
+    paginate_by = 20
 
     def get_queryset(self):
         user = self.request.user
@@ -34,8 +35,8 @@ class RecipeListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        items = ctx.get('recipes') or self.get_queryset()
-        ctx['featured'] = random.choice(list(items)) if items else None
+        page_items = list(ctx['recipes'])
+        ctx['featured'] = random.choice(page_items) if page_items else None
         ctx['q'] = self.request.GET.get('q', '')
         return ctx
 
