@@ -166,3 +166,4 @@ cython_debug/
 #.idea/
 
 # screenshots intentionally tracked in repo for README
+.playwright-mcp/
