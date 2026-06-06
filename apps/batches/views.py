@@ -1,5 +1,7 @@
 # apps/batches/views.py
 
+import logging
+
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import (
@@ -15,6 +17,8 @@ from datetime import date
 from .models import Batch, BatchImage
 from .forms import BatchForm
 from apps.recipes.models import Recipe
+
+logger = logging.getLogger(__name__)
 
 
 ALLOWED_CHECKLIST_FIELDS = {
@@ -40,7 +44,7 @@ class BatchListView(LoginRequiredMixin, ListView):
         user = self.request.user
         qs = Batch.objects.filter(
             models.Q(user=user) | models.Q(is_public=True)
-        ).order_by('-primary_date')
+        ).select_related('user').order_by('-primary_date')
 
         q = self.request.GET.get('q', '').strip()
         stage = self.request.GET.get('stage', '').strip()
@@ -147,8 +151,6 @@ class BatchCreateView(LoginRequiredMixin, CreateView):
         return form
 
     def form_valid(self, form):
-        import logging
-        logger = logging.getLogger(__name__)
         form.instance.user = self.request.user
         response = super().form_valid(form)
         messages.success(self.request, f'Batch "{self.object.name}" created.')
@@ -196,8 +198,6 @@ class BatchUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return form
 
     def form_valid(self, form):
-        import logging
-        logger = logging.getLogger(__name__)
         response = super().form_valid(form)
         messages.success(self.request, f'Batch "{self.object.name}" saved.')
         for i, img in enumerate(self.request.FILES.getlist('images')):

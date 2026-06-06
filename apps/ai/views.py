@@ -27,25 +27,18 @@ def _ai_enabled():
 def _build_system_prompt(user):
     recipes = (
         Recipe.objects.filter(user=user)
-        .prefetch_related('ingredients__ingredient')
+        .prefetch_related('ingredients')
         .order_by('-pk')[:10]
     )
     batches = Batch.objects.filter(user=user).order_by('-primary_date')[:10]
 
     recipe_lines = []
     for r in recipes:
-        honeys = [
-            ri.ingredient.name
-            for ri in r.ingredients.all()
-            if ri.ingredient.type == 'honey'
-        ]
-        yeasts = [
-            ri.ingredient.name
-            for ri in r.ingredients.all()
-            if ri.ingredient.type == 'yeast'
-        ]
+        all_ings = list(r.ingredients.all())
+        honeys = [ing.name for ing in all_ings if ing.type == 'honey']
+        yeasts = [ing.name for ing in all_ings if ing.type == 'yeast']
         recipe_lines.append(
-            f"- {r.name}: {r.volume_gallons} gal, "
+            f"- {r.name}: {r.batch_size} gal, "
             f"honey: {', '.join(honeys) or 'unspecified'}, "
             f"yeast: {', '.join(yeasts) or 'unspecified'}"
         )
