@@ -3,3 +3,13 @@
   <img src="{% static 'img/bjorn_skal.png' %}" alt="Bjorn" class="chat-avatar">
   <div class="chat-bubble">{{ reply|linebreaksbr }}</div>
 </div>
+{% if pending_recipe %}
+<div class="chat-save-row">
+  <form method="post" action="{% url 'ai:save_recipe' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+      📜 Add "{{ pending_recipe.name }}" to My Recipes
+    </button>
+  </form>
+</div>
+{% endif %}

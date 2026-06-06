@@ -3,12 +3,13 @@ import logging
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.http import Http404, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 
 from apps.batches.models import Batch
-from apps.recipes.models import Recipe
+from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 
 from .client import call_ai
 from .models import AIUsage
@@ -110,8 +111,11 @@ def send_message(request):
     api_key = settings.AI_API_KEY
     system_prompt = _build_system_prompt(request.user)
 
+    recipe_data = None
     try:
-        reply, input_tokens, output_tokens = call_ai(provider, api_key, system_prompt, history)
+        reply, input_tokens, output_tokens, recipe_data = call_ai(
+            provider, api_key, system_prompt, history
+        )
     except Exception as exc:
         logger.error("Bjorn AI call failed: %s", exc)
         reply = "Apologies, I couldn't reach the mead spirits just now. Try again in a moment."
@@ -119,10 +123,15 @@ def send_message(request):
 
     history.append({'role': 'assistant', 'content': reply})
 
-    # Trim to last MAX_HISTORY messages
     if len(history) > MAX_HISTORY:
         history = history[-MAX_HISTORY:]
     request.session[HISTORY_KEY] = history
+
+    if recipe_data:
+        request.session['bjorn_pending_recipe'] = recipe_data
+    else:
+        request.session.pop('bjorn_pending_recipe', None)
+
     request.session.modified = True
 
     if input_tokens or output_tokens:
@@ -134,7 +143,86 @@ def send_message(request):
             output_tokens=output_tokens,
         )
 
-    return render(request, 'ai/partials/message.html', {'reply': reply})
+    return render(request, 'ai/partials/message.html', {
+        'reply': reply,
+        'pending_recipe': recipe_data,
+    })
+
+
+@login_required
+def save_recipe(request):
+    if not _ai_enabled():
+        raise Http404
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    data = request.session.pop('bjorn_pending_recipe', None)
+    request.session.modified = True
+
+    if not data:
+        messages.warning(request, "No pending recipe from Bjorn to save.")
+        return redirect('ai:chat')
+
+    try:
+        recipe = Recipe.objects.create(
+            user=request.user,
+            name=data['name'],
+            batch_size=data.get('batch_size', 5),
+            instructions=data.get('instructions', ''),
+        )
+
+        order = 1
+        honey_name = data.get('honey_name', '').strip()
+        if honey_name:
+            honey_ing = _get_or_create_ingredient(honey_name, Ingredient.TYPE_HONEY)
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=honey_ing,
+                quantity=data.get('honey_quantity', ''),
+                order=order,
+            )
+            order += 1
+
+        yeast_name = data.get('yeast', '').strip()
+        if yeast_name:
+            yeast_ing = _get_or_create_ingredient(yeast_name, Ingredient.TYPE_YEAST)
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=yeast_ing,
+                quantity='1 packet',
+                order=order,
+            )
+            order += 1
+
+        for extra in data.get('additional_ingredients', []):
+            name = extra.get('name', '').strip()
+            if not name:
+                continue
+            ing = _get_or_create_ingredient(name, Ingredient.TYPE_ADDITIVE)
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=ing,
+                quantity=extra.get('quantity', ''),
+                order=order,
+            )
+            order += 1
+
+    except Exception as exc:
+        logger.error("Failed to save Bjorn recipe: %s", exc)
+        messages.error(request, "Something went wrong saving the recipe. Try again.")
+        return redirect('ai:chat')
+
+    messages.success(request, f'Recipe "{recipe.name}" saved! Review and edit it below.')
+    return redirect('recipes:detail', pk=recipe.pk)
+
+
+def _get_or_create_ingredient(name, ing_type):
+    try:
+        return Ingredient.objects.get(name__iexact=name)
+    except Ingredient.DoesNotExist:
+        return Ingredient.objects.create(name=name, type=ing_type)
+    except Ingredient.MultipleObjectsReturned:
+        return Ingredient.objects.filter(name__iexact=name).first()
 
 
 def _model_name(provider):
