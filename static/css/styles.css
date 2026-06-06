@@ -1154,9 +1154,11 @@ body.dark .calc-table tbody tr.highlight { background: #2a1800; }
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: #fef9ef;
   margin-bottom: 0.75rem;
 }
+
+body.dark .chat-messages { background: #1e1200; }
 
 .chat-message {
   display: flex;
@@ -1217,8 +1219,9 @@ body.dark .calc-table tbody tr.highlight { background: #2a1800; }
 
 body.dark .chat-message.bjorn .chat-bubble,
 body.dark .chat-message.assistant .chat-bubble {
-  background: #2a1800;
-  color: var(--cream-100);
+  background: #5a3200;
+  color: #fef3c7;
+  border-color: #8b5000;
 }
 
 body.dark .chat-message.user .chat-bubble {
