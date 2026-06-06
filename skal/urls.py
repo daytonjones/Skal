@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.static import serve
 
 from apps.accounts.views import HomeView
 from apps.yeast.views import YeastListView
@@ -42,11 +42,10 @@ urlpatterns = [
     ),
 ]
 
-# Always serve media files — Gunicorn doesn't serve /media/ on its own.
-# For a self-hosted personal app this is acceptable; add nginx if you need
-# high-throughput file serving.
-urlpatterns += static(
-    settings.MEDIA_URL,
-    document_root=settings.MEDIA_ROOT,
-)
+# Always serve media files regardless of DEBUG setting.
+# django.conf.urls.static.static() is a no-op when DEBUG=False, so we use
+# the serve view directly. Acceptable for a self-hosted personal app.
+urlpatterns += [
+    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+]
 
