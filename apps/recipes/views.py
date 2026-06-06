@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Recipe, Ingredient, RecipeIngredient
 from .forms import RecipeForm, RecipeIngredientFormSet
+from apps.pantry.models import PantryItem
 
 
 class RecipeListView(LoginRequiredMixin, ListView):
@@ -27,7 +28,7 @@ class RecipeListView(LoginRequiredMixin, ListView):
         user = self.request.user
         qs = Recipe.objects.filter(
             models.Q(user=user) | models.Q(is_public=True) | models.Q(user__isnull=True)
-        ).distinct()
+        ).select_related('user').prefetch_related('recipeingredient_set__ingredient').distinct()
         q = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(name__icontains=q)
@@ -59,8 +60,9 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        data['ingredients'] = self.object.recipeingredient_set.order_by('order')
-        from apps.pantry.models import PantryItem
+        data['ingredients'] = (
+            self.object.recipeingredient_set.select_related('ingredient').order_by('order')
+        )
         data['pantry_ids'] = set(
             PantryItem.objects
             .filter(user=self.request.user)
