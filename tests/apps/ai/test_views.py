@@ -267,3 +267,61 @@ class TestAiContextProcessor:
         client.force_login(user)
         response = client.get(reverse('home'))
         assert response.context['ai_enabled'] is False
+
+
+@pytest.mark.django_db
+class TestBuildSystemPromptPantry:
+    def test_pantry_items_appear_grouped_by_type(self, user):
+        from apps.ai.views import _build_system_prompt
+        from apps.pantry.models import PantryItem
+        from apps.recipes.models import Ingredient
+
+        honey = Ingredient.objects.create(name='Wildflower', type=Ingredient.TYPE_HONEY)
+        yeast, _ = Ingredient.objects.get_or_create(name='Lalvin D-47', defaults={'type': Ingredient.TYPE_YEAST})
+        PantryItem.objects.create(user=user, ingredient=honey, quantity='12 lbs')
+        PantryItem.objects.create(user=user, ingredient=yeast)
+
+        prompt = _build_system_prompt(user)
+
+        assert 'Honey: Wildflower (12 lbs)' in prompt
+        assert 'Yeast: Lalvin D-47' in prompt
+
+    def test_quantity_omitted_when_blank(self, user):
+        from apps.ai.views import _build_system_prompt
+        from apps.pantry.models import PantryItem
+        from apps.recipes.models import Ingredient
+
+        additive = Ingredient.objects.create(name='Fermaid-O', type=Ingredient.TYPE_ADDITIVE)
+        PantryItem.objects.create(user=user, ingredient=additive, quantity='')
+
+        prompt = _build_system_prompt(user)
+
+        assert 'Fermaid-O' in prompt
+        assert 'Fermaid-O ()' not in prompt
+
+    def test_empty_pantry_shows_empty_label(self, user):
+        from apps.ai.views import _build_system_prompt
+
+        prompt = _build_system_prompt(user)
+
+        assert 'Pantry: (empty)' in prompt
+
+    def test_other_user_pantry_not_included(self, user, other_user):
+        from apps.ai.views import _build_system_prompt
+        from apps.pantry.models import PantryItem
+        from apps.recipes.models import Ingredient
+
+        honey = Ingredient.objects.create(name='Manuka', type=Ingredient.TYPE_HONEY)
+        PantryItem.objects.create(user=other_user, ingredient=honey)
+
+        prompt = _build_system_prompt(user)
+
+        assert 'Manuka' not in prompt
+
+    def test_substitution_instructions_in_prompt(self, user):
+        from apps.ai.views import _build_system_prompt
+
+        prompt = _build_system_prompt(user)
+
+        assert 'substitute' in prompt.lower()
+        assert 'needs to be purchased' in prompt

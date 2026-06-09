@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 
 from apps.batches.models import Batch
+from apps.pantry.models import PantryItem
 from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 
 from .client import call_ai
@@ -31,6 +32,11 @@ def _build_system_prompt(user):
         .order_by('-pk')[:10]
     )
     batches = Batch.objects.filter(user=user).order_by('-primary_date')[:10]
+    pantry_items = (
+        PantryItem.objects.filter(user=user)
+        .select_related('ingredient')
+        .order_by('ingredient__type', 'ingredient__name')
+    )
 
     recipe_lines = []
     for r in recipes:
@@ -50,6 +56,25 @@ def _build_system_prompt(user):
             gravity += f" → FG {b.fg}"
         batch_lines.append(f"- {b.name}: {b.stage}, {gravity}")
 
+    pantry_by_type = {}
+    for item in pantry_items:
+        t = item.ingredient.type
+        label = item.ingredient.name
+        if item.quantity:
+            label += f" ({item.quantity})"
+        pantry_by_type.setdefault(t, []).append(label)
+
+    if pantry_by_type:
+        type_labels = {'honey': 'Honey', 'yeast': 'Yeast', 'additive': 'Additives'}
+        pantry_lines = [
+            f"{type_labels[t]}: {', '.join(pantry_by_type[t])}"
+            for t in ['honey', 'yeast', 'additive']
+            if t in pantry_by_type
+        ]
+        pantry_text = "The user's pantry:\n" + '\n'.join(pantry_lines)
+    else:
+        pantry_text = "Pantry: (empty)"
+
     recipes_text = '\n'.join(recipe_lines) if recipe_lines else 'No recipes yet.'
     batches_text = '\n'.join(batch_lines) if batch_lines else 'No batches yet.'
 
@@ -66,9 +91,15 @@ def _build_system_prompt(user):
         "topics. Do not assist with tasks outside your brewing expertise.\n\n"
         f"The user's recipes:\n{recipes_text}\n\n"
         f"The user's batches:\n{batches_text}\n\n"
+        f"{pantry_text}\n\n"
         "When suggesting a new recipe, structure it with: name, batch size (gallons), "
         "honey type and amount (lbs), yeast strain, any additional ingredients, and brief "
-        "notes — so the user can easily add it to Skål."
+        "notes — so the user can easily add it to Skål.\n\n"
+        "When suggesting a recipe, cross-reference the ingredients against the user's pantry. "
+        "If a needed ingredient is on hand, note it. If it's missing but a pantry substitute "
+        "could work (e.g. EC-1118 instead of 71B), suggest the substitution and explain the "
+        "trade-off briefly. Only flag an ingredient as 'needs to be purchased' when no "
+        "reasonable substitute exists in the pantry."
     )
 
 
