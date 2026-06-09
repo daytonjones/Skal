@@ -66,10 +66,12 @@ def _build_system_prompt(user):
 
     if pantry_by_type:
         type_labels = {'honey': 'Honey', 'yeast': 'Yeast', 'additive': 'Additives'}
+        known_order = ['honey', 'yeast', 'additive']
+        type_order = [t for t in known_order if t in pantry_by_type] + \
+                     [t for t in pantry_by_type if t not in known_order]
         pantry_lines = [
-            f"{type_labels[t]}: {', '.join(pantry_by_type[t])}"
-            for t in ['honey', 'yeast', 'additive']
-            if t in pantry_by_type
+            f"{type_labels.get(t, t.capitalize())}: {', '.join(pantry_by_type[t])}"
+            for t in type_order
         ]
         pantry_text = "The user's pantry:\n" + '\n'.join(pantry_lines)
     else:
