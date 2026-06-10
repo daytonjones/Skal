@@ -1,7 +1,7 @@
 # apps/batches/forms.py
 
 from django import forms
-from .models import Batch
+from .models import Batch, TastingNote
 
 class BatchForm(forms.ModelForm):
     class Meta:
@@ -42,5 +42,18 @@ class BatchForm(forms.ModelForm):
             'fo_1_3_break_date':     forms.DateInput(attrs={'type': 'date'}),
             'rack_secondary_date':   forms.DateInput(attrs={'type': 'date'}),
             'bottled_date':          forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+class TastingNoteForm(forms.ModelForm):
+    class Meta:
+        model = TastingNote
+        fields = ['date', 'score', 'aroma', 'flavor', 'overall']
+        widgets = {
+            'date':    forms.DateInput(attrs={'type': 'date'}),
+            'score':   forms.NumberInput(attrs={'min': 1, 'max': 10}),
+            'aroma':   forms.Textarea(attrs={'rows': 3}),
+            'flavor':  forms.Textarea(attrs={'rows': 3}),
+            'overall': forms.Textarea(attrs={'rows': 3}),
         }
 
