@@ -19,12 +19,17 @@
     <span class="badge badge-{{ batch.stage }}">{{ batch.stage|capfirst }}</span>
     <div class="batch-row-abv">
       {% if batch.fg %}
-        <div class="abv-value" style="color:var(--stage-{{ batch.stage }});">
-          {% with og=batch.og|floatformat:3 fg=batch.fg|floatformat:3 %}
-          {{ batch.og }}
-          {% endwith %}
-        </div>
-        <div class="abv-label">→ {{ batch.fg }}</div>
+        {% if batch.bottled_done %}
+          <div class="abv-value" style="color:var(--stage-{{ batch.stage }});">
+            {{ batch.abv|floatformat:1 }}%
+          </div>
+          <div class="abv-label">ABV</div>
+        {% else %}
+          <div class="abv-value" style="color:var(--stage-{{ batch.stage }});">
+            {{ batch.og|floatformat:3 }}
+          </div>
+          <div class="abv-label">→ {{ batch.fg|floatformat:3 }}</div>
+        {% endif %}
       {% else %}
         <div class="abv-value" style="color:var(--brown-700);">—</div>
         <div class="abv-label">FG TBD</div>
@@ -40,7 +45,7 @@
   </a>
 {% empty %}
   <div class="empty-state">
-    <p>Your cellar is empty.</p>
+    <p>No batches yet.</p>
     <a href="{% url 'batches:create' %}" class="btn btn-primary">Start your first batch →</a>
   </div>
 {% endfor %}

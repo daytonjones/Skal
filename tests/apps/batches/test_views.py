@@ -165,7 +165,7 @@ class TestBatchListHTMX:
             reverse('batches:index') + '?q=nonexistent',
             HTTP_HX_REQUEST='true',
         )
-        assert b'Your cellar is empty' in response.content
+        assert b'No batches yet' in response.content
 
     def test_stage_filter_active(self, auth_client, batch):
         batch.pitch_yeast_done = True
