@@ -21,6 +21,12 @@
       </a>
     </li>
     <li>
+      <a href="{% url 'cellar' %}" {% if request.resolver_match.url_name == 'cellar' %}aria-current="page"{% endif %}>
+        <span class="nav-icon">🍾</span>
+        <span class="nav-label">Cellar</span>
+      </a>
+    </li>
+    <li>
       <a href="{% url 'calculators:index' %}" {% if 'calculators' in request.resolver_match.app_name %}aria-current="page"{% endif %}>
         <span class="nav-icon">🧮</span>
         <span class="nav-label">Calculators</span>

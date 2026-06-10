@@ -35,6 +35,8 @@ fi
 mkdir -p /app/media
 chmod 755 /app/media
 
+service cron start
+
 echo "🚀 Launching application…"
 exec "$@"
 

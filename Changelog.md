@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.2.0] - 2026-06-10
+
+### Added
+
+* **Batch email notifications** — Opt-in per-event email reminders for TOSNA nutrient additions (24h/48h/72h), gravity check (~day 4), racking to secondary, and bottling day. Configured per-user on the profile page. Delivered daily at 7am UTC via a management command (`send_batch_notifications`) scheduled by Docker cron.
+* **Tasting log** — Record tasting notes per batch with aroma, flavor, overall impressions, and a 1–10 score. Notes appear in reverse-chronological order on the batch detail page with full create/edit/delete support.
+* **Cellar tracker** — After bottling, set a bottle count and storage location on any batch. Log consumption events inline to track how many bottles remain. A dedicated `/cellar/` page lists all bottled batches at a glance with a "Last bottle!" warning when only one remains.
+* **Quick-consume** — Log a bottle directly from the cellar page without navigating away. An inline quantity field and "−" button per row posts and redirects back to `/cellar/`.
+* **Consumption delete** — Remove individual consumption entries from the batch detail page with a per-entry "×" button (POST, login-required).
+* **ABV display** — Bottled batches now show calculated ABV (alternate formula) instead of FG on the home dashboard, batch list, and cellar view. Active batches continue to show OG → FG.
+
+### Changed
+
+* Batch list page heading corrected from "Your Cellar" to "Your Batches"; cellar page heading updated to "Your Cellar".
+* Same-day consumption entries are aggregated in the batch detail history: total quantity on the summary row, individual entries with delete buttons below.
+* Cellar view automatically hides batches once `bottles_remaining` reaches zero.
+* Bottle count and storage location fields are now visible in the batch edit form under a dedicated "Cellar" section.
+* `install.sh` detects ports already in use and auto-suggests the next free one, looping until the user confirms.
+
+---
+
 ## [2.1.0] - 2026-06-06
 
 ### Added

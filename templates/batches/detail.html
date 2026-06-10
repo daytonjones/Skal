@@ -82,6 +82,141 @@
   </div>
   {% endif %}
 
+  <!-- Tasting Notes -->
+  <section class="tasting-notes" style="margin:2rem 0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 style="margin:0;">Tasting Notes</h2>
+      {% if request.user == batch.user %}
+        <a href="{% url 'batches:tasting_note_create' batch_pk=batch.pk %}" class="btn btn-secondary">+ Add Note</a>
+      {% endif %}
+    </div>
+
+    {% if tasting_notes %}
+      {% for note in tasting_notes %}
+        <div class="tasting-note-card" style="border:1px solid var(--border);border-radius:0.5rem;padding:1rem;margin-bottom:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+            <strong>{{ note.date }}</strong>
+            <span style="color:var(--brown-700);font-size:0.9rem;">Score: {{ note.score }}/10</span>
+          </div>
+          {% if note.aroma %}
+            <p style="margin:0.25rem 0;"><span style="font-weight:600;">Aroma:</span> {{ note.aroma }}</p>
+          {% endif %}
+          {% if note.flavor %}
+            <p style="margin:0.25rem 0;"><span style="font-weight:600;">Flavor:</span> {{ note.flavor }}</p>
+          {% endif %}
+          {% if note.overall %}
+            <p style="margin:0.25rem 0;"><span style="font-weight:600;">Overall:</span> {{ note.overall }}</p>
+          {% endif %}
+          {% if request.user == batch.user %}
+            <div style="margin-top:0.75rem;display:flex;gap:0.75rem;">
+              <a href="{% url 'batches:tasting_note_update' batch_pk=batch.pk pk=note.pk %}"
+                 class="btn btn-secondary">Edit</a>
+              <form method="post"
+                    action="{% url 'batches:tasting_note_delete' batch_pk=batch.pk pk=note.pk %}"
+                    style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Delete this tasting note?')">Delete</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      {% if request.user == batch.user %}
+        <p style="color:var(--brown-600);font-style:italic;">
+          No tasting notes yet.
+          <a href="{% url 'batches:tasting_note_create' batch_pk=batch.pk %}">Add the first one.</a>
+        </p>
+      {% endif %}
+    {% endif %}
+  </section>
+
+  {% if batch.bottled_done %}
+  <section class="cellar-section" style="margin-top:2rem;">
+    <h2>Cellar</h2>
+
+    {% if batch.bottle_count %}
+    <div class="cellar-stats" style="display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div>
+        <span class="stat-label">Bottles Remaining</span>
+        <span class="stat-value">
+          {{ batch.bottles_remaining }}
+          {% if batch.bottles_remaining == 1 %}
+            <span class="badge badge-warning">Last bottle!</span>
+          {% endif %}
+        </span>
+      </div>
+      <div>
+        <span class="stat-label">Storage Location</span>
+        <span class="stat-value">
+          {% if batch.storage_location %}{{ batch.storage_location }}{% else %}&mdash;{% endif %}
+        </span>
+      </div>
+      <div>
+        <span class="stat-label">Bottled</span>
+        <span class="stat-value">{{ batch.bottled_date }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if request.user == batch.user %}
+    <details class="log-consumption-details" style="margin-bottom:1.5rem;">
+      <summary style="cursor:pointer;font-weight:600;">Log Consumption</summary>
+      <form method="post" action="{% url 'batches:add_consumption' batch.pk %}"
+            style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="consume-date">Date</label>
+          <input type="date" id="consume-date" name="date"
+                 value="{{ today|date:'Y-m-d' }}" required>
+        </div>
+        <div class="form-group">
+          <label for="consume-qty">Bottles</label>
+          <input type="number" id="consume-qty" name="quantity"
+                 min="1" value="1" required style="width:5rem;">
+        </div>
+        <div class="form-group">
+          <label for="consume-notes">Notes <small>(optional)</small></label>
+          <input type="text" id="consume-notes" name="notes"
+                 placeholder="e.g. dinner party" style="width:16rem;">
+        </div>
+        <button type="submit" class="btn btn-secondary">Log</button>
+      </form>
+    </details>
+    {% endif %}
+
+    {% if consumptions_by_date %}
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">Consumption History</h3>
+    <ul class="consumption-list" style="list-style:none;padding:0;margin:0;">
+      {% for c in consumptions_by_date %}
+      <li style="padding:0.35rem 0;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;">{{ c.date }}</span>
+        &mdash; {{ c.quantity }} bottle{{ c.quantity|pluralize }}
+        {% if c.notes %}<span style="color:var(--brown-700);"> &middot; {{ c.notes }}</span>{% endif %}
+        {% if request.user == batch.user %}
+        <ul style="list-style:none;padding:0;margin:0.25rem 0 0 1rem;">
+          {% for entry in c.entries %}
+          <li style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--brown-700);padding:0.15rem 0;">
+            {{ entry.quantity }} bottle{{ entry.quantity|pluralize }}{% if entry.notes %} &middot; {{ entry.notes }}{% endif %}
+            <form method="post" action="{% url 'batches:delete_consumption' entry.pk %}" style="display:inline;margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger"
+                      style="padding:0.1rem 0.4rem;font-size:0.7rem;line-height:1;"
+                      onclick="return confirm('Remove this entry?')">×</button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+  </section>
+  {% endif %}
+
   {% if request.user == batch.user %}
     <div class="btn-group no-print" style="margin-bottom:1rem;">
       <a href="{% url 'batches:edit' batch.pk %}" class="btn btn-primary">✏️ Edit Batch</a>
@@ -95,7 +230,7 @@
     </div>
   {% endif %}
   <div class="btn-group no-print">
-    <a href="{% url 'batches:index' %}" class="btn btn-secondary">← Cellar</a>
+    <a href="{% url 'batches:index' %}" class="btn btn-secondary">← Batches</a>
     <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
   </div>
 

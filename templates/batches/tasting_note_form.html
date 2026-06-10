@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{% if note %}Edit Tasting Note{% else %}Add Tasting Note{% endif %} — {{ batch.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px;margin:2rem auto;">
+  <h1>{% if note %}Edit Tasting Note{% else %}Add Tasting Note{% endif %}</h1>
+  <p style="color:var(--brown-700);margin-bottom:1.5rem;">{{ batch.name }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <ul class="errorlist">
+            {% for error in field.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary">
+        {% if note %}Save Changes{% else %}Add Note{% endif %}
+      </button>
+      <a href="{% url 'batches:detail' pk=batch.pk %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

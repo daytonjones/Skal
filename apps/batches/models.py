@@ -6,6 +6,7 @@ from datetime import date
 
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.recipes.models import Recipe
 from PIL import Image
 
@@ -81,6 +82,11 @@ class Batch(models.Model):
     bottled_note        = models.TextField(blank=True, default='')
     # -------------------------
 
+    # --- Cellar tracker ---
+    bottle_count     = models.PositiveIntegerField(null=True, blank=True)
+    storage_location = models.CharField(max_length=200, blank=True)
+    # ----------------------
+
     class Meta:
         ordering = ['-primary_date']
 
@@ -127,6 +133,23 @@ class Batch(models.Model):
         ]
         return int((sum(done) / 8) * 100)
 
+    @property
+    def abv(self):
+        if self.og is None or self.fg is None:
+            return None
+        try:
+            og, fg = float(self.og), float(self.fg)
+            return round((76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794), 1)
+        except ZeroDivisionError:
+            return None
+
+    @property
+    def bottles_remaining(self):
+        if self.bottle_count is None:
+            return None
+        consumed = self.consumptions.aggregate(total=models.Sum('quantity'))['total'] or 0
+        return self.bottle_count - consumed
+
     def __str__(self):
         return self.name
 
@@ -153,4 +176,38 @@ class BatchImage(models.Model):
         img = Image.open(img_path)
         img.thumbnail((800, 800))
         img.save(img_path)
+
+
+class TastingNote(models.Model):
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.CASCADE,
+        related_name="tasting_notes"
+    )
+    date = models.DateField()
+    aroma = models.TextField(blank=True)
+    flavor = models.TextField(blank=True)
+    overall = models.TextField(blank=True)
+    score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.batch.name} — {self.date} ({self.score}/10)"
+
+
+class BottleConsumption(models.Model):
+    batch    = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='consumptions')
+    date     = models.DateField()
+    quantity = models.PositiveIntegerField()
+    notes    = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.quantity} bottle(s) on {self.date} from {self.batch}"
 
