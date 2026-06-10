@@ -11,6 +11,8 @@ from .views import (
     tasting_note_create,
     tasting_note_update,
     tasting_note_delete,
+    CellarView,
+    add_consumption,
 )
 
 app_name = "batches"
@@ -29,5 +31,7 @@ urlpatterns = [
     path('<int:batch_pk>/tasting-notes/add/',            tasting_note_create, name='tasting_note_create'),
     path('<int:batch_pk>/tasting-notes/<int:pk>/edit/',   tasting_note_update, name='tasting_note_update'),
     path('<int:batch_pk>/tasting-notes/<int:pk>/delete/', tasting_note_delete, name='tasting_note_delete'),
+
+    path('<int:pk>/consume/', add_consumption, name='add_consumption'),
 ]
 

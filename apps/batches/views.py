@@ -14,7 +14,7 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from datetime import date
 
-from .models import Batch, BatchImage, TastingNote
+from .models import Batch, BatchImage, TastingNote, BottleConsumption
 from .forms import BatchForm, TastingNoteForm
 from apps.recipes.models import Recipe
 
@@ -317,4 +317,42 @@ def tasting_note_delete(request, batch_pk, pk):
         note.delete()
         messages.success(request, 'Tasting note deleted.')
     return redirect('batches:detail', pk=batch_pk)
+
+
+class CellarView(LoginRequiredMixin, ListView):
+    template_name = 'batches/cellar.html'
+    context_object_name = 'object_list'
+
+    def get_queryset(self):
+        return (
+            Batch.objects
+            .filter(user=self.request.user, bottled_done=True)
+            .order_by('-bottled_date')
+            .prefetch_related('consumptions')
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['today'] = date.today()
+        return ctx
+
+
+@login_required
+def add_consumption(request, pk):
+    batch = get_object_or_404(Batch, pk=pk, user=request.user)
+    if request.method == 'POST':
+        date_str = request.POST.get('date', '').strip()
+        qty_str  = request.POST.get('quantity', '').strip()
+        notes    = request.POST.get('notes', '').strip()
+        try:
+            quantity = int(qty_str)
+            if quantity <= 0:
+                raise ValueError("quantity must be positive")
+            consume_date = date.fromisoformat(date_str)
+        except (ValueError, TypeError):
+            messages.error(request, 'Invalid consumption data. Please check the date and quantity.')
+            return redirect('batches:detail', pk=pk)
+        BottleConsumption.objects.create(batch=batch, date=consume_date, quantity=quantity, notes=notes)
+        messages.success(request, f'Logged {quantity} bottle(s) consumed.')
+    return redirect('batches:detail', pk=pk)
 
