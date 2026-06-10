@@ -14,8 +14,8 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from datetime import date
 
-from .models import Batch, BatchImage
-from .forms import BatchForm
+from .models import Batch, BatchImage, TastingNote
+from .forms import BatchForm, TastingNoteForm
 from apps.recipes.models import Recipe
 
 logger = logging.getLogger(__name__)
@@ -94,6 +94,7 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['images'] = self.object.images.all()
+        ctx['tasting_notes'] = self.object.tasting_notes.all()
         if self.object.fg is not None:
             og = float(self.object.og)
             fg = float(self.object.fg)
@@ -275,4 +276,45 @@ def update_checklist_note(request, pk):
     setattr(batch, field, note)
     batch.save(update_fields=[field])
     return HttpResponse(status=204)
+
+
+@login_required
+def tasting_note_create(request, batch_pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    if request.method == 'POST':
+        form = TastingNoteForm(request.POST)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.batch = batch
+            note.save()
+            messages.success(request, 'Tasting note added.')
+            return redirect('batches:detail', pk=batch_pk)
+    else:
+        form = TastingNoteForm(initial={'date': date.today()})
+    return render(request, 'batches/tasting_note_form.html', {'form': form, 'batch': batch})
+
+
+@login_required
+def tasting_note_update(request, batch_pk, pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    note = get_object_or_404(TastingNote, pk=pk, batch=batch)
+    if request.method == 'POST':
+        form = TastingNoteForm(request.POST, instance=note)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tasting note updated.')
+            return redirect('batches:detail', pk=batch_pk)
+    else:
+        form = TastingNoteForm(instance=note)
+    return render(request, 'batches/tasting_note_form.html', {'form': form, 'batch': batch, 'note': note})
+
+
+@login_required
+def tasting_note_delete(request, batch_pk, pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    note = get_object_or_404(TastingNote, pk=pk, batch=batch)
+    if request.method == 'POST':
+        note.delete()
+        messages.success(request, 'Tasting note deleted.')
+    return redirect('batches:detail', pk=batch_pk)
 
