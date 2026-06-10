@@ -134,6 +134,16 @@ class Batch(models.Model):
         return int((sum(done) / 8) * 100)
 
     @property
+    def abv(self):
+        if self.og is None or self.fg is None:
+            return None
+        try:
+            og, fg = float(self.og), float(self.fg)
+            return round((76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794), 1)
+        except ZeroDivisionError:
+            return None
+
+    @property
     def bottles_remaining(self):
         if self.bottle_count is None:
             return None

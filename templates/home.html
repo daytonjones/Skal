@@ -81,7 +81,7 @@
       <p style="font-size:0.75rem;color:var(--stage-bottled);margin-top:0.2rem;">
         ✓ Bottled
         {% if last_bottled.bottled_date %}{{ last_bottled.bottled_date }}{% endif %}
-        {% if last_bottled.fg %} · {{ last_bottled.fg|floatformat:3 }} FG{% endif %}
+        {% if last_bottled.abv %} · {{ last_bottled.abv|floatformat:1 }}% ABV{% endif %}
       </p>
     </div>
     {% endif %}
