@@ -57,3 +57,19 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
+class UserNotificationPrefs(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notification_prefs',
+    )
+    email_notifications = models.BooleanField(default=False)
+    notify_tosna        = models.BooleanField(default=True)
+    notify_sg_check     = models.BooleanField(default=True)
+    notify_rack         = models.BooleanField(default=False)
+    notify_bottle       = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification prefs for {self.user.username}"
+
