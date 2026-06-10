@@ -5,9 +5,11 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+from django.db.models import Prefetch
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.batches.models import Batch
 from apps.batches.notifications import get_due_events
 
 logger = logging.getLogger(__name__)
@@ -21,16 +23,22 @@ class Command(BaseCommand):
         today = date.today()
         subject = f"Skål — Brewing reminders for {today}"
 
+        active_batch_prefetch = Prefetch(
+            'batches',
+            queryset=Batch.objects.filter(bottled_done=False),
+            to_attr='active_batches',
+        )
         users = (
             User.objects
             .filter(notification_prefs__email_notifications=True)
             .exclude(email='')
             .select_related('notification_prefs')
+            .prefetch_related(active_batch_prefetch)
         )
 
         for user in users:
             prefs = user.notification_prefs
-            active_batches = user.batches.filter(bottled_done=False)
+            active_batches = user.active_batches
 
             batch_events = []
             for batch in active_batches:
@@ -45,7 +53,7 @@ class Command(BaseCommand):
             hosts = getattr(settings, 'ALLOWED_HOSTS', [])
             host = next((h for h in hosts if h not in ('*', '', 'localhost', '127.0.0.1')), None)
             profile_url = reverse('accounts:profile')
-            profile_full_url = f"http://{host}{profile_url}" if host else profile_url
+            profile_full_url = f"https://{host}{profile_url}" if host else profile_url
 
             context = {
                 'user': user,
