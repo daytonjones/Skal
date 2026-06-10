@@ -16,6 +16,8 @@ class BatchForm(forms.ModelForm):
             'secondary_date',
             'bottling_date',
             'notes',
+            'bottle_count',
+            'storage_location',
             'is_public',
 
             # checklist
@@ -30,6 +32,7 @@ class BatchForm(forms.ModelForm):
         ]
         widgets = {
             'batch_size':     forms.NumberInput(attrs={'step': '0.1', 'min': '0'}),
+            'bottle_count':   forms.NumberInput(attrs={'min': '0'}),
             'primary_date':   forms.DateInput(attrs={'type': 'date'}),
             'secondary_date': forms.DateInput(attrs={'type': 'date'}),
             'bottling_date':  forms.DateInput(attrs={'type': 'date'}),

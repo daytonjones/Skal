@@ -102,6 +102,7 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
             calories = ((abv / 100) * 0.789 * 7) * (8 * 29.5735)
             ctx['abv'] = abv
             ctx['calories'] = calories
+        ctx['today'] = date.today()
         return ctx
 
 

@@ -132,6 +132,76 @@
     {% endif %}
   </section>
 
+  {% if batch.bottled_done %}
+  <section class="cellar-section" style="margin-top:2rem;">
+    <h2>Cellar</h2>
+
+    {% if batch.bottle_count %}
+    <div class="cellar-stats" style="display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div>
+        <span class="stat-label">Bottles Remaining</span>
+        <span class="stat-value">
+          {{ batch.bottles_remaining }}
+          {% if batch.bottles_remaining == 1 %}
+            <span class="badge badge-warning">Last bottle!</span>
+          {% endif %}
+        </span>
+      </div>
+      <div>
+        <span class="stat-label">Storage Location</span>
+        <span class="stat-value">
+          {% if batch.storage_location %}{{ batch.storage_location }}{% else %}&mdash;{% endif %}
+        </span>
+      </div>
+      <div>
+        <span class="stat-label">Bottled</span>
+        <span class="stat-value">{{ batch.bottled_date }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if request.user == batch.user %}
+    <details class="log-consumption-details" style="margin-bottom:1.5rem;">
+      <summary style="cursor:pointer;font-weight:600;">Log Consumption</summary>
+      <form method="post" action="{% url 'batches:add_consumption' batch.pk %}"
+            style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="consume-date">Date</label>
+          <input type="date" id="consume-date" name="date"
+                 value="{{ today }}" required>
+        </div>
+        <div class="form-group">
+          <label for="consume-qty">Bottles</label>
+          <input type="number" id="consume-qty" name="quantity"
+                 min="1" value="1" required style="width:5rem;">
+        </div>
+        <div class="form-group">
+          <label for="consume-notes">Notes <small>(optional)</small></label>
+          <input type="text" id="consume-notes" name="notes"
+                 placeholder="e.g. dinner party" style="width:16rem;">
+        </div>
+        <button type="submit" class="btn btn-secondary">Log</button>
+      </form>
+    </details>
+    {% endif %}
+
+    {% if batch.consumptions.all %}
+    <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">Consumption History</h3>
+    <ul class="consumption-list" style="list-style:none;padding:0;margin:0;">
+      {% for c in batch.consumptions.all %}
+      <li style="padding:0.35rem 0;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;">{{ c.date }}</span>
+        &mdash; {{ c.quantity }} bottle{{ c.quantity|pluralize }}
+        {% if c.notes %}<span style="color:var(--brown-700);"> &middot; {{ c.notes }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+  </section>
+  {% endif %}
+
   {% if request.user == batch.user %}
     <div class="btn-group no-print" style="margin-bottom:1rem;">
       <a href="{% url 'batches:edit' batch.pk %}" class="btn btn-primary">✏️ Edit Batch</a>
