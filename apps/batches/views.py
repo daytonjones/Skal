@@ -103,6 +103,16 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
             ctx['abv'] = abv
             ctx['calories'] = calories
         ctx['today'] = date.today()
+        from collections import defaultdict
+        grouped = defaultdict(lambda: {'quantity': 0, 'notes': []})
+        for c in self.object.consumptions.all():
+            grouped[c.date]['quantity'] += c.quantity
+            if c.notes:
+                grouped[c.date]['notes'].append(c.notes)
+        ctx['consumptions_by_date'] = [
+            {'date': d, 'quantity': v['quantity'], 'notes': ', '.join(v['notes'])}
+            for d, v in sorted(grouped.items(), reverse=True)
+        ]
         return ctx
 
 
