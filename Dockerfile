@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
     postgresql-client \
+    cron \
  && rm -rf /var/lib/apt/lists/*
 
 # install Python dependencies
@@ -19,6 +20,8 @@ RUN pip install --upgrade pip \
 # copy application source and entrypoint
 COPY . .
 RUN chmod +x /app/entrypoint.sh
+COPY docker/skal-cron /etc/cron.d/skal
+RUN chmod 0644 /etc/cron.d/skal
 
 # collect static files
 RUN python manage.py collectstatic --noinput
