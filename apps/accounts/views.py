@@ -13,8 +13,8 @@ from django.db import models
 from django.http import HttpResponse, FileResponse, HttpResponseServerError
 from django.utils.dateformat import format as datefmt
 
-from .forms import SignUpForm, ProfileForm, CustomPasswordChangeForm
-from .models import User
+from .forms import SignUpForm, ProfileForm, CustomPasswordChangeForm, NotificationPrefsForm
+from .models import User, UserNotificationPrefs
 from apps.recipes.models import Recipe, RecipeIngredient
 from apps.batches.models import Batch, BatchImage
 
@@ -171,11 +171,24 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['password_form'] = CustomPasswordChangeForm(self.request.user)
+        prefs, _ = UserNotificationPrefs.objects.get_or_create(user=self.request.user)
+        ctx['notification_prefs_form'] = NotificationPrefsForm(instance=prefs)
         return ctx
 
     def form_valid(self, form):
         messages.success(self.request, 'Profile updated.')
         return super().form_valid(form)
+
+
+@login_required
+@require_POST
+def save_notification_prefs(request):
+    prefs, _ = UserNotificationPrefs.objects.get_or_create(user=request.user)
+    form = NotificationPrefsForm(request.POST, instance=prefs)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Notification preferences saved.')
+    return redirect(reverse_lazy('accounts:profile'))
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
