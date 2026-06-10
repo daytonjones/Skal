@@ -186,10 +186,10 @@
     </details>
     {% endif %}
 
-    {% if batch.consumptions.all %}
+    {% if consumptions_by_date %}
     <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">Consumption History</h3>
     <ul class="consumption-list" style="list-style:none;padding:0;margin:0;">
-      {% for c in batch.consumptions.all %}
+      {% for c in consumptions_by_date %}
       <li style="padding:0.35rem 0;border-bottom:1px solid var(--border);">
         <span style="font-weight:600;">{{ c.date }}</span>
         &mdash; {{ c.quantity }} bottle{{ c.quantity|pluralize }}
