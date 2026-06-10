@@ -194,6 +194,21 @@
         <span style="font-weight:600;">{{ c.date }}</span>
         &mdash; {{ c.quantity }} bottle{{ c.quantity|pluralize }}
         {% if c.notes %}<span style="color:var(--brown-700);"> &middot; {{ c.notes }}</span>{% endif %}
+        {% if request.user == batch.user %}
+        <ul style="list-style:none;padding:0;margin:0.25rem 0 0 1rem;">
+          {% for entry in c.entries %}
+          <li style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--brown-700);padding:0.15rem 0;">
+            {{ entry.quantity }} bottle{{ entry.quantity|pluralize }}{% if entry.notes %} &middot; {{ entry.notes }}{% endif %}
+            <form method="post" action="{% url 'batches:delete_consumption' entry.pk %}" style="display:inline;margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger"
+                      style="padding:0.1rem 0.4rem;font-size:0.7rem;line-height:1;"
+                      onclick="return confirm('Remove this entry?')">×</button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
       </li>
       {% endfor %}
     </ul>

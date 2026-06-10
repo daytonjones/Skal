@@ -10,6 +10,7 @@ from django.views.generic import (
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from datetime import date
@@ -104,13 +105,15 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
             ctx['calories'] = calories
         ctx['today'] = date.today()
         from collections import defaultdict
-        grouped = defaultdict(lambda: {'quantity': 0, 'notes': []})
+        grouped = defaultdict(lambda: {'quantity': 0, 'notes': [], 'entries': []})
         for c in self.object.consumptions.all():
             grouped[c.date]['quantity'] += c.quantity
+            grouped[c.date]['entries'].append(c)
             if c.notes:
                 grouped[c.date]['notes'].append(c.notes)
         ctx['consumptions_by_date'] = [
-            {'date': d, 'quantity': v['quantity'], 'notes': ', '.join(v['notes'])}
+            {'date': d, 'quantity': v['quantity'],
+             'notes': ', '.join(v['notes']), 'entries': v['entries']}
             for d, v in sorted(grouped.items(), reverse=True)
         ]
         return ctx
@@ -375,4 +378,14 @@ def add_consumption(request, pk):
         BottleConsumption.objects.create(batch=batch, date=consume_date, quantity=quantity, notes=notes)
         messages.success(request, f'Logged {quantity} bottle(s) consumed.')
     return redirect(next_url or reverse_lazy('batches:detail', kwargs={'pk': pk}))
+
+
+@login_required
+@require_POST
+def delete_consumption(request, pk):
+    consumption = get_object_or_404(BottleConsumption, pk=pk, batch__user=request.user)
+    batch_pk = consumption.batch_id
+    consumption.delete()
+    messages.success(request, 'Consumption entry removed.')
+    return redirect('batches:detail', pk=batch_pk)
 
