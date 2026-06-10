@@ -6,6 +6,7 @@ from datetime import date
 
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.recipes.models import Recipe
 from PIL import Image
 
@@ -153,4 +154,25 @@ class BatchImage(models.Model):
         img = Image.open(img_path)
         img.thumbnail((800, 800))
         img.save(img_path)
+
+
+class TastingNote(models.Model):
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.CASCADE,
+        related_name="tasting_notes"
+    )
+    date = models.DateField()
+    aroma = models.TextField(blank=True)
+    flavor = models.TextField(blank=True)
+    overall = models.TextField(blank=True)
+    score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.batch.name} — {self.date} ({self.score}/10)"
 

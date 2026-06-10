@@ -1,6 +1,7 @@
 import pytest
 import datetime
-from apps.batches.models import Batch
+from django.core.exceptions import ValidationError
+from apps.batches.models import Batch, TastingNote
 
 
 @pytest.fixture
@@ -71,3 +72,72 @@ class TestChecklistNoteFields:
         batch.save()
         batch.refresh_from_db()
         assert batch.fo_24h_note == 'Added 2g Fermaid-O'
+
+
+@pytest.fixture
+def tasting_note(db, user):
+    batch = Batch.objects.create(
+        user=user, name='Tasting Batch', batch_size='5.0',
+        og='1.100', primary_date=datetime.date(2025, 1, 1),
+    )
+    return TastingNote.objects.create(
+        batch=batch,
+        date=datetime.date(2025, 7, 1),
+        score=8,
+        aroma='Light honey',
+        flavor='Clean finish',
+        overall='Promising start',
+    )
+
+
+@pytest.mark.django_db
+class TestTastingNoteModel:
+    def test_tasting_note_str(self, tasting_note):
+        assert str(tasting_note) == f"{tasting_note.batch.name} — 2025-07-01 (8/10)"
+
+    def test_score_below_minimum_raises(self, tasting_note):
+        tasting_note.score = 0
+        with pytest.raises(ValidationError):
+            tasting_note.full_clean()
+
+    def test_score_above_maximum_raises(self, tasting_note):
+        tasting_note.score = 11
+        with pytest.raises(ValidationError):
+            tasting_note.full_clean()
+
+    def test_score_boundary_values_valid(self, db, user):
+        batch = Batch.objects.create(
+            user=user, name='Boundary Batch', batch_size='5.0',
+            og='1.100', primary_date=datetime.date(2025, 1, 1),
+        )
+        for score in (1, 10):
+            note = TastingNote(batch=batch, date=datetime.date(2025, 7, 1), score=score)
+            note.full_clean()  # should not raise
+
+    def test_cascade_delete_with_batch(self, tasting_note):
+        note_pk = tasting_note.pk
+        tasting_note.batch.delete()
+        assert not TastingNote.objects.filter(pk=note_pk).exists()
+
+    def test_ordering_newest_first(self, db, user):
+        batch = Batch.objects.create(
+            user=user, name='Order Batch', batch_size='5.0',
+            og='1.100', primary_date=datetime.date(2025, 1, 1),
+        )
+        TastingNote.objects.create(batch=batch, date=datetime.date(2025, 3, 1), score=7)
+        TastingNote.objects.create(batch=batch, date=datetime.date(2025, 9, 1), score=9)
+        TastingNote.objects.create(batch=batch, date=datetime.date(2025, 6, 1), score=8)
+        dates = list(batch.tasting_notes.values_list('date', flat=True))
+        assert dates == sorted(dates, reverse=True)
+
+    def test_optional_text_fields(self, db, user):
+        batch = Batch.objects.create(
+            user=user, name='Sparse Batch', batch_size='5.0',
+            og='1.100', primary_date=datetime.date(2025, 1, 1),
+        )
+        note = TastingNote.objects.create(
+            batch=batch, date=datetime.date(2025, 7, 1), score=5
+        )
+        assert note.aroma == ''
+        assert note.flavor == ''
+        assert note.overall == ''
