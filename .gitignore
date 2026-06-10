@@ -168,3 +168,6 @@ cython_debug/
 
 # screenshots intentionally tracked in repo for README
 .playwright-mcp/
+
+# local dev convenience scripts
+resume.sh
