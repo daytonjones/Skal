@@ -188,6 +188,8 @@ def save_notification_prefs(request):
     if form.is_valid():
         form.save()
         messages.success(request, 'Notification preferences saved.')
+    else:
+        messages.error(request, 'Could not save notification preferences. Please try again.')
     return redirect(reverse_lazy('accounts:profile'))
 
 
