@@ -43,6 +43,25 @@ prompt_secret() {
 
 hr() { echo -e "${CYAN}────────────────────────────────────────────────────────${RESET}"; }
 
+port_in_use() {
+    local port="$1"
+    if command -v ss &>/dev/null; then
+        ss -tuln 2>/dev/null | grep -q ":${port} "
+    elif command -v lsof &>/dev/null; then
+        lsof -iTCP:"$port" -sTCP:LISTEN &>/dev/null
+    else
+        (echo > /dev/tcp/localhost/"$port") 2>/dev/null
+    fi
+}
+
+next_free_port() {
+    local port="$1"
+    while port_in_use "$port"; do
+        port=$((port + 1))
+    done
+    echo "$port"
+}
+
 # ── Header ────────────────────────────────────────────────────────────────────
 clear
 hr
@@ -152,7 +171,23 @@ echo "  Use 'localhost' for local use, or your server's domain/IP for remote acc
 echo "  Multiple values can be comma-separated: e.g. myserver.com,192.168.1.10"
 echo
 prompt DJANGO_ALLOWED_HOSTS "Hostname or IP address" "localhost,127.0.0.1"
-prompt HOST_PORT "Port number" "8000"
+
+SUGGESTED_PORT="$(next_free_port 8000)"
+while true; do
+    read -rp "  $(echo -e "${BOLD}Port number${RESET} [${SUGGESTED_PORT}]: ")" HOST_PORT
+    HOST_PORT="${HOST_PORT:-$SUGGESTED_PORT}"
+    if ! [[ "$HOST_PORT" =~ ^[0-9]+$ ]] || (( HOST_PORT < 1 || HOST_PORT > 65535 )); then
+        warn "Invalid port number. Enter a number between 1 and 65535."
+        continue
+    fi
+    if port_in_use "$HOST_PORT"; then
+        NEXT="$(next_free_port $((HOST_PORT + 1)))"
+        warn "Port $HOST_PORT is already in use. Try $NEXT instead."
+        SUGGESTED_PORT="$NEXT"
+        continue
+    fi
+    break
+done
 echo
 ok "Address: $DJANGO_ALLOWED_HOSTS"
 ok "Port:    $HOST_PORT"

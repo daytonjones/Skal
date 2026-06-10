@@ -325,9 +325,13 @@ class CellarView(LoginRequiredMixin, ListView):
     context_object_name = 'object_list'
 
     def get_queryset(self):
+        from django.db.models import F, Sum, Value
+        from django.db.models.functions import Coalesce
         return (
             Batch.objects
             .filter(user=self.request.user, bottled_done=True)
+            .annotate(total_consumed=Coalesce(Sum('consumptions__quantity'), Value(0)))
+            .exclude(bottle_count__isnull=False, total_consumed__gte=F('bottle_count'))
             .order_by('-bottled_date')
             .prefetch_related('consumptions')
         )
