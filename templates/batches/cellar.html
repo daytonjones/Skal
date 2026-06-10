@@ -16,6 +16,7 @@
         <th>Bottles Remaining</th>
         <th>Storage Location</th>
         <th>Bottled</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -39,6 +40,22 @@
         </td>
         <td>
           {% if batch.bottled_date %}{{ batch.bottled_date }}{% else %}&mdash;{% endif %}
+        </td>
+        <td>
+          {% if batch.bottles_remaining %}
+          <form method="post" action="{% url 'batches:add_consumption' batch.pk %}"
+                style="display:flex;align-items:center;gap:0.4rem;">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ today }}">
+            <input type="hidden" name="next" value="/cellar/">
+            <input type="number" name="quantity" value="1" min="1"
+                   {% if batch.bottles_remaining %}max="{{ batch.bottles_remaining }}"{% endif %}
+                   style="width:3.5rem;padding:0.2rem 0.4rem;text-align:center;">
+            <button type="submit" class="btn btn-secondary"
+                    title="Log consumed bottles and stay on cellar page"
+                    style="padding:0.2rem 0.6rem;">−</button>
+          </form>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}

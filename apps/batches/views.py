@@ -340,11 +340,16 @@ class CellarView(LoginRequiredMixin, ListView):
 
 @login_required
 def add_consumption(request, pk):
+    from django.utils.http import url_has_allowed_host_and_scheme
     batch = get_object_or_404(Batch, pk=pk, user=request.user)
+    next_url = None
     if request.method == 'POST':
         date_str = request.POST.get('date', '').strip()
         qty_str  = request.POST.get('quantity', '').strip()
         notes    = request.POST.get('notes', '').strip()
+        raw_next = request.POST.get('next', '')
+        if raw_next and url_has_allowed_host_and_scheme(raw_next, allowed_hosts={request.get_host()}):
+            next_url = raw_next
         try:
             quantity = int(qty_str)
             if quantity <= 0:
@@ -352,8 +357,8 @@ def add_consumption(request, pk):
             consume_date = date.fromisoformat(date_str)
         except (ValueError, TypeError):
             messages.error(request, 'Invalid consumption data. Please check the date and quantity.')
-            return redirect('batches:detail', pk=pk)
+            return redirect(next_url or reverse_lazy('batches:detail', kwargs={'pk': pk}))
         BottleConsumption.objects.create(batch=batch, date=consume_date, quantity=quantity, notes=notes)
         messages.success(request, f'Logged {quantity} bottle(s) consumed.')
-    return redirect('batches:detail', pk=pk)
+    return redirect(next_url or reverse_lazy('batches:detail', kwargs={'pk': pk}))
 
