@@ -6,6 +6,7 @@ from django.views.static import serve
 
 from apps.accounts.views import HomeView
 from apps.yeast.views import YeastListView
+from apps.batches.views import CellarView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,6 +16,7 @@ urlpatterns = [
     path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
 
     path("yeast/", YeastListView.as_view(), name="yeast"),
+    path("cellar/", CellarView.as_view(), name="cellar"),
 
     path(
         "accounts/",

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Cellar</h1>
+{% for batch in object_list %}
+<p>{{ batch.name }}</p>
+{% empty %}
+<p>No bottled batches yet.</p>
+{% endfor %}
+{% endblock %}
