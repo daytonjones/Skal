@@ -169,7 +169,7 @@
         <div class="form-group">
           <label for="consume-date">Date</label>
           <input type="date" id="consume-date" name="date"
-                 value="{{ today }}" required>
+                 value="{{ today|date:'Y-m-d' }}" required>
         </div>
         <div class="form-group">
           <label for="consume-qty">Bottles</label>

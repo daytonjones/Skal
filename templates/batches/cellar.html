@@ -46,7 +46,7 @@
           <form method="post" action="{% url 'batches:add_consumption' batch.pk %}"
                 style="display:flex;align-items:center;gap:0.4rem;">
             {% csrf_token %}
-            <input type="hidden" name="date" value="{{ today }}">
+            <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
             <input type="hidden" name="next" value="/cellar/">
             <input type="number" name="quantity" value="1" min="1"
                    {% if batch.bottles_remaining %}max="{{ batch.bottles_remaining }}"{% endif %}
