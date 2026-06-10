@@ -10,12 +10,13 @@ from django.views.generic import (
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from datetime import date
 
-from .models import Batch, BatchImage
-from .forms import BatchForm
+from .models import Batch, BatchImage, TastingNote, BottleConsumption
+from .forms import BatchForm, TastingNoteForm
 from apps.recipes.models import Recipe
 
 logger = logging.getLogger(__name__)
@@ -94,6 +95,7 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['images'] = self.object.images.all()
+        ctx['tasting_notes'] = self.object.tasting_notes.all()
         if self.object.fg is not None:
             og = float(self.object.og)
             fg = float(self.object.fg)
@@ -101,6 +103,19 @@ class BatchDetailView(LoginRequiredMixin, DetailView):
             calories = ((abv / 100) * 0.789 * 7) * (8 * 29.5735)
             ctx['abv'] = abv
             ctx['calories'] = calories
+        ctx['today'] = date.today()
+        from collections import defaultdict
+        grouped = defaultdict(lambda: {'quantity': 0, 'notes': [], 'entries': []})
+        for c in self.object.consumptions.all():
+            grouped[c.date]['quantity'] += c.quantity
+            grouped[c.date]['entries'].append(c)
+            if c.notes:
+                grouped[c.date]['notes'].append(c.notes)
+        ctx['consumptions_by_date'] = [
+            {'date': d, 'quantity': v['quantity'],
+             'notes': ', '.join(v['notes']), 'entries': v['entries']}
+            for d, v in sorted(grouped.items(), reverse=True)
+        ]
         return ctx
 
 
@@ -275,4 +290,102 @@ def update_checklist_note(request, pk):
     setattr(batch, field, note)
     batch.save(update_fields=[field])
     return HttpResponse(status=204)
+
+
+@login_required
+def tasting_note_create(request, batch_pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    if request.method == 'POST':
+        form = TastingNoteForm(request.POST)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.batch = batch
+            note.save()
+            messages.success(request, 'Tasting note added.')
+            return redirect('batches:detail', pk=batch_pk)
+    else:
+        form = TastingNoteForm(initial={'date': date.today()})
+    return render(request, 'batches/tasting_note_form.html', {'form': form, 'batch': batch})
+
+
+@login_required
+def tasting_note_update(request, batch_pk, pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    note = get_object_or_404(TastingNote, pk=pk, batch=batch)
+    if request.method == 'POST':
+        form = TastingNoteForm(request.POST, instance=note)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tasting note updated.')
+            return redirect('batches:detail', pk=batch_pk)
+    else:
+        form = TastingNoteForm(instance=note)
+    return render(request, 'batches/tasting_note_form.html', {'form': form, 'batch': batch, 'note': note})
+
+
+@login_required
+def tasting_note_delete(request, batch_pk, pk):
+    batch = get_object_or_404(Batch, pk=batch_pk, user=request.user)
+    note = get_object_or_404(TastingNote, pk=pk, batch=batch)
+    if request.method == 'POST':
+        note.delete()
+        messages.success(request, 'Tasting note deleted.')
+    return redirect('batches:detail', pk=batch_pk)
+
+
+class CellarView(LoginRequiredMixin, ListView):
+    template_name = 'batches/cellar.html'
+    context_object_name = 'object_list'
+
+    def get_queryset(self):
+        from django.db.models import F, Sum, Value
+        from django.db.models.functions import Coalesce
+        return (
+            Batch.objects
+            .filter(user=self.request.user, bottled_done=True)
+            .annotate(total_consumed=Coalesce(Sum('consumptions__quantity'), Value(0)))
+            .exclude(bottle_count__isnull=False, total_consumed__gte=F('bottle_count'))
+            .order_by('-bottled_date')
+            .prefetch_related('consumptions')
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['today'] = date.today()
+        return ctx
+
+
+@login_required
+def add_consumption(request, pk):
+    from django.utils.http import url_has_allowed_host_and_scheme
+    batch = get_object_or_404(Batch, pk=pk, user=request.user)
+    next_url = None
+    if request.method == 'POST':
+        date_str = request.POST.get('date', '').strip()
+        qty_str  = request.POST.get('quantity', '').strip()
+        notes    = request.POST.get('notes', '').strip()
+        raw_next = request.POST.get('next', '')
+        if raw_next and url_has_allowed_host_and_scheme(raw_next, allowed_hosts={request.get_host()}):
+            next_url = raw_next
+        try:
+            quantity = int(qty_str)
+            if quantity <= 0:
+                raise ValueError("quantity must be positive")
+            consume_date = date.fromisoformat(date_str)
+        except (ValueError, TypeError):
+            messages.error(request, 'Invalid consumption data. Please check the date and quantity.')
+            return redirect(next_url or reverse_lazy('batches:detail', kwargs={'pk': pk}))
+        BottleConsumption.objects.create(batch=batch, date=consume_date, quantity=quantity, notes=notes)
+        messages.success(request, f'Logged {quantity} bottle(s) consumed.')
+    return redirect(next_url or reverse_lazy('batches:detail', kwargs={'pk': pk}))
+
+
+@login_required
+@require_POST
+def delete_consumption(request, pk):
+    consumption = get_object_or_404(BottleConsumption, pk=pk, batch__user=request.user)
+    batch_pk = consumption.batch_id
+    consumption.delete()
+    messages.success(request, 'Consumption entry removed.')
+    return redirect('batches:detail', pk=batch_pk)
 

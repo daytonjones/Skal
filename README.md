@@ -16,6 +16,9 @@ Though built with mead in mind, Skål works just as well for beer and cider.
 
 - **Recipe Management** — Create, edit, browse, and export recipes with ingredients and instructions. Toggle public/private visibility. One-click clone to fork a community recipe.
 - **Batch Tracking** — Log batches from must creation through bottling. Track OG/FG, primary/secondary/bottle dates, notes, and a full TOSNA 3.0 nutrient schedule.
+- **Tasting Log** — Record aroma, flavor, overall impressions, and a 1–10 score per batch. Notes appear on the batch detail page in reverse-chronological order.
+- **Cellar Tracker** — Set a bottle count and storage location after bottling. Log consumption events to track remaining inventory. A dedicated `/cellar/` view surfaces all bottled batches with a last-bottle warning.
+- **Email Notifications** — Opt-in reminders for TOSNA additions, gravity checks, racking, and bottling. Delivered daily; configured per-user on the profile page.
 - **Photo Galleries** — Upload batch photos with captions. A slideshow of your latest brews rotates on the home dashboard.
 - **Bjorn AI Assistant** — Ask Bjorn (your Viking mead guide) brewing questions, get recipe suggestions, and save them directly to your recipe list with one click.
 - **Yeast Reference Table** — Compare yeasts by tolerance, attenuation, and suggested use with sorting and search.
@@ -35,9 +38,13 @@ Though built with mead in mind, Skål works just as well for beer and cider.
 |---|---|---|
 | ![Home](screenshots/home.png) | ![Recipes](screenshots/recipes.png) | ![Batch](screenshots/batch-detail.png) |
 
- Bjorn AI Chat | Calculators | 
+| Bjorn AI Chat | Calculators |
 |---|---|
-| ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) | 
+| ![Bjorn](screenshots/bjorn-chat.png) | ![Calculators](screenshots/calculators.png) |
+
+| Cellar Tracker | Tasting Notes | Email Notifications |
+|---|---|---|
+| ![Cellar](screenshots/cellar.png) | ![Tasting Notes](screenshots/tasting-notes.png) | ![Notifications](screenshots/notifications.png) |
 
 ---
 

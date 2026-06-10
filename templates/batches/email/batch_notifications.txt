@@ -1,0 +1,16 @@
+Skål — Brewing reminders for {{ today }}
+========================================
+
+Hi {{ user.get_full_name|default:user.username }},
+
+Here are your brewing tasks due today:
+
+{% for item in batch_events %}
+{{ item.batch.name }}
+{% for event in item.events %}  • {{ event }}
+{% endfor %}
+{% endfor %}
+
+Manage your notification preferences at {{ profile_url }}
+
+Skål!

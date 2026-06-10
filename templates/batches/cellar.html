@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cellar — Skål{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Your Cellar</h1>
+</div>
+
+{% if object_list %}
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Batch</th>
+        <th>Bottles Remaining</th>
+        <th>Storage Location</th>
+        <th>Bottled</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for batch in object_list %}
+      <tr>
+        <td>
+          <a href="{% url 'batches:detail' batch.pk %}">{{ batch.name }}</a>
+          {% if batch.bottles_remaining == 1 %}
+            <span class="badge badge-warning">Last bottle!</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if batch.bottles_remaining is not None %}
+            {{ batch.bottles_remaining }}
+          {% else %}
+            &mdash;
+          {% endif %}
+        </td>
+        <td>
+          {% if batch.storage_location %}{{ batch.storage_location }}{% else %}&mdash;{% endif %}
+        </td>
+        <td>
+          {% if batch.bottled_date %}{{ batch.bottled_date }}{% else %}&mdash;{% endif %}
+        </td>
+        <td>
+          {% if batch.bottles_remaining %}
+          <form method="post" action="{% url 'batches:add_consumption' batch.pk %}"
+                style="display:flex;align-items:center;gap:0.4rem;">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
+            <input type="hidden" name="next" value="/cellar/">
+            <input type="number" name="quantity" value="1" min="1"
+                   {% if batch.bottles_remaining %}max="{{ batch.bottles_remaining }}"{% endif %}
+                   style="width:3.5rem;padding:0.2rem 0.4rem;text-align:center;">
+            <button type="submit" class="btn btn-secondary"
+                    title="Log consumed bottles and stay on cellar page"
+                    style="padding:0.2rem 0.6rem;">−</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty-state">
+  No bottled batches yet.
+  <a href="{% url 'batches:index' %}">View your batches</a>
+</p>
+{% endif %}
+{% endblock %}

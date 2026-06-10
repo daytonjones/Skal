@@ -22,6 +22,34 @@
   </form>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
+  <h2>Notifications</h2>
+  <form method="post" action="{% url 'accounts:save_notification_prefs' %}">
+    {% csrf_token %}
+    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+      {{ notification_prefs_form.email_notifications }}
+      <label for="{{ notification_prefs_form.email_notifications.id_for_label }}"
+             style="text-transform:none;font-size:0.875rem;color:var(--brown-900);margin:0;">
+        {{ notification_prefs_form.email_notifications.label }}
+      </label>
+    </div>
+    <fieldset id="notification-sub-prefs" style="border:none;padding:0;margin:0.75rem 0 0 1.5rem;">
+      <legend style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.5rem;">Notify me about:</legend>
+      {% for field in notification_prefs_form %}
+        {% if field.name != 'email_notifications' %}
+          <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;">
+            {{ field }}
+            <label for="{{ field.id_for_label }}"
+                   style="text-transform:none;font-size:0.875rem;color:var(--brown-900);margin:0;">
+              {{ field.label }}
+            </label>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </fieldset>
+    <button type="submit" class="btn btn-secondary" style="margin-top:0.75rem;">Save Notification Preferences</button>
+  </form>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
   <h2>Change Password</h2>
   <form method="post" action="{% url 'accounts:password_change' %}" style="margin-bottom:1.5rem;">
     {% csrf_token %}
