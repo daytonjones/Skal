@@ -8,6 +8,7 @@ from .views import (
     CustomPasswordChangeView,
     export_user_data,
     toggle_theme,
+    save_notification_prefs,
 )
 
 app_name = "accounts"
@@ -20,5 +21,6 @@ urlpatterns = [
     path("password/", CustomPasswordChangeView.as_view(), name="password_change"),
     path("export/", export_user_data,                   name="export_user_data"),
     path("theme/toggle/", toggle_theme,                 name="toggle_theme"),
+    path("profile/notifications/", save_notification_prefs, name="save_notification_prefs"),
 ]
 
