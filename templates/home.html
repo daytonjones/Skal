@@ -118,16 +118,5 @@
       }
     }
   })();
-  (function() {
-    const btn = document.getElementById('play-skal');
-    const player = document.getElementById('player-skal');
-    if (!btn || !player) return;
-    let playing = false;
-    btn.addEventListener('click', function() {
-      if (!playing) { player.play(); playing = true; btn.textContent = '⏸ Skål'; }
-      else { player.pause(); playing = false; btn.textContent = '▶ Skål'; }
-    });
-    player.addEventListener('ended', function() { playing = false; btn.textContent = '▶ Skål'; });
-  })();
 </script>
 {% endblock %}
