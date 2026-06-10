@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.2.0] - 2026-06-10
+
+### Added
+
+* **Batch email notifications** — Opt-in per-event email reminders for TOSNA nutrient additions (24h/48h/72h), gravity check (~day 4), racking to secondary, and bottling day. Configured per-user on the profile page. Delivered daily at 7am UTC via a management command (`send_batch_notifications`) scheduled by Docker cron.
+* **Tasting log** — Record tasting notes per batch with aroma, flavor, overall impressions, and a 1–10 score. Notes appear in reverse-chronological order on the batch detail page with full create/edit/delete support.
+* **Cellar tracker** — After bottling, set a bottle count and storage location on any batch. Log consumption events inline to track how many bottles remain. A dedicated `/cellar/` page lists all bottled batches at a glance with a "Last bottle!" warning when only one remains.
+
+---
+
 ## [2.1.0] - 2026-06-06
 
 ### Added
