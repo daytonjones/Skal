@@ -1,7 +1,7 @@
 import pytest
 import datetime
 from django.core.exceptions import ValidationError
-from apps.batches.models import Batch, TastingNote
+from apps.batches.models import Batch, BottleConsumption, TastingNote
 
 
 @pytest.fixture
@@ -141,3 +141,83 @@ class TestTastingNoteModel:
         assert note.aroma == ''
         assert note.flavor == ''
         assert note.overall == ''
+
+
+@pytest.fixture
+def bottled_batch(db, user):
+    return Batch.objects.create(
+        user=user,
+        name='Cyser',
+        batch_size='5.0',
+        og='1.110',
+        primary_date=datetime.date(2025, 1, 1),
+        bottled_done=True,
+        bottled_date=datetime.date(2025, 6, 1),
+    )
+
+
+@pytest.mark.django_db
+class TestBottlesRemainingProperty:
+    def test_returns_none_when_bottle_count_not_set(self, bottled_batch):
+        assert bottled_batch.bottle_count is None
+        assert bottled_batch.bottles_remaining is None
+
+    def test_returns_bottle_count_when_no_consumptions(self, bottled_batch):
+        bottled_batch.bottle_count = 24
+        bottled_batch.save()
+        assert bottled_batch.bottles_remaining == 24
+
+    def test_subtracts_consumed_quantities(self, bottled_batch):
+        bottled_batch.bottle_count = 24
+        bottled_batch.save()
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 4), quantity=3,
+        )
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 8, 1), quantity=2,
+        )
+        assert bottled_batch.bottles_remaining == 19
+
+    def test_can_return_zero_when_all_consumed(self, bottled_batch):
+        bottled_batch.bottle_count = 6
+        bottled_batch.save()
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 1), quantity=6,
+        )
+        assert bottled_batch.bottles_remaining == 0
+
+
+@pytest.mark.django_db
+class TestBottleConsumptionModel:
+    def test_str(self, bottled_batch):
+        c = BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 4), quantity=2,
+        )
+        assert str(c) == f"2 bottle(s) on 2025-07-04 from {bottled_batch}"
+
+    def test_ordering_latest_first(self, bottled_batch):
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 1), quantity=1,
+        )
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 9, 1), quantity=1,
+        )
+        dates = list(
+            BottleConsumption.objects.filter(batch=bottled_batch)
+            .values_list('date', flat=True)
+        )
+        assert dates[0] > dates[1]
+
+    def test_notes_optional(self, bottled_batch):
+        c = BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 4), quantity=1,
+        )
+        assert c.notes == ''
+
+    def test_cascade_delete(self, bottled_batch):
+        BottleConsumption.objects.create(
+            batch=bottled_batch, date=datetime.date(2025, 7, 1), quantity=1,
+        )
+        pk = bottled_batch.pk
+        bottled_batch.delete()
+        assert BottleConsumption.objects.filter(batch_id=pk).count() == 0

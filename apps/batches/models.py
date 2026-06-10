@@ -82,6 +82,11 @@ class Batch(models.Model):
     bottled_note        = models.TextField(blank=True, default='')
     # -------------------------
 
+    # --- Cellar tracker ---
+    bottle_count     = models.PositiveIntegerField(null=True, blank=True)
+    storage_location = models.CharField(max_length=200, blank=True)
+    # ----------------------
+
     class Meta:
         ordering = ['-primary_date']
 
@@ -127,6 +132,13 @@ class Batch(models.Model):
             self.fo_1_3_break_done, self.rack_secondary_done, self.bottled_done,
         ]
         return int((sum(done) / 8) * 100)
+
+    @property
+    def bottles_remaining(self):
+        if self.bottle_count is None:
+            return None
+        consumed = self.consumptions.aggregate(total=models.Sum('quantity'))['total'] or 0
+        return self.bottle_count - consumed
 
     def __str__(self):
         return self.name
@@ -175,4 +187,17 @@ class TastingNote(models.Model):
 
     def __str__(self):
         return f"{self.batch.name} — {self.date} ({self.score}/10)"
+
+
+class BottleConsumption(models.Model):
+    batch    = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='consumptions')
+    date     = models.DateField()
+    quantity = models.PositiveIntegerField()
+    notes    = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.quantity} bottle(s) on {self.date} from {self.batch}"
 
