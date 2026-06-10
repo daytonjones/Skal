@@ -36,6 +36,16 @@
     </div>
 
     <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
+    <h2>Cellar</h2>
+    <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.75rem;">
+      Set after bottling to track your cellar inventory.
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:0.75rem;">
+      <div class="form-group">{{ form.bottle_count.label_tag }}{{ form.bottle_count }}{{ form.bottle_count.errors }}</div>
+      <div class="form-group">{{ form.storage_location.label_tag }}{{ form.storage_location }}{{ form.storage_location.errors }}</div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
     <h2>Checklist</h2>
     <p style="font-size:0.8rem;color:var(--brown-700);margin-bottom:0.75rem;">
       Check off completed steps. Dates auto-fill when checked.
