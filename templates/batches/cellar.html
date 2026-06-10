@@ -1,9 +1,54 @@
 {% extends "base.html" %}
+
+{% block title %}Cellar — Skål{% endblock %}
+
 {% block content %}
-<h1>Cellar</h1>
-{% for batch in object_list %}
-<p>{{ batch.name }}</p>
-{% empty %}
-<p>No bottled batches yet.</p>
-{% endfor %}
+<div class="page-header">
+  <h1>Cellar</h1>
+</div>
+
+{% if object_list %}
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Batch</th>
+        <th>Bottles Remaining</th>
+        <th>Storage Location</th>
+        <th>Bottled</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for batch in object_list %}
+      <tr>
+        <td>
+          <a href="{% url 'batches:detail' batch.pk %}">{{ batch.name }}</a>
+          {% if batch.bottles_remaining == 1 %}
+            <span class="badge badge-warning">Last bottle!</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if batch.bottles_remaining is not None %}
+            {{ batch.bottles_remaining }}
+          {% else %}
+            &mdash;
+          {% endif %}
+        </td>
+        <td>
+          {% if batch.storage_location %}{{ batch.storage_location }}{% else %}&mdash;{% endif %}
+        </td>
+        <td>
+          {% if batch.bottled_date %}{{ batch.bottled_date }}{% else %}&mdash;{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty-state">
+  No bottled batches yet.
+  <a href="{% url 'batches:index' %}">View your batches</a>
+</p>
+{% endif %}
 {% endblock %}
