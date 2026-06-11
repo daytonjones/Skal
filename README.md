@@ -15,9 +15,9 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](http://makeapullrequest.com)
 [![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-black.svg)](https://www.buymeacoffee.com/drunkengecko)
 
-**Skål** is a modern web application for managing your mead-making journey — from crafting recipes to tracking fermentation batches, calculating ABV, managing your ingredient pantry, and getting help from an AI brewing assistant. Designed for homebrewers who want a clean, focused tool rather than a spreadsheet.
+**Skål** is a self-hosted brewing tracker for mead makers. Manage recipes, log fermentation batches from must to bottle, track your cellar inventory, and get brewing help from an AI assistant. No cloud dependency, no subscription — runs on your own server.
 
-Though built with mead in mind, Skål works just as well for beer and cider.
+Built with mead in mind, but works fine for beer and cider too.
 
 ---
 
@@ -26,10 +26,10 @@ Though built with mead in mind, Skål works just as well for beer and cider.
 - **Recipe Management** — Create, edit, browse, and export recipes with ingredients and instructions. Toggle public/private visibility. One-click clone to fork a community recipe.
 - **Batch Tracking** — Log batches from must creation through bottling. Track OG/FG, primary/secondary/bottle dates, notes, and a full TOSNA 3.0 nutrient schedule.
 - **Tasting Log** — Record aroma, flavor, overall impressions, and a 1–10 score per batch. Notes appear on the batch detail page in reverse-chronological order.
-- **Cellar Tracker** — Set a bottle count and storage location after bottling. Log consumption events to track remaining inventory. A dedicated `/cellar/` view surfaces all bottled batches with a last-bottle warning.
+- **Cellar Tracker** — Set a bottle count and storage location after bottling. Log consumption to track what's left. The `/cellar/` page lists all bottled batches with a last-bottle warning.
 - **Email Notifications** — Opt-in reminders for TOSNA additions, gravity checks, racking, and bottling. Delivered daily; configured per-user on the profile page.
 - **Photo Galleries** — Upload batch photos with captions. A slideshow of your latest brews rotates on the home dashboard.
-- **Bjorn AI Assistant** — Ask Bjorn (your Viking mead guide) brewing questions, get recipe suggestions, and save them directly to your recipe list with one click.
+- **Bjorn AI Assistant** — Ask Bjorn brewing questions, get recipe suggestions, and save them straight to your recipe list.
 - **Yeast Reference Table** — Compare yeasts by tolerance, attenuation, and suggested use with sorting and search.
 - **ABV & Calorie Calculator** — Alternate formula ABV, estimated calories per 5 oz glass. SG/Brix fields stay linked.
 - **Pantry** — Track ingredients you have on hand; recipe detail shows what you're missing.
@@ -71,7 +71,7 @@ cd Skal
 ./install.sh
 ```
 
-The install script walks you through every configuration option step by step, writes your `.env` file, builds and starts the containers, and optionally configures the Bjorn AI assistant.
+The install script prompts for each config option, writes your `.env`, builds and starts the containers, and optionally sets up Bjorn.
 
 ### Option B — Manual Setup
 
@@ -151,7 +151,7 @@ Bjorn is a Viking mead-making expert built into Skål. He knows your recipes and
 - [Anthropic Claude](https://console.anthropic.com/) — `AI_PROVIDER=anthropic`
 - [OpenAI](https://platform.openai.com/) — `AI_PROVIDER=openai`
 
-**Recipe suggestions:** When Bjorn suggests a recipe, a save card appears in the chat. Click **Add to My Recipes** to save it directly to your recipe list — honey, yeast, additives, and instructions all included.
+**Recipe suggestions:** When Bjorn suggests a recipe, a save card appears in the chat. Click **Add to My Recipes** and it lands in your recipe list with ingredients and instructions intact.
 
 **Usage reporting:** A weekly email is sent to Django admins summarising token usage per user. You can also run it manually:
 
@@ -163,7 +163,7 @@ docker compose exec web python manage.py send_ai_report
 
 ## Upgrading
 
-Use the upgrade script to safely back up your data and apply new migrations:
+Use the upgrade script to back up your data and apply new migrations:
 
 ```bash
 ./upgrade.sh
