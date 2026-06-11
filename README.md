@@ -7,7 +7,12 @@
 [![GitHub stars](https://img.shields.io/github/stars/daytonjones/Skal)](https://github.com/daytonjones/Skal/stargazers)
 [![License](https://img.shields.io/github/license/daytonjones/Skal)](https://github.com/daytonjones/Skal/blob/main/LICENSE)
 [![Django](https://img.shields.io/badge/Django-5.2%2B-0C4B33?logo=django)](https://www.djangoproject.com)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![HTMX](https://img.shields.io/badge/HTMX-2.0-36C?logo=htmx&logoColor=white)](https://htmx.org)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
+![Self-Hosted](https://img.shields.io/badge/self--hosted-yes-orange)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](http://makeapullrequest.com)
 [![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-black.svg)](https://www.buymeacoffee.com/drunkengecko)
 
 **Skål** is a modern web application for managing your mead-making journey — from crafting recipes to tracking fermentation batches, calculating ABV, managing your ingredient pantry, and getting help from an AI brewing assistant. Designed for homebrewers who want a clean, focused tool rather than a spreadsheet.
