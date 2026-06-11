@@ -1,10 +1,14 @@
 # Skål
 
 [![GitHub release](https://img.shields.io/github/v/release/daytonjones/Skal?sort=semver)](https://github.com/daytonjones/Skal/releases)
-[![GitHub last commit](https://img.shields.io/github/last-commit/daytonjones/Skal)](https://github.com/daytonjones/Skal/commits/main)
+[![GitHub last commit](https://img.shields.io/github/last-commit/daytonjones/Skal?color=red&style=social)](https://github.com/daytonjones/Skal/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/daytonjones/Skal?style=social)](https://github.com/daytonjones/Skal)
 [![GitHub issues](https://img.shields.io/github/issues/daytonjones/Skal)](https://github.com/daytonjones/Skal/issues)
 [![GitHub stars](https://img.shields.io/github/stars/daytonjones/Skal)](https://github.com/daytonjones/Skal/stargazers)
 [![License](https://img.shields.io/github/license/daytonjones/Skal)](https://github.com/daytonjones/Skal/blob/main/LICENSE)
+[![Django](https://img.shields.io/badge/Django-5.2%2B-0C4B33?logo=django)](https://www.djangoproject.com)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
+[![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-black.svg)](https://www.buymeacoffee.com/drunkengecko)
 
 **Skål** is a modern web application for managing your mead-making journey — from crafting recipes to tracking fermentation batches, calculating ABV, managing your ingredient pantry, and getting help from an AI brewing assistant. Designed for homebrewers who want a clean, focused tool rather than a spreadsheet.
 
