@@ -198,14 +198,6 @@ This creates a timestamped SQL backup in `backups/`, rebuilds the image, and res
 
 ---
 
-## Contact
-
-**Dayton Jones**
-Email: [jones.dayton@gmail.com](mailto:jones.dayton@gmail.com)
-GitHub: [@daytonjones](https://github.com/daytonjones)
-
----
-
 ## License
 
 MIT License. See [LICENSE](LICENSE) for full details.
