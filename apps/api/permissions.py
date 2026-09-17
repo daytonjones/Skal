@@ -17,3 +17,24 @@ class IsOwnerOrPublicReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return bool(obj.is_public)
         return False
+
+
+class IsBatchOwnerOrPublicReadOnly(permissions.BasePermission):
+    """Like IsOwnerOrPublicReadOnly, but for objects related via `.batch`."""
+
+    def has_permission(self, request, view):
+        if request.method != "POST":
+            return True
+        batch_id = request.data.get("batch")
+        if batch_id is None:
+            return True  # let serializer validation reject the missing field
+        from apps.batches.models import Batch
+
+        return Batch.objects.filter(pk=batch_id, user=request.user).exists()
+
+    def has_object_permission(self, request, view, obj):
+        if obj.batch.user_id == request.user.id:
+            return True
+        if request.method in permissions.SAFE_METHODS:
+            return bool(obj.batch.is_public)
+        return False

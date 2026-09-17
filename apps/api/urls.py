@@ -10,10 +10,20 @@ from apps.api.views.auth import MeView, RegisterView
 from apps.api.views.recipes import RecipeViewSet
 from apps.api.views.pantry import PantryItemViewSet
 from apps.api.views.yeast import YeastListAPIView
+from apps.api.views.batches import (
+    BatchImageViewSet,
+    BatchViewSet,
+    BottleConsumptionViewSet,
+    TastingNoteViewSet,
+)
 
 router = DefaultRouter()
 router.register("recipes", RecipeViewSet, basename="recipe")
 router.register("pantry", PantryItemViewSet, basename="pantry-item")
+router.register("batches", BatchViewSet, basename="batch")
+router.register("tasting-notes", TastingNoteViewSet, basename="tasting-note")
+router.register("bottle-consumption", BottleConsumptionViewSet, basename="bottle-consumption")
+router.register("batch-images", BatchImageViewSet, basename="batch-image")
 
 urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="api-token-obtain"),
