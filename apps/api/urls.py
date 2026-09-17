@@ -7,8 +7,10 @@ from rest_framework_simplejwt.views import (
 )
 
 from apps.api.views.auth import MeView, RegisterView
+from apps.api.views.recipes import RecipeViewSet
 
 router = DefaultRouter()
+router.register("recipes", RecipeViewSet, basename="recipe")
 
 urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="api-token-obtain"),
