@@ -16,6 +16,7 @@ from apps.api.views.batches import (
     BottleConsumptionViewSet,
     TastingNoteViewSet,
 )
+from apps.api.views.bjorn import ChatMessageListCreateView, SaveRecipeFromChatView
 
 router = DefaultRouter()
 router.register("recipes", RecipeViewSet, basename="recipe")
@@ -32,5 +33,11 @@ urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="api-register"),
     path("auth/me/", MeView.as_view(), name="api-me"),
     path("yeast/", YeastListAPIView.as_view(), name="api-yeast"),
+    path("bjorn/messages/", ChatMessageListCreateView.as_view(), name="api-bjorn-messages"),
+    path(
+        "bjorn/messages/<int:pk>/save-recipe/",
+        SaveRecipeFromChatView.as_view(),
+        name="api-bjorn-save-recipe",
+    ),
     path("", include(router.urls)),
 ]
