@@ -22,6 +22,14 @@ class TestRecipeList:
         assert "Public" in names
         assert "Private" not in names
 
+    def test_lists_global_seeded_recipes(self, auth_api_client, user):
+        # Test that global/seeded recipes (user=None) are visible even if is_public=False
+        # This ensures parity with the web app and handles future seeded recipes
+        Recipe.objects.create(user=None, name="Global Seeded", instructions="x", is_public=False)
+        r = auth_api_client.get("/api/v1/recipes/")
+        names = {item["name"] for item in r.data}
+        assert "Global Seeded" in names
+
 
 class TestRecipeCreate:
     def test_create_with_ingredients(self, auth_api_client, honey):

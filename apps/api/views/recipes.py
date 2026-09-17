@@ -17,7 +17,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Recipe.objects.filter(
-            db_models.Q(user=user) | db_models.Q(is_public=True)
+            db_models.Q(user=user) | db_models.Q(is_public=True) | db_models.Q(user__isnull=True)
         ).distinct()
 
     def get_permissions(self):
