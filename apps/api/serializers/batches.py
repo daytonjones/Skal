@@ -32,14 +32,32 @@ class TastingNoteSerializer(serializers.ModelSerializer):
         model = TastingNote
         fields = ["id", "batch", "date", "aroma", "flavor", "overall", "score"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            self.fields["batch"].queryset = Batch.objects.filter(user=request.user)
+
 
 class BottleConsumptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = BottleConsumption
         fields = ["id", "batch", "date", "quantity", "notes"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            self.fields["batch"].queryset = Batch.objects.filter(user=request.user)
+
 
 class BatchImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BatchImage
         fields = ["id", "batch", "image", "caption", "order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            self.fields["batch"].queryset = Batch.objects.filter(user=request.user)

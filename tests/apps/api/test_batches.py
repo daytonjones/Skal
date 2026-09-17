@@ -1,7 +1,10 @@
 import pytest
 from datetime import date
+from io import BytesIO
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 
-from apps.batches.models import Batch, BottleConsumption, TastingNote
+from apps.batches.models import Batch, BottleConsumption, TastingNote, BatchImage
 
 
 @pytest.fixture
@@ -69,3 +72,65 @@ class TestBottleConsumption:
         assert BottleConsumption.objects.filter(batch=batch).count() == 1
         detail = auth_api_client.get(f"/api/v1/batches/{batch.id}/")
         assert detail.data["bottles_remaining"] == 10
+
+
+class TestBatchReassignmentProtection:
+    """Regression tests for cross-account batch reassignment vulnerability."""
+
+    def test_cannot_reassign_tasting_note_to_other_users_batch(self, auth_api_client, batch, other_batch):
+        # Create a tasting note on own batch
+        note = TastingNote.objects.create(
+            batch=batch, date=date(2026, 2, 1), score=7, overall="Good"
+        )
+        # Attempt to reassign to other user's batch via PATCH
+        r = auth_api_client.patch(
+            f"/api/v1/tasting-notes/{note.id}/",
+            {"batch": other_batch.id},
+            format="json",
+        )
+        # Should be rejected (403 Forbidden - batch not in user's queryset)
+        assert r.status_code == 403
+        # Verify the note's batch was NOT changed
+        note.refresh_from_db()
+        assert note.batch_id == batch.id
+
+    def test_cannot_reassign_bottle_consumption_to_other_users_batch(self, auth_api_client, batch, other_batch):
+        # Create a bottle consumption on own batch
+        consumption = BottleConsumption.objects.create(
+            batch=batch, date=date(2026, 3, 1), quantity=1
+        )
+        # Attempt to reassign to other user's batch via PATCH
+        r = auth_api_client.patch(
+            f"/api/v1/bottle-consumption/{consumption.id}/",
+            {"batch": other_batch.id},
+            format="json",
+        )
+        # Should be rejected (403 Forbidden - batch not in user's queryset)
+        assert r.status_code == 403
+        # Verify the consumption's batch was NOT changed
+        consumption.refresh_from_db()
+        assert consumption.batch_id == batch.id
+
+    def test_cannot_reassign_batch_image_to_other_users_batch(self, auth_api_client, batch, other_batch):
+        # Create a batch image on own batch with a valid test image
+        img = Image.new("RGB", (100, 100), color="red")
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="JPEG")
+        img_bytes.seek(0)
+        image_file = SimpleUploadedFile(
+            "test.jpg", img_bytes.getvalue(), content_type="image/jpeg"
+        )
+        image = BatchImage.objects.create(
+            batch=batch, image=image_file, caption="Test image", order=1
+        )
+        # Attempt to reassign to other user's batch via PATCH (use multipart format for image viewset)
+        r = auth_api_client.patch(
+            f"/api/v1/batch-images/{image.id}/",
+            {"batch": other_batch.id},
+            format="multipart",
+        )
+        # Should be rejected (403 Forbidden - batch not in user's queryset)
+        assert r.status_code == 403
+        # Verify the image's batch was NOT changed
+        image.refresh_from_db()
+        assert image.batch_id == batch.id

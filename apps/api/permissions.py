@@ -23,7 +23,7 @@ class IsBatchOwnerOrPublicReadOnly(permissions.BasePermission):
     """Like IsOwnerOrPublicReadOnly, but for objects related via `.batch`."""
 
     def has_permission(self, request, view):
-        if request.method != "POST":
+        if request.method in permissions.SAFE_METHODS:
             return True
         batch_id = request.data.get("batch")
         if batch_id is None:
