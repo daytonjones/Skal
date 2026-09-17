@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 from apps.api.views.auth import MeView, RegisterView
 from apps.api.views.recipes import RecipeViewSet
 from apps.api.views.pantry import PantryItemViewSet
+from apps.api.views.yeast import YeastListAPIView
 
 router = DefaultRouter()
 router.register("recipes", RecipeViewSet, basename="recipe")
@@ -20,5 +21,6 @@ urlpatterns = [
     path("auth/token/logout/", TokenBlacklistView.as_view(), name="api-token-logout"),
     path("auth/register/", RegisterView.as_view(), name="api-register"),
     path("auth/me/", MeView.as_view(), name="api-me"),
+    path("yeast/", YeastListAPIView.as_view(), name="api-yeast"),
     path("", include(router.urls)),
 ]
