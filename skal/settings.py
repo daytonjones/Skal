@@ -63,6 +63,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "apps.accounts",
     "apps.recipes",
     "apps.batches",
@@ -70,6 +73,7 @@ INSTALLED_APPS = [
     "apps.yeast",
     "apps.pantry",
     "apps.ai",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
@@ -166,4 +170,23 @@ DEFAULT_FROM_EMAIL  = os.environ.get("DEFAULT_FROM_EMAIL", "Skål <noreply@local
 # AI Assistant (Bjorn) -------------------------------------------------------
 AI_PROVIDER = os.environ.get('AI_PROVIDER', '')   # 'anthropic' | 'openai' | ''
 AI_API_KEY  = os.environ.get('AI_API_KEY', '')
+
+# REST API (mobile) ----------------------------------------------------------
+from datetime import timedelta  # noqa: E402
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
 
