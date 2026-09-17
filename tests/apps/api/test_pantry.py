@@ -35,3 +35,17 @@ class TestPantryApi:
         item = PantryItem.objects.create(user=other_user, ingredient=honey)
         r = auth_api_client.delete(f"/api/v1/pantry/{item.id}/")
         assert r.status_code == 404
+
+    def test_cannot_add_duplicate_ingredient(self, auth_api_client, user, honey):
+        # User already has this ingredient in their pantry
+        PantryItem.objects.create(user=user, ingredient=honey, quantity="1 lb")
+        # Try to add the same ingredient again
+        r = auth_api_client.post(
+            "/api/v1/pantry/",
+            {"ingredient_id": honey.id, "quantity": "2 lbs", "notes": ""},
+            format="json",
+        )
+        # Should get validation error, not 500
+        assert r.status_code == 400
+        # Verify no duplicate was created
+        assert PantryItem.objects.filter(user=user, ingredient=honey).count() == 1

@@ -6,6 +6,7 @@ from apps.recipes.models import Ingredient
 
 
 class PantryItemSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     ingredient = IngredientSerializer(read_only=True)
     ingredient_id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(), source="ingredient", write_only=True
@@ -13,4 +14,4 @@ class PantryItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PantryItem
-        fields = ["id", "ingredient", "ingredient_id", "quantity", "notes"]
+        fields = ["id", "user", "ingredient", "ingredient_id", "quantity", "notes"]

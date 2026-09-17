@@ -12,4 +12,4 @@ class PantryItemViewSet(viewsets.ModelViewSet):
         return PantryItem.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
