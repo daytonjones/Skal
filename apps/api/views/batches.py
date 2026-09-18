@@ -1,5 +1,5 @@
 from django.db import models as db_models
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.parsers import FormParser, MultiPartParser
 
 from apps.api.permissions import (
@@ -14,6 +14,18 @@ from apps.api.serializers.batches import (
     TastingNoteSerializer,
 )
 from apps.batches.models import Batch, BatchImage, BottleConsumption, TastingNote
+
+
+def _filter_by_batch(request, queryset):
+    """Optional `?batch=<id>` narrowing for batch sub-resources."""
+    batch_id = request.query_params.get("batch")
+    if batch_id is None:
+        return queryset
+    try:
+        batch_id = int(batch_id)
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({"batch": "Must be a valid batch id."})
+    return queryset.filter(batch_id=batch_id)
 
 
 class BatchViewSet(viewsets.ModelViewSet):
@@ -36,9 +48,10 @@ class TastingNoteViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return TastingNote.objects.filter(
+        qs = TastingNote.objects.filter(
             db_models.Q(batch__user=user) | db_models.Q(batch__is_public=True)
         ).distinct()
+        return _filter_by_batch(self.request, qs)
 
 
 class BottleConsumptionViewSet(viewsets.ModelViewSet):
@@ -47,9 +60,10 @@ class BottleConsumptionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return BottleConsumption.objects.filter(
+        qs = BottleConsumption.objects.filter(
             db_models.Q(batch__user=user) | db_models.Q(batch__is_public=True)
         ).distinct()
+        return _filter_by_batch(self.request, qs)
 
 
 class BatchImageViewSet(viewsets.ModelViewSet):
@@ -59,6 +73,7 @@ class BatchImageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return BatchImage.objects.filter(
+        qs = BatchImage.objects.filter(
             db_models.Q(batch__user=user) | db_models.Q(batch__is_public=True)
         ).distinct()
+        return _filter_by_batch(self.request, qs)

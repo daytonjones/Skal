@@ -1,6 +1,8 @@
+from django.db import models as db_models
 from rest_framework import serializers
 
 from apps.batches.models import Batch, BatchImage, BottleConsumption, TastingNote
+from apps.recipes.models import Recipe
 
 
 class BatchSerializer(serializers.ModelSerializer):
@@ -25,6 +27,18 @@ class BatchSerializer(serializers.ModelSerializer):
             "bottle_count", "storage_location",
             "stage", "checklist_progress", "abv", "bottles_remaining",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            # Mirror the web app's rule (apps/batches/views.py): a batch may only
+            # reference the user's own recipes, public recipes, or global ones.
+            self.fields["recipe"].queryset = Recipe.objects.filter(
+                db_models.Q(user=request.user)
+                | db_models.Q(is_public=True)
+                | db_models.Q(user__isnull=True)
+            )
 
 
 class TastingNoteSerializer(serializers.ModelSerializer):
