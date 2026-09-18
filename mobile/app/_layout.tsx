@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { queryClient } from "../lib/queryClient";
 import { AuthProvider } from "../lib/authContext";
+import UpdateBanner from "../components/UpdateBanner";
 
 export default function RootLayout() {
   return (
@@ -13,6 +14,7 @@ export default function RootLayout() {
         <AuthProvider>
           <PaperProvider theme={MD3DarkTheme}>
             <StatusBar style="light" />
+            <UpdateBanner />
             <Slot />
           </PaperProvider>
         </AuthProvider>
