@@ -96,3 +96,15 @@ class TestRecipeClone:
         original = Recipe.objects.create(user=other_user, name="Secret", instructions="x")
         r = auth_api_client.post(f"/api/v1/recipes/{original.id}/clone/")
         assert r.status_code == 404
+
+
+class TestRecipeIsOwner:
+    def test_is_owner_true_for_own_recipe(self, auth_api_client, user):
+        recipe = Recipe.objects.create(user=user, name="Mine", instructions="x")
+        r = auth_api_client.get(f"/api/v1/recipes/{recipe.id}/")
+        assert r.data["is_owner"] is True
+
+    def test_is_owner_false_for_public_recipe_of_other_user(self, auth_api_client, other_user):
+        recipe = Recipe.objects.create(user=other_user, name="Theirs", instructions="x", is_public=True)
+        r = auth_api_client.get(f"/api/v1/recipes/{recipe.id}/")
+        assert r.data["is_owner"] is False

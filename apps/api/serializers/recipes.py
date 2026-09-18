@@ -24,10 +24,11 @@ class RecipeSerializer(serializers.ModelSerializer):
     recipe_ingredients = RecipeIngredientSerializer(
         many=True, source="recipeingredient_set", required=False
     )
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ["id", "name", "batch_size", "instructions", "is_public", "recipe_ingredients"]
+        fields = ["id", "name", "batch_size", "instructions", "is_public", "is_owner", "recipe_ingredients"]
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop("recipeingredient_set", [])
@@ -48,3 +49,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def _sync_ingredients(self, recipe, ingredients_data):
         for item in ingredients_data:
             RecipeIngredient.objects.create(recipe=recipe, **item)
+
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        return bool(request and obj.user_id == request.user.id)

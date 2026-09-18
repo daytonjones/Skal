@@ -146,4 +146,4 @@ class SaveRecipeFromChatView(APIView):
             message.pending_recipe = None
             message.save(update_fields=["pending_recipe"])
 
-        return Response(RecipeSerializer(recipe).data, status=201)
+        return Response(RecipeSerializer(recipe, context={"request": request}).data, status=201)

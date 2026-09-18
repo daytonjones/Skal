@@ -271,3 +271,15 @@ class TestBatchQueryParamFilter:
         r = auth_api_client.get(f"/api/v1/batch-images/?batch={batch.id}")
         assert r.data["count"] == 1
         assert r.data["results"][0]["id"] == mine.id
+
+
+class TestBatchIsOwner:
+    def test_is_owner_true_for_own_batch(self, auth_api_client, batch):
+        r = auth_api_client.get(f"/api/v1/batches/{batch.id}/")
+        assert r.data["is_owner"] is True
+
+    def test_is_owner_false_for_public_batch_of_other_user(self, auth_api_client, other_batch):
+        other_batch.is_public = True
+        other_batch.save()
+        r = auth_api_client.get(f"/api/v1/batches/{other_batch.id}/")
+        assert r.data["is_owner"] is False

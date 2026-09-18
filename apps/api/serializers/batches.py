@@ -10,6 +10,7 @@ class BatchSerializer(serializers.ModelSerializer):
     checklist_progress = serializers.ReadOnlyField()
     abv = serializers.ReadOnlyField()
     bottles_remaining = serializers.ReadOnlyField()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Batch
@@ -25,7 +26,7 @@ class BatchSerializer(serializers.ModelSerializer):
             "rack_secondary_done", "rack_secondary_date", "rack_secondary_note",
             "bottled_done", "bottled_date", "bottled_note",
             "bottle_count", "storage_location",
-            "stage", "checklist_progress", "abv", "bottles_remaining",
+            "stage", "checklist_progress", "abv", "bottles_remaining", "is_owner",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -39,6 +40,10 @@ class BatchSerializer(serializers.ModelSerializer):
                 | db_models.Q(is_public=True)
                 | db_models.Q(user__isnull=True)
             )
+
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        return bool(request and obj.user_id == request.user.id)
 
 
 class TastingNoteSerializer(serializers.ModelSerializer):
