@@ -23,9 +23,6 @@ RUN chmod +x /app/entrypoint.sh
 COPY docker/skal-cron /etc/cron.d/skal
 RUN chmod 0644 /etc/cron.d/skal
 
-# collect static files
-RUN python manage.py collectstatic --noinput
-
 # expose Django port
 EXPOSE 8000
 
