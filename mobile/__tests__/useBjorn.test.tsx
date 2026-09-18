@@ -40,6 +40,7 @@ describe("useBjorn", () => {
 
     const { result } = renderHook(() => useSendBjornMessage(), { wrapper });
     await result.current.mutateAsync("Any tips for spiced mead?");
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApi.sendBjornMessage).toHaveBeenCalledWith("Any tips for spiced mead?");
   });

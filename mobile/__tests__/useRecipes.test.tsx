@@ -49,6 +49,7 @@ describe("useRecipes", () => {
       is_public: false,
       recipe_ingredients: [],
     });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApi.createRecipe).toHaveBeenCalled();
   });
