@@ -8,6 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+# Canonical app version. Single source of truth for the footer and the
+# public /api/v1/version/ endpoint the mobile app polls before login.
+APP_VERSION = "2.2.0"
+
 ###
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -103,6 +107,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.ai.context_processors.ai_settings",
+                "apps.api.context_processors.app_version",
             ],
         },
     },

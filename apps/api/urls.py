@@ -9,6 +9,7 @@ from apps.api.views.auth import ApprovedTokenObtainPairView, MeView, RegisterVie
 from apps.api.views.recipes import RecipeViewSet
 from apps.api.views.pantry import PantryItemViewSet
 from apps.api.views.yeast import YeastListAPIView
+from apps.api.views.version import VersionView
 from apps.api.views.batches import (
     BatchImageViewSet,
     BatchViewSet,
@@ -26,6 +27,7 @@ router.register("bottle-consumption", BottleConsumptionViewSet, basename="bottle
 router.register("batch-images", BatchImageViewSet, basename="batch-image")
 
 urlpatterns = [
+    path("version/", VersionView.as_view(), name="api-version"),
     path("auth/token/", ApprovedTokenObtainPairView.as_view(), name="api-token-obtain"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="api-token-refresh"),
     path("auth/token/logout/", TokenBlacklistView.as_view(), name="api-token-logout"),
