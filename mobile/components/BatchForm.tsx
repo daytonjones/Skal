@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ScrollView, View, StyleSheet } from "react-native";
-import { TextInput, Button, Switch, Text } from "react-native-paper";
+import { TextInput, Button, Switch, Text, HelperText } from "react-native-paper";
 import type { Batch, BatchInput } from "../api/types";
+import { firstErrorMessage } from "../lib/errors";
 
 interface Props {
   initial?: Batch;
@@ -27,14 +28,20 @@ export default function BatchForm({ initial, onSubmit, submitLabel }: Props) {
   const [fg, setFg] = useState(initial?.fg ?? "");
   const [primaryDate, setPrimaryDate] = useState(initial?.primary_date ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [bottleCount, setBottleCount] = useState(
+    initial?.bottle_count != null ? String(initial.bottle_count) : ""
+  );
+  const [storageLocation, setStorageLocation] = useState(initial?.storage_location ?? "");
   const [isPublic, setIsPublic] = useState(initial?.is_public ?? false);
   const [checklist, setChecklist] = useState<Record<string, boolean>>(
     Object.fromEntries(CHECKLIST_STEPS.map((s) => [s.key, (initial as any)?.[s.key] ?? false]))
   );
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
     setSubmitting(true);
+    setError(null);
     try {
       await onSubmit({
         name,
@@ -43,9 +50,13 @@ export default function BatchForm({ initial, onSubmit, submitLabel }: Props) {
         fg: fg || null,
         primary_date: primaryDate,
         notes,
+        bottle_count: bottleCount ? Number(bottleCount) : null,
+        storage_location: storageLocation,
         is_public: isPublic,
         ...checklist,
       } as Partial<BatchInput>);
+    } catch (err) {
+      setError(firstErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -72,6 +83,21 @@ export default function BatchForm({ initial, onSubmit, submitLabel }: Props) {
         style={styles.input}
       />
       <TextInput mode="outlined" label="Notes" value={notes} onChangeText={setNotes} multiline style={styles.input} />
+      <TextInput
+        mode="outlined"
+        label="Bottle count"
+        value={bottleCount}
+        onChangeText={setBottleCount}
+        keyboardType="number-pad"
+        style={styles.input}
+      />
+      <TextInput
+        mode="outlined"
+        label="Storage location"
+        value={storageLocation}
+        onChangeText={setStorageLocation}
+        style={styles.input}
+      />
       <View style={styles.row}>
         <Text>Public</Text>
         <Switch value={isPublic} onValueChange={setIsPublic} />
@@ -88,6 +114,7 @@ export default function BatchForm({ initial, onSubmit, submitLabel }: Props) {
         </View>
       ))}
 
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       <Button mode="contained" onPress={handleSubmit} loading={submitting} disabled={submitting} style={styles.submit}>
         {submitLabel}
       </Button>

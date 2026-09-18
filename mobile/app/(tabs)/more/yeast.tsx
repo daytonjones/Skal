@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
 import { Text, List, TextInput, ActivityIndicator } from "react-native-paper";
+import { Stack } from "expo-router";
 import { useYeast } from "../../../hooks/useYeast";
 
 export default function YeastScreen() {
@@ -16,22 +17,30 @@ export default function YeastScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Yeast Reference" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load the yeast reference.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Yeast Reference" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load the yeast reference.</Text>
+        </View>
+      </>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Yeast Reference" }} />
+      <View style={styles.container}>
       <TextInput
         mode="outlined"
         label="Search by name or style"
@@ -49,7 +58,8 @@ export default function YeastScreen() {
           />
         )}
       />
-    </View>
+      </View>
+    </>
   );
 }
 

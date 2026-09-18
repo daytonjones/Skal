@@ -1,6 +1,6 @@
 import { FlatList, View, StyleSheet } from "react-native";
 import { Text, Card, FAB, ActivityIndicator, Chip, ProgressBar, Button } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useBatches } from "../../../hooks/useBatches";
 
 export default function BatchesListScreen() {
@@ -8,22 +8,30 @@ export default function BatchesListScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Batches" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load batches.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Batches" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load batches.</Text>
+        </View>
+      </>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Batches" }} />
+      <View style={styles.container}>
       <Button mode="text" onPress={() => router.push("/batches/cellar")} style={styles.cellarLink}>
         View Cellar
       </Button>
@@ -43,7 +51,8 @@ export default function BatchesListScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No batches yet.</Text>}
       />
       <FAB icon="plus" style={styles.fab} onPress={() => router.push("/batches/new")} />
-    </View>
+      </View>
+    </>
   );
 }
 

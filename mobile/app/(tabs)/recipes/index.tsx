@@ -1,6 +1,6 @@
 import { FlatList, View, StyleSheet } from "react-native";
 import { Text, Card, FAB, ActivityIndicator, Chip } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useRecipes } from "../../../hooks/useRecipes";
 
 export default function RecipesListScreen() {
@@ -8,22 +8,30 @@ export default function RecipesListScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Recipes" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load recipes.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Recipes" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load recipes.</Text>
+        </View>
+      </>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Recipes" }} />
+      <View style={styles.container}>
       <FlatList
         data={data?.results ?? []}
         keyExtractor={(item) => String(item.id)}
@@ -40,7 +48,8 @@ export default function RecipesListScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No recipes yet.</Text>}
       />
       <FAB icon="plus" style={styles.fab} onPress={() => router.push("/recipes/new")} />
-    </View>
+      </View>
+    </>
   );
 }
 

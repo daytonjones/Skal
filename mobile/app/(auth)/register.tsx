@@ -3,16 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { router } from "expo-router";
 import { register } from "../../api/auth";
-import { ApiError } from "../../lib/apiFetch";
-
-function firstError(body: unknown): string {
-  if (body && typeof body === "object") {
-    const values = Object.values(body as Record<string, unknown>);
-    const first = values[0];
-    if (Array.isArray(first) && typeof first[0] === "string") return first[0];
-  }
-  return "Registration failed. Check your details and try again.";
-}
+import { firstErrorMessage } from "../../lib/errors";
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState("");
@@ -28,7 +19,7 @@ export default function RegisterScreen() {
       await register(username, email, password);
       router.replace("/pending-approval");
     } catch (err) {
-      setError(err instanceof ApiError ? firstError(err.body) : "Couldn't reach the server.");
+      setError(firstErrorMessage(err, "Couldn't reach the server."));
     } finally {
       setLoading(false);
     }

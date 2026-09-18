@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { Text, ActivityIndicator, Button, List, Chip } from "react-native-paper";
-import { useLocalSearchParams, router } from "expo-router";
+import { Text, ActivityIndicator, Button, List, Chip, HelperText } from "react-native-paper";
+import { useLocalSearchParams, router, Stack } from "expo-router";
 import { useRecipe, useCloneRecipe, useDeleteRecipe } from "../../../hooks/useRecipes";
+import { firstErrorMessage } from "../../../lib/errors";
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -9,35 +11,54 @@ export default function RecipeDetailScreen() {
   const { data: recipe, isLoading, isError } = useRecipe(recipeId);
   const cloneMutation = useCloneRecipe();
   const deleteMutation = useDeleteRecipe();
+  const [error, setError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Recipe" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError || !recipe) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load this recipe.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Recipe" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load this recipe.</Text>
+        </View>
+      </>
     );
   }
 
   async function handleClone() {
-    const cloned = await cloneMutation.mutateAsync(recipeId);
-    router.replace(`/recipes/${cloned.id}`);
+    setError(null);
+    try {
+      const cloned = await cloneMutation.mutateAsync(recipeId);
+      router.replace(`/recipes/${cloned.id}`);
+    } catch (err) {
+      setError(firstErrorMessage(err));
+    }
   }
 
   async function handleDelete() {
-    await deleteMutation.mutateAsync(recipeId);
-    router.back();
+    setError(null);
+    try {
+      await deleteMutation.mutateAsync(recipeId);
+      router.back();
+    } catch (err) {
+      setError(firstErrorMessage(err));
+    }
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Recipe" }} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">{recipe.name}</Text>
       {recipe.is_public ? <Chip style={styles.chip}>Public</Chip> : null}
       <Text variant="bodyMedium" style={styles.section}>
@@ -51,6 +72,7 @@ export default function RecipeDetailScreen() {
       <Text variant="titleMedium" style={styles.section}>Instructions</Text>
       <Text variant="bodyMedium">{recipe.instructions}</Text>
 
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       <Button mode="outlined" onPress={handleClone} loading={cloneMutation.isPending} style={styles.button}>
         Clone this recipe
       </Button>
@@ -70,7 +92,8 @@ export default function RecipeDetailScreen() {
           </Button>
         </>
       ) : null}
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

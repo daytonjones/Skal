@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
-import { useLocalSearchParams, router } from "expo-router";
+import { TextInput, Button, Text, HelperText } from "react-native-paper";
+import { useLocalSearchParams, router, Stack } from "expo-router";
 import { useCreateTastingNote } from "../../../../hooks/useBatches";
+import { firstErrorMessage } from "../../../../lib/errors";
 
 export default function AddTastingNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,21 +14,29 @@ export default function AddTastingNoteScreen() {
   const [flavor, setFlavor] = useState("");
   const [overall, setOverall] = useState("");
   const [score, setScore] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
-    await createMutation.mutateAsync({
-      batch: batchId,
-      date,
-      aroma,
-      flavor,
-      overall,
-      score: Number(score),
-    });
-    router.back();
+    setError(null);
+    try {
+      await createMutation.mutateAsync({
+        batch: batchId,
+        date,
+        aroma,
+        flavor,
+        overall,
+        score: Number(score),
+      });
+      router.back();
+    } catch (err) {
+      setError(firstErrorMessage(err));
+    }
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Tasting Note" }} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Text variant="titleMedium" style={styles.title}>New tasting note</Text>
       <TextInput mode="outlined" label="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} style={styles.input} />
       <TextInput mode="outlined" label="Aroma" value={aroma} onChangeText={setAroma} style={styles.input} />
@@ -41,10 +50,12 @@ export default function AddTastingNoteScreen() {
         keyboardType="number-pad"
         style={styles.input}
       />
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       <Button mode="contained" onPress={handleSubmit} loading={createMutation.isPending}>
         Save
       </Button>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import { FlatList, View, StyleSheet } from "react-native";
 import { Text, Card, ActivityIndicator, Button } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useBatches } from "../../../hooks/useBatches";
 
 export default function HomeScreen() {
@@ -8,16 +8,21 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Home" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   const recent = (data?.results ?? []).slice(0, 5);
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Home" }} />
+      <View style={styles.container}>
       <Text variant="headlineSmall" style={styles.title}>Skål</Text>
       <Text variant="titleMedium" style={styles.section}>Recent batches</Text>
       {isError ? (
@@ -42,7 +47,8 @@ export default function HomeScreen() {
           Start a batch
         </Button>
       </View>
-    </View>
+      </View>
+    </>
   );
 }
 

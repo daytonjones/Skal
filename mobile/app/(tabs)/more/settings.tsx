@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { getServerUrl, setServerUrl } from "../../../lib/secureStorage";
 import { useAuthState } from "../../../lib/authContext";
+import { normalizeUrl } from "../../../lib/url";
 
 export default function SettingsScreen() {
   const { signOut } = useAuthState();
@@ -24,12 +25,13 @@ export default function SettingsScreen() {
       setError("Enter a server address.");
       return;
     }
+    const url = normalizeUrl(input);
     setSaving(true);
     setError(null);
     try {
-      await fetch(input, { method: "GET" });
-      await setServerUrl(input);
-      if (input !== current) {
+      await fetch(url, { method: "GET" });
+      await setServerUrl(url);
+      if (url !== current) {
         // Switching servers invalidates any existing session for the old one.
         await signOut();
         router.replace("/login");
@@ -44,7 +46,9 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Server Settings" }} />
+      <View style={styles.container}>
       <Text variant="titleMedium" style={styles.title}>Server address</Text>
       <TextInput
         mode="outlined"
@@ -59,7 +63,8 @@ export default function SettingsScreen() {
       <Button mode="contained" onPress={handleSave} loading={saving} disabled={saving}>
         Save
       </Button>
-    </View>
+      </View>
+    </>
   );
 }
 

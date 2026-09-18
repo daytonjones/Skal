@@ -3,14 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { router } from "expo-router";
 import { setServerUrl } from "../lib/secureStorage";
-
-function normalizeUrl(input: string): string {
-  const trimmed = input.trim().replace(/\/+$/, "");
-  if (!/^https?:\/\//i.test(trimmed)) {
-    return `https://${trimmed}`;
-  }
-  return trimmed;
-}
+import { normalizeUrl } from "../lib/url";
 
 export default function ServerSetupScreen() {
   const [input, setInput] = useState("");

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { TextInput, Button, Switch, Text, IconButton } from "react-native-paper";
+import { TextInput, Button, Switch, Text, IconButton, HelperText } from "react-native-paper";
 import type { Recipe, RecipeInput, RecipeIngredientInput } from "../api/types";
+import { firstErrorMessage } from "../lib/errors";
 
 interface Props {
   initial?: Recipe;
@@ -22,6 +23,7 @@ export default function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
     })) ?? []
   );
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function addIngredientRow() {
     setIngredients((prev) => [...prev, { ingredient_id: 0, quantity: "", order: prev.length }]);
@@ -37,6 +39,7 @@ export default function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
 
   async function handleSubmit() {
     setSubmitting(true);
+    setError(null);
     try {
       await onSubmit({
         name,
@@ -45,6 +48,8 @@ export default function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
         is_public: isPublic,
         recipe_ingredients: ingredients.filter((ing) => ing.ingredient_id > 0),
       });
+    } catch (err) {
+      setError(firstErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -98,6 +103,7 @@ export default function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
       ))}
       <Button mode="text" onPress={addIngredientRow}>Add ingredient</Button>
 
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       <Button mode="contained" onPress={handleSubmit} loading={submitting} disabled={submitting} style={styles.submit}>
         {submitLabel}
       </Button>

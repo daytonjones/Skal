@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { TextInput, Text, SegmentedButtons } from "react-native-paper";
+import { Stack } from "expo-router";
 import { abvStandard, abvAlternate, caloriesPerGlass } from "../../../lib/calculators";
 
 export default function CalculatorsScreen() {
@@ -17,7 +18,9 @@ export default function CalculatorsScreen() {
   }, [og, fg, formula]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Calculators" }} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Text variant="titleMedium" style={styles.title}>ABV &amp; Calories</Text>
       <TextInput mode="outlined" label="Original Gravity" value={og} onChangeText={setOg} keyboardType="decimal-pad" style={styles.input} />
       <TextInput mode="outlined" label="Final Gravity" value={fg} onChangeText={setFg} keyboardType="decimal-pad" style={styles.input} />
@@ -32,7 +35,8 @@ export default function CalculatorsScreen() {
       />
       <Text variant="bodyLarge">ABV: {abv != null ? `${abv.toFixed(2)}%` : "--"}</Text>
       <Text variant="bodyLarge">Calories (5oz glass): {calories != null ? calories.toFixed(0) : "--"}</Text>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

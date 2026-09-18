@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, ScrollView, StyleSheet, Image } from "react-native";
-import { Text, ActivityIndicator, Button, List, ProgressBar, Chip } from "react-native-paper";
-import { useLocalSearchParams, router } from "expo-router";
+import { Text, ActivityIndicator, Button, List, ProgressBar, Chip, HelperText } from "react-native-paper";
+import { useLocalSearchParams, router, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import {
   useBatch,
@@ -11,6 +11,7 @@ import {
   useUploadBatchImage,
   useDeleteBatch,
 } from "../../../hooks/useBatches";
+import { firstErrorMessage } from "../../../lib/errors";
 
 export default function BatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,20 +23,27 @@ export default function BatchDetailScreen() {
   const uploadImage = useUploadBatchImage(batchId);
   const deleteMutation = useDeleteBatch();
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Batch" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError || !batch) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load this batch.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Batch" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load this batch.</Text>
+        </View>
+      </>
     );
   }
 
@@ -54,12 +62,19 @@ export default function BatchDetailScreen() {
   }
 
   async function handleDelete() {
-    await deleteMutation.mutateAsync(batchId);
-    router.back();
+    setError(null);
+    try {
+      await deleteMutation.mutateAsync(batchId);
+      router.back();
+    } catch (err) {
+      setError(firstErrorMessage(err));
+    }
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Batch" }} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">{batch.name}</Text>
       <Chip style={styles.chip}>{batch.stage}</Chip>
       <ProgressBar progress={batch.checklist_progress / 100} style={styles.progress} />
@@ -105,6 +120,7 @@ export default function BatchDetailScreen() {
         ) : null}
       </List.Section>
 
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       {batch.is_owner ? (
         <>
           <Button mode="outlined" onPress={() => router.push(`/batches/${batchId}/edit`)} style={styles.button}>
@@ -121,7 +137,8 @@ export default function BatchDetailScreen() {
           </Button>
         </>
       ) : null}
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

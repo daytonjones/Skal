@@ -1,6 +1,6 @@
 import { View, ScrollView, StyleSheet } from "react-native";
 import { Text, Switch, Button, ActivityIndicator } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useMe, useUpdateMe } from "../../../hooks/useMe";
 import { useAuthState } from "../../../lib/authContext";
 
@@ -11,9 +11,12 @@ export default function ProfileScreen() {
 
   if (isLoading || !me) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Profile" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
@@ -29,7 +32,9 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Profile" }} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineSmall">{me.username}</Text>
       <Text variant="bodyMedium" style={styles.section}>{me.email}</Text>
 
@@ -70,7 +75,8 @@ export default function ProfileScreen() {
       <Button mode="outlined" textColor="red" onPress={handleLogout} style={styles.button}>
         Log out
       </Button>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

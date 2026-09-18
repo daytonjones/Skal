@@ -1,37 +1,49 @@
 import { useState, useRef } from "react";
 import { View, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { Text, TextInput, IconButton, ActivityIndicator, Card, Button } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useBjornMessages, useSendBjornMessage, useSaveBjornRecipe } from "../../../hooks/useBjorn";
 import { ApiError } from "../../../lib/apiFetch";
+import { firstErrorMessage } from "../../../lib/errors";
 
 export default function BjornScreen() {
   const { data, isLoading, isError, error } = useBjornMessages();
   const sendMutation = useSendBjornMessage();
   const saveRecipeMutation = useSaveBjornRecipe();
   const [input, setInput] = useState("");
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Bjorn" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     if (error instanceof ApiError && error.status === 404) {
       return (
-        <View style={styles.center}>
-          <Text>Bjorn isn't enabled on this server.</Text>
-        </View>
+        <>
+          <Stack.Screen options={{ title: "Bjorn" }} />
+          <View style={styles.center}>
+            <Text>Bjorn isn't enabled on this server.</Text>
+          </View>
+        </>
       );
     }
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load Bjorn right now.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Bjorn" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load Bjorn right now.</Text>
+        </View>
+      </>
     );
   }
 
@@ -39,17 +51,30 @@ export default function BjornScreen() {
     if (!input.trim()) return;
     const text = input;
     setInput("");
-    await sendMutation.mutateAsync(text);
-    listRef.current?.scrollToEnd({ animated: true });
+    setSendError(null);
+    try {
+      await sendMutation.mutateAsync(text);
+      listRef.current?.scrollToEnd({ animated: true });
+    } catch (err) {
+      setInput(text);
+      setSendError(firstErrorMessage(err));
+    }
   }
 
   async function handleSaveRecipe(messageId: number) {
-    const recipe = await saveRecipeMutation.mutateAsync(messageId);
-    router.push(`/recipes/${recipe.id}`);
+    setSaveError(null);
+    try {
+      const recipe = await saveRecipeMutation.mutateAsync(messageId);
+      router.push(`/recipes/${recipe.id}`);
+    } catch (err) {
+      setSaveError(firstErrorMessage(err));
+    }
   }
 
   return (
-    <KeyboardAvoidingView
+    <>
+      <Stack.Screen options={{ title: "Bjorn" }} />
+      <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
@@ -72,6 +97,8 @@ export default function BjornScreen() {
         )}
         contentContainerStyle={styles.list}
       />
+      {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+      {sendError ? <Text style={styles.errorText}>{sendError}</Text> : null}
       <View style={styles.inputRow}>
         <TextInput
           mode="outlined"
@@ -82,7 +109,8 @@ export default function BjornScreen() {
         />
         <IconButton icon="send" onPress={handleSend} loading={sendMutation.isPending} />
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 
@@ -95,4 +123,5 @@ const styles = StyleSheet.create({
   assistantBubble: { alignSelf: "flex-start" },
   inputRow: { flexDirection: "row", alignItems: "center", padding: 8 },
   input: { flex: 1, marginRight: 8 },
+  errorText: { color: "red", paddingHorizontal: 12, paddingBottom: 4 },
 });

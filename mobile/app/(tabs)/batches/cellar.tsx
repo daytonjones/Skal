@@ -1,6 +1,6 @@
 import { FlatList, View, StyleSheet } from "react-native";
 import { Text, Card, ActivityIndicator } from "react-native-paper";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useBatches } from "../../../hooks/useBatches";
 
 export default function CellarScreen() {
@@ -8,33 +8,42 @@ export default function CellarScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Cellar" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load the cellar.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Cellar" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load the cellar.</Text>
+        </View>
+      </>
     );
   }
 
   const bottled = (data?.results ?? []).filter((b) => b.bottled_done && b.bottle_count != null);
 
   return (
-    <FlatList
-      data={bottled}
-      keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => (
-        <Card style={styles.card} onPress={() => router.push(`/batches/${item.id}`)}>
-          <Card.Title title={item.name} subtitle={`${item.bottles_remaining} bottles remaining`} />
-        </Card>
-      )}
-      ListEmptyComponent={<Text style={styles.empty}>No bottled batches yet.</Text>}
-    />
+    <>
+      <Stack.Screen options={{ title: "Cellar" }} />
+      <FlatList
+        data={bottled}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <Card style={styles.card} onPress={() => router.push(`/batches/${item.id}`)}>
+            <Card.Title title={item.name} subtitle={`${item.bottles_remaining} bottles remaining`} />
+          </Card>
+        )}
+        ListEmptyComponent={<Text style={styles.empty}>No bottled batches yet.</Text>}
+      />
+    </>
   );
 }
 

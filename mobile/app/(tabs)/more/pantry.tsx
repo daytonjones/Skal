@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
-import { Text, List, IconButton, TextInput, Button, ActivityIndicator } from "react-native-paper";
+import { Text, List, IconButton, TextInput, Button, ActivityIndicator, HelperText } from "react-native-paper";
+import { Stack } from "expo-router";
 import { usePantry, useCreatePantryItem, useDeletePantryItem } from "../../../hooks/usePantry";
+import { firstErrorMessage } from "../../../lib/errors";
 
 export default function PantryScreen() {
   const { data, isLoading, isError } = usePantry();
@@ -9,36 +11,50 @@ export default function PantryScreen() {
   const deleteMutation = useDeletePantryItem();
   const [ingredientId, setIngredientId] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Pantry" }} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
-        <Text>Couldn't load your pantry.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Pantry" }} />
+        <View style={styles.center}>
+          <Text>Couldn't load your pantry.</Text>
+        </View>
+      </>
     );
   }
 
   async function handleAdd() {
     if (!ingredientId) return;
-    await createMutation.mutateAsync({
-      ingredient_id: Number(ingredientId),
-      quantity,
-      notes: "",
-    });
-    setIngredientId("");
-    setQuantity("");
+    setError(null);
+    try {
+      await createMutation.mutateAsync({
+        ingredient_id: Number(ingredientId),
+        quantity,
+        notes: "",
+      });
+      setIngredientId("");
+      setQuantity("");
+    } catch (err) {
+      setError(firstErrorMessage(err));
+    }
   }
 
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ title: "Pantry" }} />
+      <View style={styles.container}>
       <FlatList
         data={data?.results ?? []}
         keyExtractor={(item) => String(item.id)}
@@ -53,6 +69,7 @@ export default function PantryScreen() {
         )}
         ListEmptyComponent={<Text style={styles.empty}>Your pantry is empty.</Text>}
       />
+      {error ? <HelperText type="error">{error}</HelperText> : null}
       <View style={styles.addRow}>
         <TextInput
           mode="outlined"
@@ -73,7 +90,8 @@ export default function PantryScreen() {
           Add
         </Button>
       </View>
-    </View>
+      </View>
+    </>
   );
 }
 
