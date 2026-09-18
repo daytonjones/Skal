@@ -11,4 +11,4 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatMessageCreateSerializer(serializers.Serializer):
-    content = serializers.CharField()
+    content = serializers.CharField(max_length=4000)

@@ -1,4 +1,7 @@
+import logging
+
 from django.conf import settings
+from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
@@ -7,11 +10,19 @@ from rest_framework.views import APIView
 
 from apps.ai.client import call_ai
 from apps.ai.models import AIUsage, ChatMessage
-from apps.ai.views import _ai_enabled, _build_system_prompt, _get_or_create_ingredient, _model_name
+from apps.ai.views import (
+    MAX_HISTORY,
+    _ai_enabled,
+    _build_system_prompt,
+    _get_or_create_ingredient,
+    _model_name,
+)
 from apps.api.permissions import IsApproved
 from apps.api.serializers.bjorn import ChatMessageCreateSerializer, ChatMessageSerializer
 from apps.api.serializers.recipes import RecipeSerializer
 from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
+
+logger = logging.getLogger(__name__)
 
 
 class ChatMessageListCreateView(generics.ListCreateAPIView):
@@ -35,9 +46,10 @@ class ChatMessageListCreateView(generics.ListCreateAPIView):
 
         ChatMessage.objects.create(user=request.user, role=ChatMessage.ROLE_USER, content=user_content)
 
+        # Cap the context sent to the provider, matching the web app's MAX_HISTORY.
         history = [
             {"role": m.role, "content": m.content} for m in self.get_queryset()
-        ]
+        ][-MAX_HISTORY:]
 
         provider = settings.AI_PROVIDER
         api_key = settings.AI_API_KEY
@@ -47,7 +59,8 @@ class ChatMessageListCreateView(generics.ListCreateAPIView):
             reply, input_tokens, output_tokens, recipe_data = call_ai(
                 provider, api_key, system_prompt, history
             )
-        except Exception:
+        except Exception as exc:
+            logger.error("Bjorn AI call failed: %s", exc)
             reply = "Apologies, I couldn't reach the mead spirits just now. Try again in a moment."
             input_tokens = output_tokens = 0
             recipe_data = None
@@ -80,41 +93,57 @@ class SaveRecipeFromChatView(APIView):
         if not data:
             return Response({"detail": "No pending recipe on this message."}, status=400)
 
-        recipe = Recipe.objects.create(
-            user=request.user,
-            name=data["name"],
-            batch_size=data.get("batch_size", 5),
-            instructions=data.get("instructions", ""),
-        )
+        if not isinstance(data, dict):
+            return Response({"detail": "Pending recipe data is malformed."}, status=400)
 
-        order = 1
-        honey_name = data.get("honey_name", "").strip()
-        if honey_name:
-            honey_ing = _get_or_create_ingredient(honey_name, Ingredient.TYPE_HONEY)
-            RecipeIngredient.objects.create(
-                recipe=recipe, ingredient=honey_ing, quantity=data.get("honey_quantity", ""), order=order
+        name = data.get("name")
+        if not name:
+            return Response({"detail": "Pending recipe is missing a name."}, status=400)
+
+        with transaction.atomic():
+            recipe = Recipe.objects.create(
+                user=request.user,
+                name=name,
+                batch_size=data.get("batch_size", 5),
+                instructions=data.get("instructions", ""),
             )
-            order += 1
 
-        yeast_name = data.get("yeast", "").strip()
-        if yeast_name:
-            yeast_ing = _get_or_create_ingredient(yeast_name, Ingredient.TYPE_YEAST)
-            RecipeIngredient.objects.create(
-                recipe=recipe, ingredient=yeast_ing, quantity="1 packet", order=order
-            )
-            order += 1
+            order = 1
+            honey_name = (data.get("honey_name") or "").strip()
+            if honey_name:
+                honey_ing = _get_or_create_ingredient(honey_name, Ingredient.TYPE_HONEY)
+                RecipeIngredient.objects.create(
+                    recipe=recipe,
+                    ingredient=honey_ing,
+                    quantity=data.get("honey_quantity", ""),
+                    order=order,
+                )
+                order += 1
 
-        for extra in data.get("additional_ingredients", []):
-            name = extra.get("name", "").strip()
-            if not name:
-                continue
-            ing = _get_or_create_ingredient(name, Ingredient.TYPE_ADDITIVE)
-            RecipeIngredient.objects.create(
-                recipe=recipe, ingredient=ing, quantity=extra.get("quantity", ""), order=order
-            )
-            order += 1
+            yeast_name = (data.get("yeast") or "").strip()
+            if yeast_name:
+                yeast_ing = _get_or_create_ingredient(yeast_name, Ingredient.TYPE_YEAST)
+                RecipeIngredient.objects.create(
+                    recipe=recipe, ingredient=yeast_ing, quantity="1 packet", order=order
+                )
+                order += 1
 
-        message.pending_recipe = None
-        message.save(update_fields=["pending_recipe"])
+            extras = data.get("additional_ingredients") or []
+            if not isinstance(extras, list):
+                extras = []
+            for extra in extras:
+                if not isinstance(extra, dict):
+                    continue
+                extra_name = (extra.get("name") or "").strip()
+                if not extra_name:
+                    continue
+                ing = _get_or_create_ingredient(extra_name, Ingredient.TYPE_ADDITIVE)
+                RecipeIngredient.objects.create(
+                    recipe=recipe, ingredient=ing, quantity=extra.get("quantity", ""), order=order
+                )
+                order += 1
+
+            message.pending_recipe = None
+            message.save(update_fields=["pending_recipe"])
 
         return Response(RecipeSerializer(recipe).data, status=201)

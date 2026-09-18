@@ -1,7 +1,10 @@
+import logging
+
 import pytest
 from unittest.mock import patch
 
 from apps.ai.models import ChatMessage
+from apps.ai.views import MAX_HISTORY
 from apps.recipes.models import Recipe
 
 
@@ -46,6 +49,43 @@ class TestBjornMessages:
         msg = ChatMessage.objects.get(role="assistant")
         assert msg.pending_recipe == recipe_data
 
+    @patch("apps.api.views.bjorn.call_ai")
+    def test_history_sent_to_provider_is_capped(self, mock_call_ai, auth_api_client, user):
+        mock_call_ai.return_value = ("ok", 1, 1, None)
+        for i in range(30):
+            ChatMessage.objects.create(user=user, role="user", content=f"msg {i}")
+
+        r = auth_api_client.post(
+            "/api/v1/bjorn/messages/", {"content": "latest"}, format="json"
+        )
+        assert r.status_code == 201
+        history = mock_call_ai.call_args[0][3]
+        assert len(history) == MAX_HISTORY
+        # The most recent message must be the one just posted.
+        assert history[-1]["content"] == "latest"
+
+    @patch("apps.api.views.bjorn.call_ai")
+    def test_provider_failure_is_logged_and_handled(self, mock_call_ai, auth_api_client, caplog):
+        mock_call_ai.side_effect = RuntimeError("context window exceeded")
+        with caplog.at_level(logging.ERROR, logger="apps.api.views.bjorn"):
+            r = auth_api_client.post(
+                "/api/v1/bjorn/messages/", {"content": "hello"}, format="json"
+            )
+        assert r.status_code == 201
+        assert "context window exceeded" in caplog.text
+
+    def test_rejects_overlong_content(self, auth_api_client):
+        r = auth_api_client.post(
+            "/api/v1/bjorn/messages/", {"content": "x" * 4001}, format="json"
+        )
+        assert r.status_code == 400
+        assert "content" in r.data
+
+    def test_list_response_is_paginated(self, auth_api_client, user):
+        ChatMessage.objects.create(user=user, role="user", content="hi")
+        r = auth_api_client.get("/api/v1/bjorn/messages/")
+        assert set(["count", "next", "previous", "results"]).issubset(r.data.keys())
+
 
 class TestSaveRecipeFromChat:
     def test_saves_pending_recipe_as_new_recipe(self, auth_api_client, user):
@@ -74,3 +114,34 @@ class TestSaveRecipeFromChat:
         msg = ChatMessage.objects.create(user=user, role="assistant", content="hi")
         r = auth_api_client.post(f"/api/v1/bjorn/messages/{msg.id}/save-recipe/")
         assert r.status_code == 400
+
+    def test_pending_recipe_without_name_returns_400(self, auth_api_client, user):
+        msg = ChatMessage.objects.create(
+            user=user,
+            role="assistant",
+            content="Here you go",
+            pending_recipe={"instructions": "Do the thing", "honey_name": "Wildflower"},
+        )
+        r = auth_api_client.post(f"/api/v1/bjorn/messages/{msg.id}/save-recipe/")
+        assert r.status_code == 400
+        # No partial recipe row left behind for this user.
+        assert Recipe.objects.filter(user=user).count() == 0
+        msg.refresh_from_db()
+        assert msg.pending_recipe is not None
+
+    def test_malformed_additional_ingredients_do_not_crash(self, auth_api_client, user):
+        msg = ChatMessage.objects.create(
+            user=user,
+            role="assistant",
+            content="Here you go",
+            pending_recipe={
+                "name": "Odd Mead",
+                "instructions": "x",
+                "honey_name": None,
+                "additional_ingredients": ["not-a-dict", {"quantity": "1 tsp"}],
+            },
+        )
+        r = auth_api_client.post(f"/api/v1/bjorn/messages/{msg.id}/save-recipe/")
+        assert r.status_code == 201
+        recipe = Recipe.objects.get(name="Odd Mead")
+        assert recipe.recipeingredient_set.count() == 0
