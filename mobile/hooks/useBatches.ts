@@ -3,12 +3,12 @@ import * as batchesApi from "../api/batches";
 import type { BatchInput, TastingNoteInput, BottleConsumptionInput } from "../api/types";
 
 export function useBatches(page = 1) {
-  return useQuery({ queryKey: ["batches", page], queryFn: () => batchesApi.listBatches(page) });
+  return useQuery({ queryKey: ["batches", "list", page], queryFn: () => batchesApi.listBatches(page) });
 }
 
 export function useBatch(id: number) {
   return useQuery({
-    queryKey: ["batches", id],
+    queryKey: ["batches", "detail", id],
     queryFn: () => batchesApi.getBatch(id),
     enabled: !!id,
   });
@@ -28,7 +28,7 @@ export function useUpdateBatch(id: number) {
     mutationFn: (input: Partial<BatchInput>) => batchesApi.updateBatch(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batches", id] });
+      queryClient.invalidateQueries({ queryKey: ["batches", "detail", id] });
     },
   });
 }
@@ -71,7 +71,7 @@ export function useCreateBottleConsumption(batchId: number) {
     mutationFn: (input: BottleConsumptionInput) => batchesApi.createBottleConsumption(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bottle-consumption", batchId] });
-      queryClient.invalidateQueries({ queryKey: ["batches", batchId] });
+      queryClient.invalidateQueries({ queryKey: ["batches", "detail", batchId] });
     },
   });
 }
