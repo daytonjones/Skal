@@ -8,13 +8,14 @@ from rest_framework.views import APIView
 from apps.ai.client import call_ai
 from apps.ai.models import AIUsage, ChatMessage
 from apps.ai.views import _ai_enabled, _build_system_prompt, _get_or_create_ingredient, _model_name
+from apps.api.permissions import IsApproved
 from apps.api.serializers.bjorn import ChatMessageCreateSerializer, ChatMessageSerializer
 from apps.api.serializers.recipes import RecipeSerializer
 from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 
 
 class ChatMessageListCreateView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsApproved]
 
     def get_queryset(self):
         return ChatMessage.objects.filter(user=self.request.user).order_by("created_at")
@@ -71,7 +72,7 @@ class ChatMessageListCreateView(generics.ListCreateAPIView):
 
 
 class SaveRecipeFromChatView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsApproved]
 
     def post(self, request, pk):
         message = get_object_or_404(ChatMessage, pk=pk, user=request.user)

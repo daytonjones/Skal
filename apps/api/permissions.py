@@ -1,6 +1,19 @@
 from rest_framework import permissions
 
 
+class IsApproved(permissions.BasePermission):
+    """Mirrors the web app's admin-approval gate; defense in depth behind the token view."""
+
+    message = "Your account is pending admin approval."
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_approved
+        )
+
+
 class IsOwner(permissions.BasePermission):
     """Object-level: only the owning user may read or write."""
 
@@ -9,9 +22,14 @@ class IsOwner(permissions.BasePermission):
 
 
 class IsOwnerOrPublicReadOnly(permissions.BasePermission):
-    """Owner has full access. Anyone authenticated may read a public object."""
+    """Owner has full access. Anyone authenticated may read a public or global object."""
 
     def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if obj.user_id is None:
+            # Global/seeded object (no owner): readable by any authenticated user.
+            return request.method in permissions.SAFE_METHODS
         if obj.user_id == request.user.id:
             return True
         if request.method in permissions.SAFE_METHODS:
@@ -23,14 +41,11 @@ class IsBatchOwnerOrPublicReadOnly(permissions.BasePermission):
     """Like IsOwnerOrPublicReadOnly, but for objects related via `.batch`."""
 
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        batch_id = request.data.get("batch")
-        if batch_id is None:
-            return True  # let serializer validation reject the missing field
-        from apps.batches.models import Batch
-
-        return Batch.objects.filter(pk=batch_id, user=request.user).exists()
+        # Write access to a specific batch is enforced by the serializer, whose
+        # `batch` queryset is restricted to the requesting user's batches. Doing
+        # the check here as well would run before validation and blow up (500)
+        # on a malformed `batch` value instead of yielding a clean 400.
+        return True
 
     def has_object_permission(self, request, view, obj):
         if obj.batch.user_id == request.user.id:

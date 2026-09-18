@@ -2,10 +2,21 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.accounts.models import UserNotificationPrefs
 
 User = get_user_model()
+
+
+class ApprovedTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Mirrors the web app's admin-approval gate (apps/accounts/views.py) for JWT login."""
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_approved:
+            raise serializers.ValidationError("Your account is pending admin approval.")
+        return data
 
 
 class RegisterSerializer(serializers.ModelSerializer):

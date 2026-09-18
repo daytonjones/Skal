@@ -1,6 +1,16 @@
 from rest_framework import generics, permissions
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from apps.api.serializers.auth import MeSerializer, RegisterSerializer
+from apps.api.permissions import IsApproved
+from apps.api.serializers.auth import (
+    ApprovedTokenObtainPairSerializer,
+    MeSerializer,
+    RegisterSerializer,
+)
+
+
+class ApprovedTokenObtainPairView(TokenObtainPairView):
+    serializer_class = ApprovedTokenObtainPairSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -10,7 +20,7 @@ class RegisterView(generics.CreateAPIView):
 
 class MeView(generics.RetrieveUpdateAPIView):
     serializer_class = MeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsApproved]
 
     def get_object(self):
         return self.request.user

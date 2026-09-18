@@ -18,8 +18,8 @@ class TestPantryApi:
         other_ing = Ingredient.objects.create(name="Other Honey", type=Ingredient.TYPE_HONEY)
         PantryItem.objects.create(user=other_user, ingredient=other_ing, quantity="2 lb")
         r = auth_api_client.get("/api/v1/pantry/")
-        assert len(r.data) == 1
-        assert r.data[0]["ingredient"]["name"] == "Test Honey"
+        assert r.data["count"] == 1
+        assert r.data["results"][0]["ingredient"]["name"] == "Test Honey"
 
     def test_create_assigns_current_user(self, auth_api_client, user, honey):
         r = auth_api_client.post(

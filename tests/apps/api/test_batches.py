@@ -30,7 +30,7 @@ class TestBatchList:
         other_batch.is_public = True
         other_batch.save()
         r = auth_api_client.get("/api/v1/batches/")
-        names = {item["name"] for item in r.data}
+        names = {item["name"] for item in r.data["results"]}
         assert batch.name in names
         assert other_batch.name in names
 
@@ -56,7 +56,10 @@ class TestTastingNotes:
             {"batch": other_batch.id, "date": "2026-02-01", "score": 8},
             format="json",
         )
-        assert r.status_code == 403
+        # Rejected by the serializer's restricted `batch` queryset.
+        assert r.status_code == 400
+        assert "batch" in r.data
+        assert not TastingNote.objects.filter(batch=other_batch).exists()
 
 
 class TestBottleConsumption:
@@ -88,8 +91,9 @@ class TestBatchReassignmentProtection:
             {"batch": other_batch.id},
             format="json",
         )
-        # Should be rejected (403 Forbidden - batch not in user's queryset)
-        assert r.status_code == 403
+        # Should be rejected (400 - batch not in the serializer's restricted queryset)
+        assert r.status_code == 400
+        assert "batch" in r.data
         # Verify the note's batch was NOT changed
         note.refresh_from_db()
         assert note.batch_id == batch.id
@@ -105,8 +109,9 @@ class TestBatchReassignmentProtection:
             {"batch": other_batch.id},
             format="json",
         )
-        # Should be rejected (403 Forbidden - batch not in user's queryset)
-        assert r.status_code == 403
+        # Should be rejected (400 - batch not in the serializer's restricted queryset)
+        assert r.status_code == 400
+        assert "batch" in r.data
         # Verify the consumption's batch was NOT changed
         consumption.refresh_from_db()
         assert consumption.batch_id == batch.id
@@ -129,8 +134,9 @@ class TestBatchReassignmentProtection:
             {"batch": other_batch.id},
             format="multipart",
         )
-        # Should be rejected (403 Forbidden - batch not in user's queryset)
-        assert r.status_code == 403
+        # Should be rejected (400 - batch not in the serializer's restricted queryset)
+        assert r.status_code == 400
+        assert "batch" in r.data
         # Verify the image's batch was NOT changed
         image.refresh_from_db()
         assert image.batch_id == batch.id

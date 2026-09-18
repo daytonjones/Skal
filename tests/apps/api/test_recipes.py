@@ -17,7 +17,7 @@ class TestRecipeList:
         Recipe.objects.create(user=other_user, name="Public", instructions="x", is_public=True)
         Recipe.objects.create(user=other_user, name="Private", instructions="x")
         r = auth_api_client.get("/api/v1/recipes/")
-        names = {item["name"] for item in r.data}
+        names = {item["name"] for item in r.data["results"]}
         assert "Mine" in names
         assert "Public" in names
         assert "Private" not in names
@@ -27,8 +27,40 @@ class TestRecipeList:
         # This ensures parity with the web app and handles future seeded recipes
         Recipe.objects.create(user=None, name="Global Seeded", instructions="x", is_public=False)
         r = auth_api_client.get("/api/v1/recipes/")
-        names = {item["name"] for item in r.data}
+        names = {item["name"] for item in r.data["results"]}
         assert "Global Seeded" in names
+
+    def test_retrieves_global_seeded_recipe(self, auth_api_client, user):
+        # A global recipe that is listable must also be retrievable (I3).
+        recipe = Recipe.objects.create(
+            user=None, name="Global Seeded", instructions="x", is_public=False
+        )
+        r = auth_api_client.get(f"/api/v1/recipes/{recipe.id}/")
+        assert r.status_code == 200
+        assert r.data["name"] == "Global Seeded"
+
+    def test_cannot_modify_global_seeded_recipe(self, auth_api_client):
+        recipe = Recipe.objects.create(
+            user=None, name="Global Seeded", instructions="x", is_public=False
+        )
+        r = auth_api_client.patch(
+            f"/api/v1/recipes/{recipe.id}/", {"name": "Hijacked"}, format="json"
+        )
+        assert r.status_code == 403
+        recipe.refresh_from_db()
+        assert recipe.name == "Global Seeded"
+
+        r = auth_api_client.delete(f"/api/v1/recipes/{recipe.id}/")
+        assert r.status_code == 403
+        assert Recipe.objects.filter(pk=recipe.pk).exists()
+
+    def test_list_response_is_paginated(self, auth_api_client, user):
+        Recipe.objects.create(user=user, name="Mine", instructions="x")
+        r = auth_api_client.get("/api/v1/recipes/")
+        assert r.status_code == 200
+        assert set(["count", "next", "previous", "results"]).issubset(r.data.keys())
+        assert isinstance(r.data["results"], list)
+        assert "Mine" in {item["name"] for item in r.data["results"]}
 
 
 class TestRecipeCreate:

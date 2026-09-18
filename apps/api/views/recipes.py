@@ -5,14 +5,14 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.api.permissions import IsOwnerOrPublicReadOnly
+from apps.api.permissions import IsApproved, IsOwnerOrPublicReadOnly
 from apps.api.serializers.recipes import RecipeSerializer
 from apps.recipes.models import Recipe, RecipeIngredient
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrPublicReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsApproved, IsOwnerOrPublicReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -22,7 +22,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "clone":
-            return [permissions.IsAuthenticated()]
+            return [permissions.IsAuthenticated(), IsApproved()]
         return super().get_permissions()
 
     @action(detail=True, methods=["post"])

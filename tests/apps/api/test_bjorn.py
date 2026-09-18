@@ -20,8 +20,8 @@ class TestBjornMessages:
         ChatMessage.objects.create(user=user, role="user", content="hi")
         ChatMessage.objects.create(user=other_user, role="user", content="secret")
         r = auth_api_client.get("/api/v1/bjorn/messages/")
-        assert len(r.data) == 1
-        assert r.data[0]["content"] == "hi"
+        assert r.data["count"] == 1
+        assert r.data["results"][0]["content"] == "hi"
 
     @patch("apps.api.views.bjorn.call_ai")
     def test_post_creates_user_and_assistant_messages(self, mock_call_ai, auth_api_client, user):

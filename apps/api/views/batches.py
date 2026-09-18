@@ -2,7 +2,11 @@ from django.db import models as db_models
 from rest_framework import permissions, viewsets
 from rest_framework.parsers import FormParser, MultiPartParser
 
-from apps.api.permissions import IsBatchOwnerOrPublicReadOnly, IsOwnerOrPublicReadOnly
+from apps.api.permissions import (
+    IsApproved,
+    IsBatchOwnerOrPublicReadOnly,
+    IsOwnerOrPublicReadOnly,
+)
 from apps.api.serializers.batches import (
     BatchImageSerializer,
     BatchSerializer,
@@ -14,7 +18,7 @@ from apps.batches.models import Batch, BatchImage, BottleConsumption, TastingNot
 
 class BatchViewSet(viewsets.ModelViewSet):
     serializer_class = BatchSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrPublicReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsApproved, IsOwnerOrPublicReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -28,7 +32,7 @@ class BatchViewSet(viewsets.ModelViewSet):
 
 class TastingNoteViewSet(viewsets.ModelViewSet):
     serializer_class = TastingNoteSerializer
-    permission_classes = [permissions.IsAuthenticated, IsBatchOwnerOrPublicReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsApproved, IsBatchOwnerOrPublicReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -39,7 +43,7 @@ class TastingNoteViewSet(viewsets.ModelViewSet):
 
 class BottleConsumptionViewSet(viewsets.ModelViewSet):
     serializer_class = BottleConsumptionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsBatchOwnerOrPublicReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsApproved, IsBatchOwnerOrPublicReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -50,7 +54,7 @@ class BottleConsumptionViewSet(viewsets.ModelViewSet):
 
 class BatchImageViewSet(viewsets.ModelViewSet):
     serializer_class = BatchImageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsBatchOwnerOrPublicReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsApproved, IsBatchOwnerOrPublicReadOnly]
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):

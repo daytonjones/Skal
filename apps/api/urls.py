@@ -1,12 +1,11 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
     TokenBlacklistView,
 )
 
-from apps.api.views.auth import MeView, RegisterView
+from apps.api.views.auth import ApprovedTokenObtainPairView, MeView, RegisterView
 from apps.api.views.recipes import RecipeViewSet
 from apps.api.views.pantry import PantryItemViewSet
 from apps.api.views.yeast import YeastListAPIView
@@ -27,7 +26,7 @@ router.register("bottle-consumption", BottleConsumptionViewSet, basename="bottle
 router.register("batch-images", BatchImageViewSet, basename="batch-image")
 
 urlpatterns = [
-    path("auth/token/", TokenObtainPairView.as_view(), name="api-token-obtain"),
+    path("auth/token/", ApprovedTokenObtainPairView.as_view(), name="api-token-obtain"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="api-token-refresh"),
     path("auth/token/logout/", TokenBlacklistView.as_view(), name="api-token-logout"),
     path("auth/register/", RegisterView.as_view(), name="api-register"),
