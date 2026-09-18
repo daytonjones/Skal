@@ -43,6 +43,7 @@ describe("useMe", () => {
 
     const { result } = renderHook(() => useUpdateMe(), { wrapper });
     await result.current.mutateAsync({ theme: "light" });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApi.updateMe).toHaveBeenCalledWith({ theme: "light" });
   });
