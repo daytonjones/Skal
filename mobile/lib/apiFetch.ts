@@ -27,6 +27,11 @@ export class SessionExpiredError extends Error {
   }
 }
 
+let sessionExpiredHandler: (() => void) | null = null;
+export function setSessionExpiredHandler(handler: () => void): void {
+  sessionExpiredHandler = handler;
+}
+
 interface ApiFetchOptions extends RequestInit {
   skipAuth?: boolean;
 }
@@ -72,12 +77,14 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     const newAccess = await refreshAccessToken(serverUrl, tokens.refresh);
     if (!newAccess) {
       await clearTokens();
+      sessionExpiredHandler?.();
       throw new SessionExpiredError();
     }
     await setAccessToken(newAccess);
     response = await doFetch(`${serverUrl}${path}`, options, newAccess);
     if (response.status === 401) {
       await clearTokens();
+      sessionExpiredHandler?.();
       throw new SessionExpiredError();
     }
   }

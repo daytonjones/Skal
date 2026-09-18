@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { router } from "expo-router";
 import { getServerUrl, getTokens, clearTokens } from "./secureStorage";
+import { setSessionExpiredHandler } from "./apiFetch";
 
 type AuthStatus = "loading" | "no-server" | "unauthenticated" | "authenticated";
 
@@ -27,6 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshStatus();
   }, [refreshStatus]);
+
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      setStatus("unauthenticated");
+      router.replace("/login");
+    });
+  }, []);
 
   const signOut = useCallback(async () => {
     await clearTokens();
