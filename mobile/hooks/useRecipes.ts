@@ -4,14 +4,14 @@ import type { RecipeInput } from "../api/types";
 
 export function useRecipes(page = 1) {
   return useQuery({
-    queryKey: ["recipes", page],
+    queryKey: ["recipes", "list", page],
     queryFn: () => recipesApi.listRecipes(page),
   });
 }
 
 export function useRecipe(id: number) {
   return useQuery({
-    queryKey: ["recipes", id],
+    queryKey: ["recipes", "detail", id],
     queryFn: () => recipesApi.getRecipe(id),
     enabled: !!id,
   });
@@ -31,7 +31,7 @@ export function useUpdateRecipe(id: number) {
     mutationFn: (input: RecipeInput) => recipesApi.updateRecipe(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
-      queryClient.invalidateQueries({ queryKey: ["recipes", id] });
+      queryClient.invalidateQueries({ queryKey: ["recipes", "detail", id] });
     },
   });
 }
