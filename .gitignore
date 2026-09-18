@@ -19,6 +19,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Exception: track mobile/lib (Expo app TypeScript modules)
+!mobile/lib/
 parts/
 sdist/
 var/
