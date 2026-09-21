@@ -31,13 +31,13 @@ describe("apiFetch", () => {
     mockedStorage.getTokens.mockResolvedValue({ access: "expired", refresh: "refresh-1" });
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({ ok: false, status: 401, json: async () => ({}) })
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ access: "fresh" }) })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ access: "fresh", refresh: "fresh-refresh" }) })
       .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ id: 1 }) });
 
     const result = await apiFetch<{ id: number }>("/api/v1/recipes/1/");
 
     expect(result).toEqual({ id: 1 });
-    expect(mockedStorage.setAccessToken).toHaveBeenCalledWith("fresh");
+    expect(mockedStorage.setTokens).toHaveBeenCalledWith({ access: "fresh", refresh: "fresh-refresh" });
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 

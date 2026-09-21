@@ -1,4 +1,4 @@
-import { getServerUrl, getTokens, setAccessToken, clearTokens } from "./secureStorage";
+import { getServerUrl, getTokens, setTokens, clearTokens } from "./secureStorage";
 
 export class ApiError extends Error {
   status: number;
@@ -51,7 +51,7 @@ async function doFetch(url: string, options: ApiFetchOptions, accessToken: strin
   }
 }
 
-async function refreshAccessToken(serverUrl: string, refresh: string): Promise<string | null> {
+async function refreshAccessToken(serverUrl: string, refresh: string): Promise<{ access: string; refresh: string } | null> {
   try {
     const res = await fetch(`${serverUrl}/api/v1/auth/token/refresh/`, {
       method: "POST",
@@ -60,7 +60,7 @@ async function refreshAccessToken(serverUrl: string, refresh: string): Promise<s
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data.access as string;
+    return { access: data.access as string, refresh: data.refresh as string };
   } catch {
     return null;
   }
@@ -74,14 +74,14 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   let response = await doFetch(`${serverUrl}${path}`, options, tokens?.access ?? null);
 
   if (response.status === 401 && tokens && !options.skipAuth) {
-    const newAccess = await refreshAccessToken(serverUrl, tokens.refresh);
-    if (!newAccess) {
+    const refreshed = await refreshAccessToken(serverUrl, tokens.refresh);
+    if (!refreshed) {
       await clearTokens();
       sessionExpiredHandler?.();
       throw new SessionExpiredError();
     }
-    await setAccessToken(newAccess);
-    response = await doFetch(`${serverUrl}${path}`, options, newAccess);
+    await setTokens(refreshed);
+    response = await doFetch(`${serverUrl}${path}`, options, refreshed.access);
     if (response.status === 401) {
       await clearTokens();
       sessionExpiredHandler?.();
