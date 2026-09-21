@@ -9,6 +9,7 @@ export default function MoreScreen() {
       <View style={styles.container}>
       <List.Item title="Pantry" left={(props) => <List.Icon {...props} icon="basket" />} onPress={() => router.push("/more/pantry")} />
       <List.Item title="Yeast Reference" left={(props) => <List.Icon {...props} icon="flask-outline" />} onPress={() => router.push("/more/yeast")} />
+      <List.Item title="Mead History" left={(props) => <List.Icon {...props} icon="book-open-page-variant" />} onPress={() => router.push("/more/mead-history")} />
       <List.Item title="Calculators" left={(props) => <List.Icon {...props} icon="calculator" />} onPress={() => router.push("/more/calculators")} />
       <List.Item title="Profile" left={(props) => <List.Icon {...props} icon="account" />} onPress={() => router.push("/more/profile")} />
       <List.Item title="Settings" left={(props) => <List.Icon {...props} icon="cog" />} onPress={() => router.push("/more/settings")} />
