@@ -8,6 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+# Canonical app version. Single source of truth for the footer and the
+# public /api/v1/version/ endpoint the mobile app polls before login.
+APP_VERSION = "2.2.0"
+
 ###
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -63,6 +67,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "apps.accounts",
     "apps.recipes",
     "apps.batches",
@@ -70,6 +77,7 @@ INSTALLED_APPS = [
     "apps.yeast",
     "apps.pantry",
     "apps.ai",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
@@ -99,6 +107,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.ai.context_processors.ai_settings",
+                "apps.api.context_processors.app_version",
             ],
         },
     },
@@ -166,4 +175,26 @@ DEFAULT_FROM_EMAIL  = os.environ.get("DEFAULT_FROM_EMAIL", "Skål <noreply@local
 # AI Assistant (Bjorn) -------------------------------------------------------
 AI_PROVIDER = os.environ.get('AI_PROVIDER', '')   # 'anthropic' | 'openai' | ''
 AI_API_KEY  = os.environ.get('AI_API_KEY', '')
+
+# REST API (mobile) ----------------------------------------------------------
+from datetime import timedelta  # noqa: E402
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+        "apps.api.permissions.IsApproved",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
 

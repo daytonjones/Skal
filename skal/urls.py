@@ -42,6 +42,7 @@ urlpatterns = [
         "ai/",
         include(("apps.ai.urls", "ai"), namespace="ai"),
     ),
+    path("api/v1/", include("apps.api.urls")),
 ]
 
 # Always serve media files regardless of DEBUG setting.
