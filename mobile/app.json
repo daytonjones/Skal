@@ -2,11 +2,11 @@
   "expo": {
     "name": "Skål",
     "slug": "mobile",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "scheme": "skal",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
