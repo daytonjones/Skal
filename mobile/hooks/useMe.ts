@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMe, updateMe } from "../api/auth";
 import type { Me, NotificationPrefs } from "../api/types";
 
-export function useMe() {
-  return useQuery({ queryKey: ["me"], queryFn: getMe });
+export function useMe(options?: { enabled?: boolean }) {
+  return useQuery({ queryKey: ["me"], queryFn: getMe, enabled: options?.enabled ?? true });
 }
 
 export function useUpdateMe() {
