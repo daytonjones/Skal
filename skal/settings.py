@@ -10,7 +10,7 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # Canonical app version. Single source of truth for the footer and the
 # public /api/v1/version/ endpoint the mobile app polls before login.
-APP_VERSION = "2.2.0"
+APP_VERSION = "2.3.0"
 
 ###
 LANGUAGE_CODE = 'en-us'

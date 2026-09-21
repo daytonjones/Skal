@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.3.0] - 2026-09-21
+
+### Added
+
+* **Android app** — A native Android companion app (Expo / React Native, in `mobile/`) with recipes, batches (tasting notes, bottle consumption, photos), cellar, pantry, yeast reference, calculators, Bjorn AI chat, and profile/settings. Self-hosted friendly: on first launch it asks for your server address. Light and dark themes mirror the web palette and follow your per-user theme setting.
+* **REST API** — New JWT-authenticated `/api/v1/` API used by the mobile app: token login/refresh/logout, registration (subject to admin approval), recipes (including clone), batches, tasting notes, bottle consumption, batch photos, pantry, yeast reference, and Bjorn chat with server-side history and save-recipe.
+* **Version check** — Public `GET /api/v1/version/` endpoint. The mobile app compares its version to the server's on launch and shows a dismissible banner when the server is newer. The web and mobile versions are kept in step.
+* `is_owner` field on recipe and batch API responses so clients can show Edit/Delete only on your own items.
+
+### Changed
+
+* The app version now lives in one place (`APP_VERSION` in `skal/settings.py`); the footer reads it instead of a hardcoded string.
+* Dockerfile no longer runs `collectstatic` at build time (it needs runtime settings); the entrypoint already runs it on start.
+
+### Database
+
+* New migration `ai/0002_chatmessage` (server-side Bjorn chat history). Applied automatically on start by `entrypoint.sh`.
+
+---
+
 ## [2.2.0] - 2026-06-10
 
 ### Added
