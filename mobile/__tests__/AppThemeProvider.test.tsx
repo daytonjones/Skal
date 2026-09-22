@@ -2,7 +2,7 @@ import { render } from "@testing-library/react-native";
 import { useTheme } from "react-native-paper";
 import { Text } from "react-native";
 import AppThemeProvider from "../components/AppThemeProvider";
-import { lightTheme, darkTheme } from "../lib/theme";
+import { lightTheme, darkTheme, useThemeMode } from "../lib/theme";
 
 const mockAuth = jest.fn();
 const mockMe = jest.fn();
@@ -11,7 +11,13 @@ jest.mock("../hooks/useMe", () => ({ useMe: (o: unknown) => mockMe(o) }));
 
 function Probe() {
   const t = useTheme();
-  return <Text testID="bg">{t.colors.background}</Text>;
+  const mode = useThemeMode();
+  return (
+    <>
+      <Text testID="bg">{t.colors.background}</Text>
+      <Text testID="mode">{mode}</Text>
+    </>
+  );
 }
 
 describe("AppThemeProvider", () => {
@@ -20,6 +26,7 @@ describe("AppThemeProvider", () => {
     mockMe.mockReturnValue({ data: undefined });
     const { getByTestId } = render(<AppThemeProvider><Probe /></AppThemeProvider>);
     expect(getByTestId("bg").props.children).toBe(darkTheme.colors.background);
+    expect(getByTestId("mode").props.children).toBe("dark");
     expect(mockMe).toHaveBeenCalledWith({ enabled: false });
   });
 
@@ -28,6 +35,7 @@ describe("AppThemeProvider", () => {
     mockMe.mockReturnValue({ data: { theme: "light" } });
     const { getByTestId } = render(<AppThemeProvider><Probe /></AppThemeProvider>);
     expect(getByTestId("bg").props.children).toBe(lightTheme.colors.background);
+    expect(getByTestId("mode").props.children).toBe("light");
     expect(mockMe).toHaveBeenCalledWith({ enabled: true });
   });
 });
