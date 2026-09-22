@@ -18,12 +18,15 @@ from .models import User, UserNotificationPrefs
 from apps.recipes.models import Recipe, RecipeIngredient
 from apps.batches.models import Batch, BatchImage
 
+import base64
 import csv
 import io
 import json
+import pathlib
 import tempfile
 import subprocess
 import os
+import qrcode
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import letter
@@ -191,6 +194,35 @@ def save_notification_prefs(request):
     else:
         messages.error(request, 'Could not save notification preferences. Please try again.')
     return redirect(reverse_lazy('accounts:profile'))
+
+
+@login_required
+def mobile_app_download(request):
+    apk_path = pathlib.Path(settings.MEDIA_ROOT) / "downloads" / "skal-latest.apk"
+    apk_exists = apk_path.is_file()
+
+    download_url = None
+    qr_data_uri = None
+    file_size = None
+
+    if apk_exists:
+        download_url = request.build_absolute_uri(settings.MEDIA_URL + "downloads/skal-latest.apk")
+
+        qr_img = qrcode.make(download_url)
+        buf = io.BytesIO()
+        qr_img.save(buf, format="PNG")
+        qr_data_uri = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+        size_bytes = apk_path.stat().st_size
+        file_size = f"{size_bytes / (1024 * 1024):.1f} MB"
+
+    return render(request, "accounts/mobile_app.html", {
+        "apk_exists": apk_exists,
+        "download_url": download_url,
+        "qr_data_uri": qr_data_uri,
+        "file_size": file_size,
+        "app_version": settings.APP_VERSION,
+    })
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):

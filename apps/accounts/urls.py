@@ -9,6 +9,7 @@ from .views import (
     export_user_data,
     toggle_theme,
     save_notification_prefs,
+    mobile_app_download,
 )
 
 app_name = "accounts"
@@ -22,5 +23,6 @@ urlpatterns = [
     path("export/", export_user_data,                   name="export_user_data"),
     path("theme/toggle/", toggle_theme,                 name="toggle_theme"),
     path("profile/notifications/", save_notification_prefs, name="save_notification_prefs"),
+    path("mobile-app/", mobile_app_download, name="mobile_app"),
 ]
 
