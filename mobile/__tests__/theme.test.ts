@@ -16,8 +16,13 @@ describe.each([
   ["dark", darkTheme, darkNavTheme],
 ] as const)("%s theme", (_name, paper, nav) => {
   const c = paper.colors;
-  it("keeps paper and navigation backgrounds in sync", () => {
-    expect(nav.colors.background).toBe(c.background);
+  it("keeps paper's background opaque but leaves the nav background transparent so AppBackground shows through screen content", () => {
+    // React Navigation/expo-router paint `colors.background` opaquely behind every
+    // screen (react-native-screens' ScreenStack container + the native-stack/bottom-tabs
+    // Background view), independent of anything in app/_layout.tsx. Paper's own
+    // `background` stays a real color for Paper components (Surface, etc.).
+    expect(nav.colors.background).toBe("transparent");
+    expect(c.background).not.toBe("transparent");
     expect(c.onBackground).not.toBe(c.background);
   });
   it("has readable text pairs", () => {

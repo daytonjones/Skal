@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { queryClient } from "../lib/queryClient";
 import { AuthProvider } from "../lib/authContext";
 import AppThemeProvider from "../components/AppThemeProvider";
+import AppBackground from "../components/AppBackground";
 import UpdateBanner from "../components/UpdateBanner";
 
 export default function RootLayout() {
@@ -12,6 +13,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AppThemeProvider>
+            <AppBackground />
             <UpdateBanner />
             <Slot />
           </AppThemeProvider>

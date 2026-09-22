@@ -1,7 +1,17 @@
+import { createContext, useContext } from "react";
 import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from "react-native-paper";
 import { DarkTheme, DefaultTheme } from "expo-router";
 
 export type ThemeMode = "light" | "dark";
+
+// Exposes the resolved light/dark mode (computed once in AppThemeProvider from the
+// logged-in user's saved preference) to any component that needs it, without having
+// to re-derive it from useAuthState()/useMe() or drill it through props.
+export const ThemeModeContext = createContext<ThemeMode>("dark");
+
+export function useThemeMode(): ThemeMode {
+  return useContext(ThemeModeContext);
+}
 
 export const stageColors = {
   planned: "#94a3b8",
@@ -67,12 +77,21 @@ export const darkTheme: MD3Theme = {
   },
 };
 
+// The nav theme's `background` is what React Navigation/expo-router paints, opaquely,
+// behind every screen's content (react-native-screens' ScreenStack container, plus the
+// per-screen Background view used by both the native-stack and bottom-tabs navigators).
+// That paint happens *underneath* every routed screen regardless of anything set in
+// app/_layout.tsx, so to let AppBackground's mead photo show through screen content
+// (rendered as a sibling behind the navigator, see app/_layout.tsx + AppBackground.tsx)
+// this must be transparent rather than an opaque color. Paper's own `background` (used
+// for Paper components like Surface) is intentionally left opaque and unchanged, and
+// `card`/`text`/`border` (header + tab bar chrome) stay solid so nav chrome is unaffected.
 export const lightNavTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
     primary: "#f59e0b",
-    background: lightTheme.colors.background,
+    background: "transparent",
     card: "#1c0a00",
     text: "#fef3c7",
     border: "#451a03",
@@ -85,7 +104,7 @@ export const darkNavTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: "#f59e0b",
-    background: darkTheme.colors.background,
+    background: "transparent",
     card: "#1c0a00",
     text: "#fef3c7",
     border: "#5a3a1a",

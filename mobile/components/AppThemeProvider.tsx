@@ -4,7 +4,7 @@ import { ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAuthState } from "../lib/authContext";
 import { useMe } from "../hooks/useMe";
-import { themeForMode, type ThemeMode } from "../lib/theme";
+import { themeForMode, ThemeModeContext, type ThemeMode } from "../lib/theme";
 
 export default function AppThemeProvider({ children }: { children: ReactNode }) {
   const { status } = useAuthState();
@@ -13,11 +13,13 @@ export default function AppThemeProvider({ children }: { children: ReactNode }) 
   const { paper, navigation } = themeForMode(mode);
 
   return (
-    <PaperProvider theme={paper}>
-      <ThemeProvider value={navigation}>
-        <StatusBar style="light" />
-        {children}
-      </ThemeProvider>
-    </PaperProvider>
+    <ThemeModeContext.Provider value={mode}>
+      <PaperProvider theme={paper}>
+        <ThemeProvider value={navigation}>
+          <StatusBar style="light" />
+          {children}
+        </ThemeProvider>
+      </PaperProvider>
+    </ThemeModeContext.Provider>
   );
 }
